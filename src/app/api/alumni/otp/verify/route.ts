@@ -1,0 +1,132 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyOtp, findAlumnusByUsn, createVerifiedSession, verifySessionToken, getSessionData } from '@/lib/alumni';
+import { createAttendee } from '@/lib/db';
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { 
+      usn, 
+      otp, 
+      action, 
+      verifyOnly, 
+      sessionToken, 
+      familyCount = 0, 
+      familyMembers = [] 
+    } = body;
+
+    if (!usn || typeof usn !== 'string') {
+      return NextResponse.json(
+        { success: false, error: 'University Seat Number (USN) is required.' },
+        { status: 400 }
+      );
+    }
+
+    const cleanedUsn = usn.trim().toUpperCase();
+    const alumnus = findAlumnusByUsn(cleanedUsn);
+    if (!alumnus) {
+      return NextResponse.json({ success: false, error: 'Graduate record not found.' }, { status: 404 });
+    }
+
+    // MODE 1: VERIFY OTP ONLY (Unlocks Step 3: Family Selection)
+    if (action === 'VERIFY_ONLY' || verifyOnly) {
+      if (!otp || typeof otp !== 'string') {
+        return NextResponse.json(
+          { success: false, error: '6-digit OTP verification code is required.' },
+          { status: 400 }
+        );
+      }
+
+      const verification = verifyOtp(cleanedUsn, otp.trim());
+      if (!verification.valid) {
+        return NextResponse.json({ success: false, error: verification.error }, { status: 400 });
+      }
+
+      const token = createVerifiedSession(cleanedUsn, {
+        email: verification.channel === 'EMAIL' ? verification.target : (alumnus.officialEmail || undefined),
+        phone: verification.channel === 'PHONE' ? verification.target : (alumnus.phone || undefined),
+      });
+
+      return NextResponse.json({
+        success: true,
+        verified: true,
+        sessionToken: token,
+        alumnus: {
+          usn: alumnus.usn,
+          fullName: alumnus.fullName,
+          department: alumnus.department,
+          batchYear: alumnus.batchYear,
+        },
+        message: 'Identity confirmed via OTP! You may now specify accompanying family members.',
+      });
+    }
+
+    // MODE 2: COMPLETE PASS WITH SESSION TOKEN
+    let directVerification: { target?: string; channel?: 'EMAIL' | 'PHONE' } | null = null;
+    if (sessionToken) {
+      const isValidSession = verifySessionToken(cleanedUsn, sessionToken);
+      if (!isValidSession) {
+        return NextResponse.json(
+          { success: false, error: 'Verification session expired. Please verify OTP again.' },
+          { status: 401 }
+        );
+      }
+    } else {
+      // Direct pass generation with OTP provided directly
+      if (!otp) {
+        return NextResponse.json(
+          { success: false, error: 'Either OTP or verified session token is required.' },
+          { status: 400 }
+        );
+      }
+
+      const verification = verifyOtp(cleanedUsn, otp.trim());
+      if (!verification.valid) {
+        return NextResponse.json({ success: false, error: verification.error }, { status: 400 });
+      }
+      directVerification = { target: verification.target, channel: verification.channel };
+    }
+
+    // Auto-create APPROVED attendee pass with family members quota
+    const parsedFamilyCount = Math.min(4, Math.max(0, Number(familyCount) || 0));
+    const cleanFamilyMembers = Array.isArray(familyMembers) 
+      ? familyMembers.slice(0, parsedFamilyCount).map((m: any) => ({
+          name: String(m.name || '').trim(),
+          relation: String(m.relation || 'Family Guest').trim(),
+          age: m.age ? String(m.age).trim() : undefined,
+        }))
+      : [];
+
+    const sessionData = sessionToken ? getSessionData(sessionToken) : null;
+    const finalEmail = sessionData?.email || (directVerification?.channel === 'EMAIL' ? directVerification.target : null) || alumnus.officialEmail || 'alumni@chronosfest.com';
+    const finalPhone = sessionData?.phone || (directVerification?.channel === 'PHONE' ? directVerification.target : null) || alumnus.phone || '+91 99999 99999';
+
+    const result = createAttendee({
+      fullName: alumnus.fullName,
+      email: finalEmail,
+      phone: finalPhone,
+      rollNumber: alumnus.usn,
+      usn: alumnus.usn,
+      department: alumnus.department,
+      year: alumnus.batchYear,
+      isVerifiedOtp: true,
+      familyCount: parsedFamilyCount,
+      familyMembers: cleanFamilyMembers,
+    });
+
+    if (!result.success) {
+      return NextResponse.json({ success: false, error: result.error }, { status: 400 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Official Alumni Entry Pass generated successfully!',
+      attendee: result.attendee,
+    });
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, error: error.message || 'Verification or pass generation failed' },
+      { status: 500 }
+    );
+  }
+}
