@@ -8,15 +8,18 @@ export const revalidate = 0;
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const cookieToken = request.cookies.get('milan_otp_token')?.value;
     const { 
       usn, 
       otp, 
       action, 
       verifyOnly, 
       sessionToken,
+      otpToken,
       organization,
       designation,
     } = body;
+    const effectiveOtpToken = otpToken || cookieToken;
 
     if (!usn || typeof usn !== 'string') {
       return NextResponse.json(
@@ -40,7 +43,7 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const verification = verifyOtp(cleanedUsn, otp.trim());
+      const verification = verifyOtp(cleanedUsn, otp.trim(), effectiveOtpToken);
       if (!verification.valid) {
         return NextResponse.json({ success: false, error: verification.error }, { status: 400 });
       }
@@ -83,7 +86,7 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const verification = verifyOtp(cleanedUsn, otp.trim());
+      const verification = verifyOtp(cleanedUsn, otp.trim(), effectiveOtpToken);
       if (!verification.valid) {
         return NextResponse.json({ success: false, error: verification.error }, { status: 400 });
       }

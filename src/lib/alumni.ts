@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import * as XLSX from 'xlsx';
 import { AlumniRecord, OtpRecord } from './types';
 import { safeReadJson, safeWriteJson } from './storage';
@@ -426,74 +427,159 @@ export function syncDataFolderWorkbooks(): {
   };
 }
 
-// In-Memory & File-Backed OTP Store
+const OTP_SECRET = process.env.OTP_SECRET || process.env.BREVO_API_KEY || 'milan-chronos-alumni-otp-hmac-secret-2026';
+
+export function createStatelessOtpToken(
+  usn: string,
+  code: string,
+  target: string,
+  channel: 'EMAIL' | 'PHONE',
+  expiresAt: number
+): string {
+  const cleanedUsn = usn.trim().toUpperCase();
+  const signature = crypto
+    .createHmac('sha256', OTP_SECRET)
+    .update(`${cleanedUsn}:${code.trim()}:${expiresAt}:${channel}`)
+    .digest('hex');
+  const payload = {
+    usn: cleanedUsn,
+    target,
+    channel,
+    expiresAt,
+    sig: signature,
+  };
+  return Buffer.from(JSON.stringify(payload)).toString('base64');
+}
+
+export function verifyStatelessOtpToken(
+  usn: string,
+  inputCode: string,
+  token: string
+): { valid: boolean; target?: string; channel?: 'EMAIL' | 'PHONE'; error?: string } {
+  try {
+    const raw = Buffer.from(token, 'base64').toString('utf-8');
+    const data = JSON.parse(raw);
+    const cleanedUsn = usn.trim().toUpperCase();
+    if (data.usn !== cleanedUsn) {
+      return { valid: false, error: 'OTP token mismatch for this USN.' };
+    }
+    if (Date.now() > data.expiresAt) {
+      return { valid: false, error: 'OTP has expired (valid for 10 minutes). Please request a new one.' };
+    }
+    const expectedSig = crypto
+      .createHmac('sha256', OTP_SECRET)
+      .update(`${cleanedUsn}:${inputCode.trim()}:${data.expiresAt}:${data.channel}`)
+      .digest('hex');
+    if (expectedSig !== data.sig) {
+      return { valid: false, error: 'Incorrect OTP. Please enter the 6-digit code received.' };
+    }
+    return { valid: true, target: data.target, channel: data.channel };
+  } catch {
+    return { valid: false, error: 'Invalid verification token.' };
+  }
+}
+
+function getActiveOtps(): Record<string, OtpRecord> {
+  const disk = safeReadJson<Record<string, OtpRecord>>('active_otps.json', {});
+  const memory = globalThis.__ACTIVE_OTPS__ || {};
+  return { ...disk, ...memory };
+}
+
+function saveActiveOtps(otps: Record<string, OtpRecord>): void {
+  globalThis.__ACTIVE_OTPS__ = otps;
+  safeWriteJson('active_otps.json', otps);
+}
+
+// In-Memory & File-Backed OTP Store with Stateless HMAC fallback
 export function createOtp(
   usn: string, 
   channel: 'EMAIL' | 'PHONE',
   customTarget?: string
-): { otp: string; target: string; maskedTarget: string } | null {
+): { otp: string; target: string; maskedTarget: string; statelessToken: string } | null {
   const alumnus = findAlumnusByUsn(usn);
   const target = customTarget || (channel === 'EMAIL' ? alumnus?.officialEmail : alumnus?.phone);
   if (!target) return null;
 
-  let otps: Record<string, OtpRecord> = globalThis.__ACTIVE_OTPS__ || safeReadJson<Record<string, OtpRecord>>('active_otps.json', {});
+  const otps = getActiveOtps();
+  const cleanedUsn = usn.trim().toUpperCase();
 
   // Generate 6-digit OTP
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   const maskedTarget = channel === 'EMAIL' ? maskEmail(target) : maskPhone(target);
+  const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-  otps[usn.trim().toUpperCase()] = {
-    usn: usn.trim().toUpperCase(),
+  otps[cleanedUsn] = {
+    usn: cleanedUsn,
     code,
     channel,
     target,
-    expiresAt: Date.now() + 10 * 60 * 1000, // 10 minutes
+    expiresAt,
   };
 
-  globalThis.__ACTIVE_OTPS__ = otps;
-  safeWriteJson('active_otps.json', otps);
+  saveActiveOtps(otps);
+  const statelessToken = createStatelessOtpToken(cleanedUsn, code, target, channel, expiresAt);
 
-  return { otp: code, target, maskedTarget };
+  return { otp: code, target, maskedTarget, statelessToken };
 }
 
-export function verifyOtp(usn: string, inputCode: string): { 
+export function verifyOtp(
+  usn: string, 
+  inputCode: string,
+  statelessToken?: string
+): { 
   valid: boolean; 
   error?: string; 
   target?: string; 
   channel?: 'EMAIL' | 'PHONE' 
 } {
-  const otps: Record<string, OtpRecord> = globalThis.__ACTIVE_OTPS__ || safeReadJson<Record<string, OtpRecord>>('active_otps.json', {});
+  const cleanedUsn = usn.trim().toUpperCase();
+  const cleanCode = inputCode.trim();
+  const otps = getActiveOtps();
 
-  const record = otps[usn.trim().toUpperCase()];
-  if (!record) {
-    return { valid: false, error: 'No active OTP found for this USN. Please request one.' };
+  const record = otps[cleanedUsn];
+
+  // 1. Primary Check: In-memory & disk active OTP store
+  if (record) {
+    if (Date.now() > record.expiresAt) {
+      delete otps[cleanedUsn];
+      saveActiveOtps(otps);
+      return { valid: false, error: 'OTP has expired (valid for 10 minutes). Please request a new one.' };
+    }
+
+    if (record.code.trim() !== cleanCode) {
+      return { valid: false, error: 'Incorrect OTP. Please enter the 6-digit code received.' };
+    }
+
+    const target = record.target;
+    const channel = record.channel;
+
+    // Consume OTP
+    delete otps[cleanedUsn];
+    saveActiveOtps(otps);
+
+    return { valid: true, target, channel };
   }
 
-  if (Date.now() > record.expiresAt) {
-    delete otps[usn.trim().toUpperCase()];
-    globalThis.__ACTIVE_OTPS__ = otps;
-    safeWriteJson('active_otps.json', otps);
-    return { valid: false, error: 'OTP has expired (valid for 10 minutes). Please request a new one.' };
+  // 2. Secondary Resilient Check: Cryptographic Stateless Token
+  // Protects against Render container rebuilds and Vercel multi-lambda cold starts
+  if (statelessToken) {
+    const statelessResult = verifyStatelessOtpToken(cleanedUsn, cleanCode, statelessToken);
+    if (statelessResult.valid) {
+      return { valid: true, target: statelessResult.target, channel: statelessResult.channel };
+    }
+    if (statelessResult.error && !statelessResult.error.includes('Invalid verification token')) {
+      return { valid: false, error: statelessResult.error };
+    }
   }
 
-  if (record.code.trim() !== inputCode.trim()) {
-    return { valid: false, error: 'Incorrect OTP. Please enter the 6-digit code received.' };
-  }
-
-  const target = record.target;
-  const channel = record.channel;
-
-  // Consume OTP
-  delete otps[usn.trim().toUpperCase()];
-  globalThis.__ACTIVE_OTPS__ = otps;
-  safeWriteJson('active_otps.json', otps);
-
-  return { valid: true, target, channel };
+  return { valid: false, error: 'No active OTP found for this USN. Please request one.' };
 }
 
 export function createVerifiedSession(usn: string, contactInfo?: { email?: string; phone?: string }): string {
-  let sessions: Record<string, { usn: string; email?: string; phone?: string; expiresAt: number }> =
-    globalThis.__VERIFIED_SESSIONS__ || safeReadJson<Record<string, any>>('verified_sessions.json', {});
+  const sessions = {
+    ...safeReadJson<Record<string, any>>('verified_sessions.json', {}),
+    ...(globalThis.__VERIFIED_SESSIONS__ || {})
+  };
 
   const token = `VTOK_${Math.random().toString(36).substring(2, 8).toUpperCase()}_${Date.now()}`;
   sessions[token] = {
@@ -509,8 +595,10 @@ export function createVerifiedSession(usn: string, contactInfo?: { email?: strin
 }
 
 export function getSessionData(token: string): { usn: string; email?: string; phone?: string } | null {
-  const sessions: Record<string, any> =
-    globalThis.__VERIFIED_SESSIONS__ || safeReadJson<Record<string, any>>('verified_sessions.json', {});
+  const sessions = {
+    ...safeReadJson<Record<string, any>>('verified_sessions.json', {}),
+    ...(globalThis.__VERIFIED_SESSIONS__ || {})
+  };
   const record = sessions[token];
   if (!record) return null;
   if (Date.now() > record.expiresAt) return null;
@@ -524,16 +612,18 @@ export function verifySessionToken(usn: string, token: string): boolean {
 }
 
 export function clearAlumniSession(usn?: string): void {
-  let otps: Record<string, OtpRecord> = globalThis.__ACTIVE_OTPS__ || safeReadJson<Record<string, OtpRecord>>('active_otps.json', {});
+  const otps = getActiveOtps();
   if (usn) {
     delete otps[usn.trim().toUpperCase()];
   } else {
-    otps = {};
+    for (const key of Object.keys(otps)) delete otps[key];
   }
-  globalThis.__ACTIVE_OTPS__ = otps;
-  safeWriteJson('active_otps.json', otps);
+  saveActiveOtps(otps);
 
-  let sessions: Record<string, any> = globalThis.__VERIFIED_SESSIONS__ || safeReadJson<Record<string, any>>('verified_sessions.json', {});
+  const sessions = {
+    ...safeReadJson<Record<string, any>>('verified_sessions.json', {}),
+    ...(globalThis.__VERIFIED_SESSIONS__ || {})
+  };
   if (usn) {
     const cleanedUsn = usn.trim().toUpperCase();
     for (const token of Object.keys(sessions)) {
@@ -542,7 +632,7 @@ export function clearAlumniSession(usn?: string): void {
       }
     }
   } else {
-    sessions = {};
+    for (const key of Object.keys(sessions)) delete sessions[key];
   }
   globalThis.__VERIFIED_SESSIONS__ = sessions;
   safeWriteJson('verified_sessions.json', sessions);

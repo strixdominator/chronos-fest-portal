@@ -60,6 +60,7 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
   const [otpTarget, setOtpTarget] = useState<string>('');
+  const [otpToken, setOtpToken] = useState<string>('');
 
   // Step 3: Verified Session & Professional Details
   const [isOtpVerified, setIsOtpVerified] = useState(false);
@@ -77,6 +78,7 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
   const [verifyingClaimedOtp, setVerifyingClaimedOtp] = useState(false);
   const [claimedOtpError, setClaimedOtpError] = useState<string | null>(null);
   const [claimedOtpTarget, setClaimedOtpTarget] = useState<string>('');
+  const [claimedOtpToken, setClaimedOtpToken] = useState<string>('');
 
   // Fallback: manual review flow
   const [showManualReview, setShowManualReview] = useState(false);
@@ -257,6 +259,9 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
       setOtpChannel(channel);
       setOtpSent(true);
       setOtpTarget(data.maskedTarget);
+      if (data.otpToken) {
+        setOtpToken(data.otpToken);
+      }
       setDeliveryInfo({
         isReal: !!data.isRealDelivery,
         message: data.message,
@@ -285,6 +290,7 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
         body: JSON.stringify({
           usn: alumnus.usn,
           otp: otpCode.trim(),
+          otpToken,
           verifyOnly: true,
         }),
       });

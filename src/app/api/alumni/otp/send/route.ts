@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       }, { status: 502 });
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: dispatchResult?.isReal 
         ? `Real verification code sent to ${otpData.maskedTarget}!`
@@ -89,7 +89,19 @@ export async function POST(request: NextRequest) {
       simulationCode: !dispatchResult?.isReal ? otpData.otp : undefined,
       dispatchError: dispatchResult?.error,
       simulationNotice: dispatchResult?.provider === 'SIMULATION' ? dispatchResult.message : undefined,
+      otpToken: otpData.statelessToken,
     });
+
+    if (otpData.statelessToken) {
+      response.cookies.set('milan_otp_token', otpData.statelessToken, {
+        path: '/',
+        httpOnly: true,
+        sameSite: 'lax',
+        maxAge: 600, // 10 minutes
+      });
+    }
+
+    return response;
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message || 'Failed to dispatch OTP' },
