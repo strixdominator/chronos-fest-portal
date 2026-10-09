@@ -175,18 +175,28 @@ export function normalizeDepartmentName(raw?: string, fallback: string = 'Engine
   const s = nameOnly.toLowerCase();
 
   if (s.includes('info') || s.includes('ise') || s === 'is') return 'ISE';
-  if (s.includes('data science') || s.includes('aids') || s.includes('ai&ds') || s.includes('ai & ds') || s === 'ad') return 'AI & DS';
-  if (s.includes('machine learning') || s.includes('aiml') || s.includes('ai&ml') || s.includes('ai & ml') || s === 'am') return 'AI & ML';
+  if (s.includes('data') || s.includes('aids') || s.includes('ai&ds') || s.includes('ai & ds') || s === 'ad') return 'AI & DS';
+  if (s.includes('machine') || s.includes('aiml') || s.includes('ai&ml') || s.includes('ai & ml') || s === 'am' || s === 'ci') return 'AI & ML';
   if (s.includes('electron') || s.includes('ece') || s === 'ec') return 'ECE';
   if (s.includes('mech') || s === 'me') return 'Mechanical';
   if (s.includes('civil') || s === 'cv') return 'Civil';
   if (s.includes('electrical') || s.includes('eee') || s === 'ee') return 'EEE';
-  if (s.includes('telecom') || s.includes('tce') || s === 'te' || s === 'tc') return 'TCE';
+  if (s.includes('telecom') || s.includes('tce') || s === 'te' || s === 'tc' || s.includes('ete')) return 'TCE';
   if (s.includes('mba') || s.includes('business admin') || s === 'ba') return 'MBA';
-  if (s.includes('mtech') || s.includes('m.tech') || s.includes('master of tech') || s === 'scs') return 'M.Tech';
+  if (
+    s.includes('mtech') || 
+    s.includes('m.tech') || 
+    s.includes('master of tech') || 
+    s === 'scs' || 
+    s.includes('mde') ||
+    s.includes('vlsi') ||
+    s.includes('design engineering') ||
+    s.includes('power system') ||
+    fallback === 'M.Tech'
+  ) return 'M.Tech';
   if (s.includes('computer') || s.includes('cse') || s === 'cs') return 'CSE';
 
-  return nameOnly.toUpperCase();
+  return fallback || nameOnly.toUpperCase();
 }
 
 export function normalizeRecordFromObject(
@@ -201,10 +211,10 @@ export function normalizeRecordFromObject(
   };
 
   const usn = findVal(['usn', 'roll', 'seat', 'regno', 'id', 'serial']);
-  if (!usn || usn.length < 5 || /usn|sl\.?|total/i.test(usn)) return null;
+  if (!usn || usn.length < 5 || /usn|sl\.?|total|heading|contact|directory|department|batch/i.test(usn)) return null;
 
   const fullName = findVal(['name', 'studentname', 'fullname', 'candidate']) || 'Graduate';
-  if (/name|total|sl\.?/i.test(fullName)) return null;
+  if (/name|total|sl\.?|contact|directory|department/i.test(fullName)) return null;
 
   let officialEmail = findVal(['email', 'mail', 'emailid']).toLowerCase();
   if (officialEmail && (!officialEmail.includes('@') || officialEmail.includes(' '))) officialEmail = '';
@@ -212,11 +222,12 @@ export function normalizeRecordFromObject(
   let phone = findVal(['phone', 'mobile', 'contact', 'cell']);
   if (phone) phone = phone.replace(/[^0-9+]/g, '');
 
-  const deptVal = findVal(['dept', 'department', 'branch', 'course']);
+  const deptVal = findVal(['dept', 'department', 'branch', 'course', 'special']);
   const department = deptVal ? normalizeDepartmentName(deptVal, defaultDept) : defaultDept;
 
   const batchVal = findVal(['batch', 'year', 'gradyear', 'passout', 'passing']);
-  const batchYear = batchVal || (defaultBatch.match(/^\d{4}$/) ? `Batch of ${defaultBatch}` : defaultBatch);
+  const cleanBatch = (defaultBatch || '').trim();
+  const batchYear = batchVal || (cleanBatch.match(/^\d{4}$/) ? `Batch of ${cleanBatch}` : cleanBatch || 'Alumni');
 
   return {
     usn: usn.toUpperCase(),
@@ -262,14 +273,31 @@ export function parseWorkbookBuffer(buffer: Buffer, fileName: string): AlumniRec
         nameCol = nIdx;
         emailCol = row.findIndex(c => typeof c === 'string' && /email|mail/i.test(c.trim()));
         phoneCol = row.findIndex(c => typeof c === 'string' && /phone|mobile|contact|cell/i.test(c.trim()));
-        deptCol = row.findIndex(c => typeof c === 'string' && /dept|branch|course/i.test(c.trim()));
+        deptCol = row.findIndex(c => typeof c === 'string' && /dept|branch|course|special/i.test(c.trim()));
         batchCol = row.findIndex(c => typeof c === 'string' && /batch|passout|grad/i.test(c.trim()));
+
+        // Also check if previous row had group headers (e.g. 'Contact Number' or 'E-mail ID' right above 'Primary')
+        const prevRow = r > 0 && Array.isArray(rawRows[r - 1]) ? rawRows[r - 1] : [];
+        if (emailCol === -1) {
+          emailCol = prevRow.findIndex(c => typeof c === 'string' && /email|mail/i.test(c.trim()));
+        }
+        if (phoneCol === -1) {
+          phoneCol = prevRow.findIndex(c => typeof c === 'string' && /phone|mobile|contact|cell/i.test(c.trim()));
+        }
         break;
       }
     }
 
     if (headerIdx !== -1) {
-      for (let r = headerIdx + 1; r < rawRows.length; r++) {
+      // Find actual data start: skip sub-header rows like 'Primary' / 'Alternate' if present
+      let dataStart = headerIdx + 1;
+      if (dataStart < rawRows.length && Array.isArray(rawRows[dataStart])) {
+        const checkRow = rawRows[dataStart];
+        const isSubHeader = checkRow.some(c => typeof c === 'string' && /primary|alternate|personal|official/i.test(c.trim()));
+        if (isSubHeader) dataStart++;
+      }
+
+      for (let r = dataStart; r < rawRows.length; r++) {
         const row = rawRows[r];
         if (!Array.isArray(row)) continue;
         const usnRaw = String(row[usnCol] || '').trim();
@@ -280,13 +308,25 @@ export function parseWorkbookBuffer(buffer: Buffer, fileName: string): AlumniRec
         if (!nameRaw || /name|total|sl\.?|contact|directory|department/i.test(nameRaw)) continue;
 
         let email = emailCol !== -1 ? String(row[emailCol] || '').trim().toLowerCase() : '';
+        if (!email || !email.includes('@')) {
+          if (emailCol !== -1 && row[emailCol + 1]) {
+            const altEmail = String(row[emailCol + 1]).trim().toLowerCase();
+            if (altEmail.includes('@') && !altEmail.includes(' ')) email = altEmail;
+          }
+        }
         if (email && (!email.includes('@') || email.includes(' '))) email = '';
 
-        let phone = phoneCol !== -1 ? String(row[phoneCol] || '').trim() : '';
-        if (phone) phone = phone.replace(/[^0-9+]/g, '');
+        let phone = phoneCol !== -1 ? String(row[phoneCol] || '').trim().replace(/[^0-9+]/g, '') : '';
+        if (phone.length < 10 && phoneCol !== -1 && row[phoneCol + 1]) {
+          const altPhone = String(row[phoneCol + 1]).trim().replace(/[^0-9+]/g, '');
+          if (altPhone.length >= 10) phone = altPhone;
+        }
 
-        let dept = deptCol !== -1 && row[deptCol] ? normalizeDepartmentName(String(row[deptCol]), detectedDept) : detectedDept;
-        let batch = batchCol !== -1 && row[batchCol] ? String(row[batchCol]).trim() : (sheetName.match(/^\d{4}$/) ? `Batch of ${sheetName}` : sheetName);
+        let dept = (detectedDept === 'M.Tech' || detectedDept === 'MBA')
+          ? detectedDept
+          : (deptCol !== -1 && row[deptCol] ? normalizeDepartmentName(String(row[deptCol]), detectedDept) : detectedDept);
+        const cleanSheet = sheetName.trim();
+        let batch = batchCol !== -1 && row[batchCol] ? String(row[batchCol]).trim() : (cleanSheet.match(/^\d{4}$/) ? `Batch of ${cleanSheet}` : cleanSheet);
 
         records.push({
           usn: cleanUsn,
@@ -320,7 +360,7 @@ export function syncDataFolderWorkbooks(): {
 } {
   ensureDir();
   const allFiles = fs.readdirSync(DATA_DIR);
-  const spreadsheetFiles = allFiles.filter(f => /\.(xlsx|xls|csv)$/i.test(f));
+  const spreadsheetFiles = allFiles.filter(f => /\.(xlsx|xls|csv)$/i.test(f) && !f.startsWith('~$'));
 
   let allParsedRecords: AlumniRecord[] = [];
   const filesProcessed: string[] = [];
@@ -344,7 +384,37 @@ export function syncDataFolderWorkbooks(): {
     departmentStats[r.department] = (departmentStats[r.department] || 0) + 1;
   }
 
-  const { added, updated, total } = importAlumniRecords(allParsedRecords);
+  // To remove all previous branches data except CSE:
+  // Retain existing CSE records (including manual additions like RAFI AHMAD Z),
+  // and re-populate with all records from current uploaded department spreadsheets.
+  const existing = getAlumniMaster();
+  const cseOnly = existing.filter(item => {
+    const d = (item.department || '').toLowerCase();
+    return d.includes('cs') || d.includes('computer');
+  });
+
+  const map = new Map<string, AlumniRecord>();
+  for (const item of cseOnly) {
+    map.set(item.usn.trim().toUpperCase(), item);
+  }
+
+  let added = 0;
+  let updated = 0;
+
+  for (const record of allParsedRecords) {
+    if (!record.usn) continue;
+    const key = record.usn.trim().toUpperCase();
+    if (map.has(key)) {
+      map.set(key, { ...map.get(key)!, ...record, usn: key });
+      updated++;
+    } else {
+      map.set(key, { ...record, usn: key });
+      added++;
+    }
+  }
+
+  const result = Array.from(map.values());
+  saveAlumniMaster(result);
 
   return {
     totalFiles: spreadsheetFiles.length,
@@ -353,7 +423,7 @@ export function syncDataFolderWorkbooks(): {
     departmentStats,
     added,
     updated,
-    totalMaster: total,
+    totalMaster: result.length,
   };
 }
 
