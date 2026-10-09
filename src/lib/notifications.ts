@@ -125,9 +125,24 @@ export async function sendEmailOtp({
         };
       } else {
         console.error('[RESEND API ERROR]', resData);
+        const errMsg = resData.message || (resData.error && resData.error.message) || JSON.stringify(resData);
+        return {
+          success: false,
+          isReal: false,
+          provider: 'RESEND',
+          error: errMsg,
+          message: `Resend Error: ${errMsg}`,
+        };
       }
     } catch (err: any) {
       console.error('[RESEND FETCH EXCEPTION]', err.message);
+      return {
+        success: false,
+        isReal: false,
+        provider: 'RESEND',
+        error: err.message,
+        message: `Resend Network Error: ${err.message}`,
+      };
     }
   }
 
@@ -160,9 +175,24 @@ export async function sendEmailOtp({
         };
       } else {
         console.error('[BREVO API ERROR]', resData);
+        const errMsg = resData.message || JSON.stringify(resData);
+        return {
+          success: false,
+          isReal: false,
+          provider: 'BREVO',
+          error: errMsg,
+          message: `Brevo Error: ${errMsg}`,
+        };
       }
     } catch (err: any) {
       console.error('[BREVO FETCH EXCEPTION]', err.message);
+      return {
+        success: false,
+        isReal: false,
+        provider: 'BREVO',
+        error: err.message,
+        message: `Brevo Network Error: ${err.message}`,
+      };
     }
   }
 
