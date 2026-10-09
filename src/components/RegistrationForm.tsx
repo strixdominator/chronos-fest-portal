@@ -656,7 +656,12 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
                   {claimedDeliveryInfo.isReal ? (
                     <>Security code delivered to <strong>{claimedOtpTarget}</strong>. Please check your <strong>Inbox</strong>, <strong>Updates</strong>, and <strong>Spam / Junk</strong> folder.</>
                   ) : (
-                    <>Live mail server credentials not set in host environment. For testing, use code: <strong style={{ color: '#1d4ed8', fontSize: '0.9rem', letterSpacing: '0.1em' }}>{claimedDeliveryInfo.simulationCode}</strong></>
+                    <>
+                      {claimedDeliveryInfo.message || 'Live mail server credentials not set in host environment.'}
+                      <div style={{ marginTop: 4 }}>
+                        For testing, use code: <strong style={{ color: '#1d4ed8', fontSize: '0.95rem', letterSpacing: '0.1em' }}>{claimedDeliveryInfo.simulationCode}</strong>
+                      </div>
+                    </>
                   )}
                 </div>
               </div>
@@ -1220,7 +1225,12 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
                   {deliveryInfo.isReal ? (
                     <>Verification code delivered to <strong>{otpTarget}</strong>. Please check your <strong>Inbox</strong>, <strong>Updates</strong>, and <strong>Spam / Junk</strong> folder.</>
                   ) : (
-                    <>Live mail server credentials not set in host environment. For testing, use code: <strong style={{ color: '#1d4ed8', fontSize: '0.9rem', letterSpacing: '0.1em' }}>{deliveryInfo.simulationCode}</strong></>
+                    <>
+                      {deliveryInfo.message || 'Live mail server credentials not set in host environment.'}
+                      <div style={{ marginTop: 4 }}>
+                        For testing, use code: <strong style={{ color: '#1d4ed8', fontSize: '0.95rem', letterSpacing: '0.1em' }}>{deliveryInfo.simulationCode}</strong>
+                      </div>
+                    </>
                   )}
                 </div>
               </div>
