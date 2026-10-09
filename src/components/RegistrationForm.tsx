@@ -761,8 +761,8 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
           </div>
         </div>
 
-        {/* Contact selection if OTP NOT sent yet */}
-        {!otpSent && (
+        {/* Contact selection if OTP NOT sent yet and NOT requesting manual review */}
+        {!otpSent && !showManualReview && (
           <div>
             <div style={{ marginBottom: 16 }}>
               {/* Email Option */}
@@ -816,6 +816,19 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
                   </button>
                 )}
               </div>
+
+              {/* Option to request manual approval if contacts changed */}
+              {(alumnus.hasEmail || alumnus.hasPhone) && (
+                <div style={{ marginTop: 14, textAlign: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowManualReview(true)}
+                    style={{ background: 'none', border: 'none', fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: 'var(--accent-coral)', cursor: 'pointer', textDecoration: 'underline' }}
+                  >
+                    LOST ACCESS TO REGISTERED CONTACT? REQUEST MANUAL APPROVAL ↗
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Anti-Forgery Protection Banner if NEITHER on file */}
@@ -853,6 +866,113 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
             )}
           </div>
         )}
+
+        {/* Manual Approval Request Form in Step 2 */}
+        {showManualReview && (
+          <form onSubmit={handleSubmitReview} style={{ marginTop: 16 }}>
+            <div style={{
+              padding: '18px 20px',
+              background: 'var(--card-blue-1)',
+              border: '1px solid var(--border-black)',
+              marginBottom: 18
+            }}>
+              <div className="mono-tag" style={{ color: 'var(--accent-blue)', marginBottom: 2 }}>
+                OFFICIAL VERIFICATION QUEUE
+              </div>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase' }}>
+                Request Committee Manual Approval
+              </h3>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 4 }}>
+                Provide your current active contact details and upload an ID proof. The organizers will verify your records and approve your pass.
+              </p>
+            </div>
+
+            {reviewError && (
+              <div style={{ padding: '10px 14px', background: '#fee2e2', border: '1px solid var(--border-black)', color: '#991b1b', fontFamily: 'var(--font-mono)', fontSize: '0.78rem', marginBottom: 16 }}>
+                {reviewError}
+              </div>
+            )}
+
+            <div style={{ marginBottom: 12 }}>
+              <label className="mono-label" style={{ display: 'block', marginBottom: 6 }}>
+                CURRENT ACTIVE EMAIL *
+              </label>
+              <input
+                type="email"
+                required
+                className="neo-input"
+                placeholder="your.email@example.com"
+                value={newEmail}
+                onChange={e => setNewEmail(e.target.value)}
+              />
+            </div>
+
+            <div style={{ marginBottom: 12 }}>
+              <label className="mono-label" style={{ display: 'block', marginBottom: 6 }}>
+                CURRENT ACTIVE MOBILE NUMBER *
+              </label>
+              <input
+                type="tel"
+                required
+                className="neo-input"
+                placeholder="+91 98765 43210"
+                value={newPhone}
+                onChange={e => setNewPhone(e.target.value)}
+              />
+            </div>
+
+            <div style={{ marginBottom: 12 }}>
+              <label className="mono-label" style={{ display: 'block', marginBottom: 6 }}>
+                REASON / NOTES
+              </label>
+              <input
+                type="text"
+                className="neo-input"
+                placeholder="e.g. Phone number changed / Lost access to registered contact"
+                value={reviewReason}
+                onChange={e => setReviewReason(e.target.value)}
+              />
+            </div>
+
+            <div style={{ marginBottom: 18 }}>
+              <label className="mono-label" style={{ display: 'block', marginBottom: 6 }}>
+                COLLEGE ID CARD / DEGREE PROOF (PHOTO)
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleProofUpload}
+                className="neo-input"
+                style={{ padding: '8px' }}
+              />
+              {proofPreview && (
+                <div style={{ marginTop: 10, border: '1px solid var(--border-black)', padding: 6, background: '#fff' }}>
+                  <img src={proofPreview} alt="Proof Preview" style={{ maxHeight: 150, display: 'block', margin: '0 auto' }} />
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                type="button"
+                onClick={() => setShowManualReview(false)}
+                className="btn-neo-outline"
+                style={{ flex: 1, padding: '12px' }}
+              >
+                CANCEL / BACK
+              </button>
+              <button
+                type="submit"
+                disabled={submittingReview}
+                className="btn-neo-black"
+                style={{ flex: 2, padding: '12px' }}
+              >
+                {submittingReview ? 'SUBMITTING REQUEST...' : 'SUBMIT FOR APPROVAL ↗'}
+              </button>
+            </div>
+          </form>
+        )}
+
 
         {/* OTP Code Form */}
         {otpSent && (

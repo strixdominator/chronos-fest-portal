@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkInAttendee, getScanPreview } from '@/lib/db';
+import { checkInAttendee, getScanPreview, normalizeScanCode } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,14 +18,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Clean input and handle full URL if scanned from another device
-    code = code.trim();
-    if (code.includes('/ticket/')) {
-      const parts = code.split('/ticket/');
-      code = parts[1].split('?')[0].split('/')[0];
-    } else if (code.includes('code=')) {
-      const match = code.match(/code=([^&]+)/);
-      if (match) code = match[1];
+    // Clean input and normalize code (handles raw ticketCode, attendee ID, USN, full URL, or query strings)
+    code = normalizeScanCode(code);
+
+    if (!code) {
+      return NextResponse.json(
+        { success: false, status: 'NOT_FOUND', message: 'Empty or invalid QR code payload.' },
+        { status: 400 }
+      );
     }
 
     // ACTION: PREVIEW (Check quota and registered members before admitting)

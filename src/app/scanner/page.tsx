@@ -71,6 +71,8 @@ export default function GateScannerPage() {
   });
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  const isScanningLocked = useRef(false);
+  const lastScannedRef = useRef<{ code: string; time: number }>({ code: '', time: 0 });
 
   // Load live stats
   const refreshStats = async () => {
@@ -106,6 +108,24 @@ export default function GateScannerPage() {
     }
   };
 
+  // Dismiss modal and resume camera scanner safely without looping
+  const handleDismissModal = () => {
+    setScanPreview(null);
+    setScanResult(null);
+
+    // Wait 1.2s before resuming so the old ticket is moved away
+    setTimeout(() => {
+      isScanningLocked.current = false;
+      if (scannerRef.current && scanning) {
+        try {
+          scannerRef.current.resume();
+        } catch (err) {
+          console.log('Resume camera notice:', err);
+        }
+      }
+    }, 1200);
+  };
+
   // Start Camera
   const startScanner = async () => {
     try {
@@ -118,6 +138,26 @@ export default function GateScannerPage() {
         { facingMode: 'environment' },
         config,
         (decodedText) => {
+          const now = Date.now();
+          if (isScanningLocked.current || verifying) return;
+
+          // Prevent rapid repeated scan of the same QR code within 3 seconds
+          if (lastScannedRef.current.code === decodedText && now - lastScannedRef.current.time < 3000) {
+            return;
+          }
+
+          lastScannedRef.current = { code: decodedText, time: now };
+          isScanningLocked.current = true;
+
+          // Immediately pause video frame processing to prevent repeating scanner loops!
+          if (scannerRef.current && scannerRef.current.isScanning) {
+            try {
+              scannerRef.current.pause(true);
+            } catch (err) {
+              console.log('Pause camera notice:', err);
+            }
+          }
+
           handleVerify(decodedText);
         },
         () => {
@@ -134,6 +174,7 @@ export default function GateScannerPage() {
 
   // Stop Camera
   const stopScanner = async () => {
+    isScanningLocked.current = false;
     if (scannerRef.current && scanning) {
       try {
         await scannerRef.current.stop();
@@ -144,6 +185,7 @@ export default function GateScannerPage() {
       }
     }
   };
+
 
   // Cleanup camera on unmount
   useEffect(() => {
@@ -694,7 +736,7 @@ export default function GateScannerPage() {
               </div>
               <button
                 type="button"
-                onClick={() => setScanPreview(null)}
+                onClick={handleDismissModal}
                 style={{ background: 'transparent', border: 'none', color: '#ffffff', cursor: 'pointer' }}
               >
                 <X size={20} />
@@ -931,7 +973,7 @@ export default function GateScannerPage() {
               {/* Close Button */}
               <button
                 type="button"
-                onClick={() => setScanPreview(null)}
+                onClick={handleDismissModal}
                 className="btn-neo-outline"
                 style={{ width: '100%', padding: '12px' }}
               >
@@ -957,7 +999,7 @@ export default function GateScannerPage() {
               </div>
               <button
                 type="button"
-                onClick={() => setScanResult(null)}
+                onClick={handleDismissModal}
                 style={{ background: 'transparent', border: 'none', color: '#ffffff', cursor: 'pointer' }}
               >
                 <X size={20} />
@@ -1028,7 +1070,7 @@ export default function GateScannerPage() {
               {/* Ready for next button */}
               <button
                 type="button"
-                onClick={() => setScanResult(null)}
+                onClick={handleDismissModal}
                 className="btn-neo-black"
                 style={{ width: '100%', padding: '14px', fontSize: '0.88rem' }}
               >

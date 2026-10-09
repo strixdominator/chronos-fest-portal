@@ -272,6 +272,52 @@ export function bulkApproveAttendees(ids: string[]): number {
   return count;
 }
 
+export function normalizeScanCode(rawCode: string): string {
+  if (!rawCode || typeof rawCode !== 'string') return '';
+  let cleaned = rawCode.trim();
+
+  // Try decoding URI component
+  try {
+    cleaned = decodeURIComponent(cleaned);
+  } catch {}
+
+  // If JSON payload was passed
+  try {
+    if (cleaned.startsWith('{') && cleaned.endsWith('}')) {
+      const parsed = JSON.parse(cleaned);
+      cleaned = parsed.ticketCode || parsed.id || parsed.code || parsed.usn || cleaned;
+    }
+  } catch {}
+
+  // If full URL with /ticket/[id]
+  if (cleaned.includes('/ticket/')) {
+    const afterTicket = cleaned.split('/ticket/')[1];
+    if (afterTicket) {
+      cleaned = afterTicket.split('?')[0].split('#')[0].split('/')[0].trim();
+    }
+  }
+
+  // If query parameter ?code=... or ?ticket=... or ?id=... or ?usn=...
+  if (cleaned.includes('code=')) {
+    const m = cleaned.match(/[?&]code=([^&#]+)/);
+    if (m) cleaned = m[1].trim();
+  } else if (cleaned.includes('ticket=')) {
+    const m = cleaned.match(/[?&]ticket=([^&#]+)/);
+    if (m) cleaned = m[1].trim();
+  } else if (cleaned.includes('id=')) {
+    const m = cleaned.match(/[?&]id=([^&#]+)/);
+    if (m) cleaned = m[1].trim();
+  } else if (cleaned.includes('usn=')) {
+    const m = cleaned.match(/[?&]usn=([^&#]+)/);
+    if (m) cleaned = m[1].trim();
+  }
+
+  // Strip trailing slashes, hashes, query strings
+  cleaned = cleaned.split('?')[0].split('#')[0].replace(/\/+$/, '').trim();
+
+  return cleaned;
+}
+
 export function getScanPreview(ticketOrId: string): {
   status: 'READY' | 'ALREADY_CHECKED_IN' | 'PENDING' | 'REJECTED' | 'NOT_FOUND';
   message: string;
@@ -281,7 +327,7 @@ export function getScanPreview(ticketOrId: string): {
   remaining: number;
 } {
   const attendees = getAttendees();
-  const query = ticketOrId.trim().toLowerCase();
+  const query = normalizeScanCode(ticketOrId).toLowerCase();
 
   const attendee = attendees.find(a => 
     a.ticketCode.toLowerCase() === query || 
@@ -367,7 +413,7 @@ export function checkInAttendee(
   totalQuota?: number;
 } {
   const attendees = getAttendees();
-  const query = ticketOrId.trim().toLowerCase();
+  const query = normalizeScanCode(ticketOrId).toLowerCase();
   
   const attendee = attendees.find(a => 
     a.ticketCode.toLowerCase() === query || 

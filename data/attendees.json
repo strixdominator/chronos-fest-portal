@@ -1,5 +1,33 @@
 [
   {
+    "fullName": "AISHWARYA M N",
+    "email": "aishwaryamn737@gmail.com",
+    "phone": "7625091760",
+    "rollNumber": "1DB18CS005",
+    "usn": "1DB18CS005",
+    "department": "CSE",
+    "year": "Batch of 2022",
+    "isVerifiedOtp": true,
+    "familyCount": 1,
+    "familyMembers": [
+      {
+        "name": "prakhyat",
+        "relation": "Child"
+      }
+    ],
+    "id": "ATT-1011",
+    "ticketCode": "TKT-CHRONOS-OM252857",
+    "status": "APPROVED",
+    "approvedAt": "2026-10-09T01:07:03.422Z",
+    "verificationMethod": "OTP_VERIFIED",
+    "checkedIn": false,
+    "registeredAt": "2026-10-09T01:07:03.422Z",
+    "wristbandColor": "Neon Cyan (General)",
+    "totalQuota": 2,
+    "admittedCount": 0,
+    "checkInLogs": []
+  },
+  {
     "fullName": "ABHISHEK DUTTA GUPT",
     "email": "abhishek.dutta2082@gmail.com",
     "phone": "33351596",
