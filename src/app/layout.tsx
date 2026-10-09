@@ -16,12 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div className="ambient-glow-1" />
-        <div className="ambient-glow-2" />
         <Suspense fallback={null}>
           <Navbar />
         </Suspense>
-        <main style={{ position: 'relative', zIndex: 1, minHeight: 'calc(100vh - 70px)' }}>
+        <main style={{ minHeight: 'calc(100vh - 64px)' }}>
           {children}
         </main>
       </body>

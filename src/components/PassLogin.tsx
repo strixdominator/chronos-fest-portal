@@ -2,16 +2,12 @@
 
 import React, { useState } from 'react';
 import { 
-  Lock, 
-  KeyRound, 
-  Mail, 
-  Phone, 
   Loader2, 
   AlertCircle, 
-  ShieldCheck, 
-  Sparkles, 
+  KeyRound, 
   CheckCircle2,
-  Search
+  Mail,
+  Phone
 } from 'lucide-react';
 import TicketCard from './TicketCard';
 import { Attendee, EventSettings } from '@/lib/types';
@@ -60,7 +56,7 @@ export default function PassLogin({ initialUsn = '', settings, onUnlocked }: Pas
       }
 
       if (!data.alreadyRegistered) {
-        throw new Error(`No pass has been claimed yet for USN "${usn.toUpperCase()}". Please claim your pass first.`);
+        throw new Error(`No pass has been claimed yet for USN "${usn.toUpperCase()}". Please switch to tab 01 to claim.`);
       }
 
       setMatchedAttendee(data.claimedSummary || {
@@ -149,38 +145,34 @@ export default function PassLogin({ initialUsn = '', settings, onUnlocked }: Pas
   // If already unlocked
   if (unlockedPass) {
     return (
-      <div style={{ textAlign: 'center' }}>
+      <div className="animate-fade-in">
         <div style={{
-          background: 'rgba(16, 185, 129, 0.1)',
-          border: '1px solid rgba(16, 185, 129, 0.3)',
-          padding: '14px 20px',
-          borderRadius: 'var(--radius-md)',
-          marginBottom: '20px',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 10,
-          color: 'var(--status-approved)',
-          fontSize: '0.9rem',
-          fontWeight: 600
+          padding: '16px 20px',
+          background: 'var(--accent-sage)',
+          border: '1px solid var(--border-black)',
+          marginBottom: 20
         }}>
-          <CheckCircle2 size={18} />
-          <span>Identity Confirmed via OTP · Pass Unlocked</span>
+          <span className="mono-tag" style={{ color: '#0a0a0a' }}>IDENTITY CONFIRMED</span>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.3rem', fontWeight: 900, textTransform: 'uppercase', marginTop: 2 }}>
+            Pass Unlocked
+          </h3>
         </div>
 
         <TicketCard attendee={unlockedPass} settings={settings} />
 
-        <div style={{ marginTop: 20 }}>
+        <div style={{ marginTop: 20, textAlign: 'center' }}>
           <button
+            type="button"
             onClick={() => {
               setUnlockedPass(null);
               setMatchedAttendee(null);
+              setUsn('');
               setOtpSent(false);
-              setOtpCode('');
             }}
-            className="btn btn-secondary"
-            style={{ fontSize: '0.85rem' }}
+            className="btn-neo-outline"
+            style={{ width: '100%' }}
           >
-            Lock Pass / Switch User
+            RETRIEVE ANOTHER PASS ↗
           </button>
         </div>
       </div>
@@ -188,192 +180,180 @@ export default function PassLogin({ initialUsn = '', settings, onUnlocked }: Pas
   }
 
   return (
-    <div className="glass-panel" style={{ padding: '32px', maxWidth: 640, margin: '0 auto' }}>
-      <div style={{ textAlign: 'center', marginBottom: 24 }}>
-        <div style={{
-          width: 52,
-          height: 52,
-          borderRadius: '50%',
-          background: 'rgba(0, 242, 254, 0.15)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: '0 auto 12px'
-        }}>
-          <Lock size={26} color="var(--accent-cyan)" />
-        </div>
-        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', fontWeight: 700, color: '#fff' }}>
-          Secure Pass Login & Verification
-        </h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginTop: 4 }}>
-          To prevent unauthorized access and screenshot theft, enter your USN and verify with an OTP sent to your registered contact.
-        </p>
+    <div className="animate-fade-in">
+      {/* Header Strip */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <span className="mono-tag">PASS RETRIEVAL</span>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 700 }}>
+          {matchedAttendee ? '02/02' : '01/02'}
+        </span>
       </div>
 
-      {error && (
-        <div style={{
-          background: 'rgba(239, 68, 68, 0.15)',
-          border: '1px solid rgba(239, 68, 68, 0.3)',
-          borderRadius: 'var(--radius-sm)',
-          padding: '12px 16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          color: '#fca5a5',
-          fontSize: '0.9rem',
-          marginBottom: 20
-        }}>
-          <AlertCircle size={18} />
-          <span>{error}</span>
-        </div>
-      )}
+      <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.05, marginBottom: 28 }}>
+        {matchedAttendee ? 'Unlock your pass.' : 'Retrieve your pass.'}
+      </h2>
 
-      {/* STEP 1: ENTER USN */}
+      {/* Step 1: Search Form */}
       {!matchedAttendee && (
         <form onSubmit={handleFindPass}>
-          <div className="form-group">
-            <label className="form-label">University Seat Number (USN)</label>
-            <div style={{ display: 'flex', gap: 10 }}>
+          <div style={{ marginBottom: 12 }}>
+            <label className="mono-label" style={{ display: 'block', marginBottom: 8 }}>
+              UNIVERSITY SEAT NUMBER
+            </label>
+            <div className="neo-input-group">
               <input
                 type="text"
                 required
-                placeholder="e.g. 1DB20CS001"
-                className="form-input"
-                style={{ textTransform: 'uppercase', fontFamily: 'monospace', fontWeight: 700 }}
+                placeholder="E.G. 1DB20CS001"
                 value={usn}
-                onChange={e => setUsn(e.target.value)}
-              />
-              <button
-                type="submit"
+                onChange={e => setUsn(e.target.value.toUpperCase())}
                 disabled={searching}
-                className="btn btn-primary"
-                style={{ whiteSpace: 'nowrap' }}
-              >
-                {searching ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
-                Search Pass
+                autoFocus
+              />
+              <button type="submit" disabled={searching || !usn.trim()}>
+                {searching ? (
+                  <>
+                    <Loader2 size={15} className="animate-spin" />
+                    SEARCHING...
+                  </>
+                ) : (
+                  'FIND PASS ↗'
+                )}
               </button>
             </div>
           </div>
+
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+            Enter the USN used during registration to pull up your digital pass.
+          </p>
+
+          {error && (
+            <div style={{ marginTop: 18, padding: '12px 16px', background: '#fee2e2', border: '1px solid var(--border-black)', color: '#991b1b', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', fontWeight: 700 }}>
+              {error}
+            </div>
+          )}
         </form>
       )}
 
-      {/* STEP 2: PASS FOUND -> REQUIRE OTP TO UNLOCK */}
-      {matchedAttendee && !otpSent && (
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.03)',
-          border: '1px solid var(--border-focus)',
-          borderRadius: 'var(--radius-md)',
-          padding: '20px',
-          textAlign: 'center'
-        }}>
-          <span style={{ fontSize: '0.72rem', color: 'var(--accent-cyan)', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>
-            PASS FOUND & SECURELY LOCKED
-          </span>
-          <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff' }}>
-            {matchedAttendee.fullName}
-          </h3>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: 2 }}>
-            USN: <strong style={{ color: 'var(--accent-cyan)', fontFamily: 'monospace' }}>{matchedAttendee.usn || matchedAttendee.rollNumber}</strong> · {matchedAttendee.department}
-          </p>
-
-          <p style={{ fontSize: '0.85rem', color: '#cbd5e1', margin: '16px 0 12px' }}>
-            Select where to send your 6-digit unlock code:
-          </p>
-
-          <div style={{ display: 'grid', gridTemplateColumns: maskedPhone ? '1fr 1fr' : '1fr', gap: 12 }}>
-            <button
-              type="button"
-              onClick={() => handleSendOtp('EMAIL')}
-              disabled={sendingOtp}
-              className="btn btn-primary"
-              style={{ fontSize: '0.85rem', padding: '12px' }}
-            >
-              <Mail size={16} />
-              Send to Email ({maskedEmail || 'Registered'})
-            </button>
-            {maskedPhone && (
-              <button
-                type="button"
-                onClick={() => handleSendOtp('PHONE')}
-                disabled={sendingOtp}
-                className="btn btn-secondary"
-                style={{ fontSize: '0.85rem', padding: '12px' }}
-              >
-                <Phone size={16} />
-                Send to Mobile ({maskedPhone})
-              </button>
-            )}
+      {/* Step 2: Matched Attendee & OTP Unlock */}
+      {matchedAttendee && (
+        <div>
+          <div className="neo-box" style={{ padding: '18px 20px', marginBottom: 20, background: 'var(--bg-card-alt)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <div className="mono-tag" style={{ fontSize: '0.68rem', marginBottom: 2 }}>MATCHED RECORD</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.3rem', fontWeight: 800 }}>
+                  {matchedAttendee.fullName}
+                </div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: 2 }}>
+                  {matchedAttendee.department}
+                </div>
+              </div>
+              <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '0.95rem', background: 'var(--bg-black)', color: '#fff', padding: '4px 8px' }}>
+                {matchedAttendee.usn || matchedAttendee.rollNumber}
+              </span>
+            </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => { setMatchedAttendee(null); setUsn(''); }}
-            style={{ background: 'none', border: 'none', color: 'var(--text-sub)', fontSize: '0.8rem', marginTop: 14, cursor: 'pointer' }}
-          >
-            ← Enter different USN
-          </button>
-        </div>
-      )}
+          {!otpSent ? (
+            <div>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: 16 }}>
+                Select a verification channel to receive your secure unlock code:
+              </p>
 
-      {/* STEP 3: ENTER OTP CODE */}
-      {matchedAttendee && otpSent && (
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.03)',
-          border: '1px solid var(--border-focus)',
-          borderRadius: 'var(--radius-md)',
-          padding: '24px'
-        }}>
-          <form onSubmit={handleVerifyOtp}>
-            <div className="form-group" style={{ textAlign: 'center' }}>
-              <label className="form-label">
-                Enter 6-Digit OTP sent to {otpTarget}
-              </label>
-              <input
-                type="text"
-                required
-                maxLength={6}
-                placeholder="e.g. 849201"
-                className="form-input"
-                style={{
-                  fontFamily: 'monospace',
-                  fontSize: '1.4rem',
-                  letterSpacing: '0.35em',
-                  textAlign: 'center',
-                  fontWeight: 700
-                }}
-                value={otpCode}
-                onChange={e => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                autoFocus
-              />
+              {error && (
+                <div style={{ padding: '10px 14px', background: '#fee2e2', border: '1px solid var(--border-black)', color: '#991b1b', fontFamily: 'var(--font-mono)', fontSize: '0.78rem', marginBottom: 16 }}>
+                  {error}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {maskedEmail && (
+                  <button
+                    type="button"
+                    disabled={sendingOtp}
+                    onClick={() => handleSendOtp('EMAIL')}
+                    className="btn-neo-black"
+                    style={{ width: '100%', justifyContent: 'space-between' }}
+                  >
+                    <span>SEND OTP TO {maskedEmail}</span>
+                    <span>↗</span>
+                  </button>
+                )}
+
+                {maskedPhone && (
+                  <button
+                    type="button"
+                    disabled={sendingOtp}
+                    onClick={() => handleSendOtp('PHONE')}
+                    className="btn-neo-outline"
+                    style={{ width: '100%', justifyContent: 'space-between' }}
+                  >
+                    <span>SEND OTP TO {maskedPhone}</span>
+                    <span>↗</span>
+                  </button>
+                )}
+              </div>
+
+              <div style={{ marginTop: 20, textAlign: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMatchedAttendee(null);
+                    setUsn('');
+                  }}
+                  style={{ background: 'none', border: 'none', fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: 'var(--text-secondary)', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  ENTER A DIFFERENT USN
+                </button>
+              </div>
             </div>
+          ) : (
+            <form onSubmit={handleVerifyOtp}>
+              <div style={{ marginBottom: 16 }}>
+                <label className="mono-label" style={{ display: 'block', marginBottom: 8 }}>
+                  ENTER 6-DIGIT CODE SENT TO {otpTarget}
+                </label>
+                <div className="neo-input-group">
+                  <input
+                    type="text"
+                    required
+                    maxLength={6}
+                    placeholder="6-DIGIT CODE"
+                    value={otpCode}
+                    onChange={e => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                    autoFocus
+                  />
+                  <button type="submit" disabled={verifyingOtp || otpCode.length < 6}>
+                    {verifyingOtp ? 'UNLOCKING...' : 'UNLOCK PASS ↗'}
+                  </button>
+                </div>
+              </div>
 
-            <button
-              type="submit"
-              disabled={verifyingOtp || otpCode.length < 6}
-              className="btn btn-primary"
-              style={{ width: '100%', padding: '12px', marginTop: 10 }}
-            >
-              {verifyingOtp ? <Loader2 size={16} className="animate-spin" /> : <KeyRound size={16} />}
-              Verify OTP & Unlock My QR Pass
-            </button>
+              {error && (
+                <div style={{ padding: '10px 14px', background: '#fee2e2', border: '1px solid var(--border-black)', color: '#991b1b', fontFamily: 'var(--font-mono)', fontSize: '0.78rem', marginBottom: 16 }}>
+                  {error}
+                </div>
+              )}
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12, fontSize: '0.8rem' }}>
-              <button
-                type="button"
-                onClick={() => handleSendOtp(otpChannel)}
-                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-              >
-                Resend Code
-              </button>
-              <button
-                type="button"
-                onClick={() => setOtpSent(false)}
-                style={{ background: 'none', border: 'none', color: 'var(--accent-cyan)', cursor: 'pointer' }}
-              >
-                Change channel
-              </button>
-            </div>
-          </form>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', marginTop: 12 }}>
+                <button
+                  type="button"
+                  onClick={() => handleSendOtp(otpChannel)}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  RESEND CODE
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOtpSent(false)}
+                  style={{ background: 'none', border: 'none', color: 'var(--accent-coral)', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  CHANGE METHOD
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       )}
     </div>

@@ -31,6 +31,7 @@ export interface Attendee {
   usn?: string; // Canonical USN
   department: string;
   year: string; // e.g. "Batch of 2024 (Alumni)"
+  batchYear?: string;
   idCardUrl?: string; // Optional degree certificate / ID proof
   degreeProofUrl?: string;
   ticketCode: string; // Unique ticket QR payload: "TKT-CHRONOS-XXXX"

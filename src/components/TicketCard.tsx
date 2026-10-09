@@ -10,12 +10,7 @@ import {
   Download, 
   Printer, 
   ShieldCheck, 
-  Calendar, 
-  MapPin, 
-  Sparkles,
-  AlertTriangle,
-  Users,
-  UserCheck
+  Users
 } from 'lucide-react';
 
 interface TicketCardProps {
@@ -31,7 +26,7 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      setLiveClock(now.toLocaleTimeString() + ' · ' + now.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
+      setLiveClock(now.toLocaleTimeString() + ' · ' + now.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }));
     };
     updateTime();
     const interval = setInterval(updateTime, 1000);
@@ -41,7 +36,6 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
   // Generate QR code when approved
   useEffect(() => {
     if (attendee.status === 'APPROVED' && canvasRef.current) {
-      // The QR code can store the ticket code or full verification URL
       const qrPayload = typeof window !== 'undefined' 
         ? `${window.location.origin}/ticket/${attendee.id}` 
         : attendee.ticketCode;
@@ -50,10 +44,10 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
         canvasRef.current,
         qrPayload,
         {
-          width: 200,
+          width: 220,
           margin: 1,
           color: {
-            dark: '#07090e',
+            dark: '#0a0a0a',
             light: '#ffffff',
           },
           errorCorrectionLevel: 'H',
@@ -90,354 +84,229 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
   const isFullyCheckedIn = attendee.checkedIn || (totalQuota > 0 && remaining === 0);
 
   return (
-    <div className="ticket-wrapper">
-      <div className="ticket-card">
-        {/* Holographic Header Banner */}
-        <div className="ticket-header">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Sparkles size={16} color="var(--accent-cyan)" />
-                <span style={{ 
-                  fontFamily: 'var(--font-display)', 
-                  fontWeight: 800, 
-                  fontSize: '1.25rem',
-                  letterSpacing: '-0.02em',
-                  color: '#fff'
-                }}>
-                  {settings?.eventName || "CHRONOS FEST 2026"}
-                </span>
-              </div>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 2 }}>
-                Official University Entry Pass
-              </p>
+    <div className="ticket-wrapper-neo">
+      <div className="ticket-neo">
+        {/* Top Header */}
+        <div className="ticket-neo-header">
+          <div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '1.25rem', letterSpacing: '-0.03em' }}>
+              CHRONOS<span style={{ color: 'var(--accent-coral)' }}>/26</span>
             </div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: '#a3a3a3', letterSpacing: '0.08em', marginTop: 2 }}>
+              OFFICIAL ALUMNI ENTRY PASS
+            </div>
+          </div>
 
-            {/* Status Pill */}
+          <div>
             {isApproved && !isFullyCheckedIn && !isPartiallyCheckedIn && (
-              <span className="badge badge-approved">
-                <span className="live-pulse" />
-                VERIFIED PASS ({totalQuota} {totalQuota > 1 ? 'PASSES' : 'PASS'})
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 800, background: 'var(--accent-sage)', color: '#064e3b', padding: '4px 8px', border: '1px solid #fff' }}>
+                VERIFIED ({totalQuota} {totalQuota > 1 ? 'PASSES' : 'PASS'})
               </span>
             )}
             {isApproved && isPartiallyCheckedIn && (
-              <span className="badge badge-approved" style={{ background: 'rgba(0, 242, 254, 0.15)', color: 'var(--accent-cyan)' }}>
-                <UserCheck size={13} />
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 800, background: 'var(--accent-ochre)', color: '#78350f', padding: '4px 8px', border: '1px solid #fff' }}>
                 {admittedCount}/{totalQuota} ADMITTED
               </span>
             )}
             {isApproved && isFullyCheckedIn && (
-              <span className="badge badge-checkedin">
-                <CheckCircle2 size={13} />
-                ALL {totalQuota} ADMITTED
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 800, background: '#fee2e2', color: '#991b1b', padding: '4px 8px', border: '1px solid #fff' }}>
+                EXHAUSTED ({totalQuota}/{totalQuota})
               </span>
             )}
             {isPending && (
-              <span className="badge badge-pending">
-                <Clock size={13} />
-                PENDING APPROVAL
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 800, background: 'var(--accent-ochre)', color: '#78350f', padding: '4px 8px', border: '1px solid #fff' }}>
+                PENDING REVIEW
               </span>
             )}
             {isRejected && (
-              <span className="badge badge-rejected">
-                <XCircle size={13} />
-                REGISTRATION DENIED
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 800, background: '#fee2e2', color: '#991b1b', padding: '4px 8px', border: '1px solid #fff' }}>
+                DENIED
               </span>
             )}
           </div>
+        </div>
 
-          <div style={{ 
-            display: 'flex', 
-            flexWrap: 'wrap', 
-            gap: 12, 
-            fontSize: '0.8rem', 
-            color: 'var(--text-muted)',
-            marginTop: 10
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <Calendar size={13} color="var(--accent-cyan)" />
-              <span>{settings?.eventDate || "Oct 24, 2026"}</span>
+        {/* Live Anti-Counterfeit Banner */}
+        <div style={{
+          background: 'var(--bg-card-alt)',
+          borderBottom: '1px solid var(--border-black)',
+          padding: '8px 16px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontFamily: 'var(--font-mono)',
+          fontSize: '0.68rem',
+          fontWeight: 700,
+          color: 'var(--text-secondary)'
+        }}>
+          <span>LIVE SECURITY STAMP</span>
+          <span style={{ color: 'var(--accent-coral)' }}>{liveClock}</span>
+        </div>
+
+        {/* Primary Details Grid */}
+        <div style={{ padding: '24px 24px 16px', background: '#fff' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 16, marginBottom: 16 }}>
+            <div>
+              <div className="mono-label" style={{ fontSize: '0.68rem', marginBottom: 2 }}>ALUMNUS NAME</div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 900 }}>
+                {attendee.fullName}
+              </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <MapPin size={13} color="var(--accent-cyan)" />
-              <span>{settings?.eventVenue || "Grand Arena"}</span>
+            <div>
+              <div className="mono-label" style={{ fontSize: '0.68rem', marginBottom: 2 }}>SEAT NUMBER (USN)</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.15rem', fontWeight: 800, color: 'var(--accent-coral)' }}>
+                {attendee.rollNumber}
+              </div>
             </div>
           </div>
 
-          <div className="ticket-notch-left" />
-          <div className="ticket-notch-right" />
-        </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, paddingBottom: 16, borderBottom: '1px solid var(--border-subtle)' }}>
+            <div>
+              <div className="mono-label" style={{ fontSize: '0.68rem', marginBottom: 2 }}>DEPARTMENT & BATCH</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 700 }}>
+                {attendee.department || 'Graduate'} {attendee.batchYear ? `• ${attendee.batchYear}` : ''}
+              </div>
+            </div>
+            <div>
+              <div className="mono-label" style={{ fontSize: '0.68rem', marginBottom: 2 }}>TICKET CODE</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 800 }}>
+                {attendee.ticketCode}
+              </div>
+            </div>
+          </div>
 
-        {/* Ticket Body */}
-        <div className="ticket-body">
-          {/* Group pass banner if > 1 members */}
+          {/* Group Quota Strip if > 1 */}
           {totalQuota > 1 && (
             <div style={{
-              background: 'rgba(0, 242, 254, 0.08)',
-              border: '1px solid rgba(0, 242, 254, 0.25)',
-              borderRadius: 'var(--radius-sm)',
-              padding: '10px 14px',
-              marginBottom: 16,
+              margin: '16px 0',
+              padding: '12px 14px',
+              background: 'var(--accent-lilac)',
+              border: '1px solid var(--border-black)',
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center',
-              fontSize: '0.82rem'
+              alignItems: 'center'
             }}>
-              <span style={{ color: 'var(--accent-cyan)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Users size={16} /> GROUP ADMISSION ({totalQuota} TOTAL)
-              </span>
-              <span style={{ color: remaining > 0 ? '#6ee7b7' : 'var(--text-muted)', fontWeight: 700 }}>
-                {admittedCount > 0 ? `${admittedCount} Checked In · ${remaining} Remaining` : `All ${totalQuota} Valid at Gate`}
+              <div>
+                <span className="mono-label" style={{ color: '#0a0a0a', fontSize: '0.68rem' }}>GROUP ADMISSION</span>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: '0.95rem', fontWeight: 800 }}>
+                  {totalQuota} PERSONS TOTAL
+                </div>
+              </div>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 800 }}>
+                {admittedCount > 0 ? `${remaining} REMAINING` : 'ALL UNCLAIMED'}
               </span>
             </div>
           )}
 
-          {/* Attendee Info Card */}
-          <div style={{ 
-            background: 'rgba(255,255,255,0.03)', 
-            border: '1px solid var(--border-subtle)',
-            borderRadius: 'var(--radius-md)',
-            padding: '16px',
-            marginBottom: '20px',
-            textAlign: 'left'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <div>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-sub)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
-                  ATTENDEE NAME
-                </span>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#fff', marginTop: 2 }}>
-                  {attendee.fullName}
-                </h3>
+          {/* Registered Family Members */}
+          {attendee.familyMembers && attendee.familyMembers.length > 0 && (
+            <div style={{ margin: '14px 0 16px' }}>
+              <div className="mono-label" style={{ fontSize: '0.68rem', marginBottom: 8 }}>
+                ACCOMPANYING GUESTS ({attendee.familyMembers.length})
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-sub)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
-                  COLLEGE ROLL NO
-                </span>
-                <div style={{ 
-                  fontFamily: 'monospace', 
-                  fontSize: '1rem', 
-                  fontWeight: 700, 
-                  color: 'var(--accent-cyan)',
-                  marginTop: 2
-                }}>
-                  {attendee.rollNumber}
-                </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {attendee.familyMembers.map((member, i) => (
+                  <div key={i} style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    padding: '8px 12px',
+                    background: '#faf8f3',
+                    border: '1px solid var(--border-black)',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.78rem',
+                    fontWeight: 700
+                  }}>
+                    <span>{member.name}</span>
+                    <span style={{ color: 'var(--text-secondary)' }}>{member.relation}</span>
+                  </div>
+                ))}
               </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--border-subtle)' }}>
-              <div>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-sub)' }}>DEPARTMENT</span>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-                  {attendee.department}
-                </p>
-              </div>
-              <div>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-sub)' }}>YEAR & PASS ID</span>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-                  {attendee.year} · <span style={{ color: '#fff', fontFamily: 'monospace' }}>{attendee.id}</span>
-                </p>
-              </div>
-            </div>
-
-            {/* Accompanying Family Members List */}
-            {attendee.familyMembers && attendee.familyMembers.length > 0 && (
-              <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--border-subtle)' }}>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-sub)', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>
-                  ACCOMPANYING FAMILY GUESTS ({attendee.familyMembers.length})
-                </span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {attendee.familyMembers.map((fam, idx) => (
-                    <span
-                      key={idx}
-                      style={{
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        border: '1px solid var(--border-subtle)',
-                        borderRadius: 4,
-                        padding: '3px 8px',
-                        fontSize: '0.78rem',
-                        color: '#cbd5e1'
-                      }}
-                    >
-                      <strong style={{ color: '#fff' }}>{fam.name}</strong> ({fam.relation})
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Condition: APPROVED */}
-          {isApproved && (
-            <div>
-              <div className="qr-code-box">
-                <div className="qr-corner qr-corner-tl" />
-                <div className="qr-corner qr-corner-tr" />
-                <div className="qr-corner qr-corner-bl" />
-                <div className="qr-corner qr-corner-br" />
-                <canvas ref={canvasRef} style={{ display: 'block' }} />
-              </div>
-
-              <div style={{ marginTop: 12 }}>
-                <div style={{ 
-                  fontFamily: 'monospace', 
-                  fontSize: '0.95rem', 
-                  fontWeight: 700, 
-                  letterSpacing: '0.08em',
-                  color: 'var(--accent-cyan)' 
-                }}>
-                  {attendee.ticketCode}
-                </div>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-sub)', marginTop: 4 }}>
-                  {totalQuota > 1 
-                    ? `Group pass for ${totalQuota} members. Partial arrivals accepted (e.g. 2 enter early, 2 enter late).`
-                    : 'Scan at Security Gate for Wristband Collection'}
-                </p>
-              </div>
-
-              {/* Wristband Tag */}
-              <div style={{
-                marginTop: 18,
-                padding: '10px 14px',
-                borderRadius: 'var(--radius-sm)',
-                background: isFullyCheckedIn 
-                  ? 'rgba(6, 182, 212, 0.12)' 
-                  : isPartiallyCheckedIn 
-                  ? 'rgba(0, 242, 254, 0.12)' 
-                  : 'rgba(16, 185, 129, 0.1)',
-                border: `1px solid ${
-                  isFullyCheckedIn 
-                    ? 'rgba(6, 182, 212, 0.3)' 
-                    : isPartiallyCheckedIn 
-                    ? 'rgba(0, 242, 254, 0.3)' 
-                    : 'rgba(16, 185, 129, 0.3)'
-                }`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                fontSize: '0.85rem',
-                fontWeight: 600
-              }}>
-                {isFullyCheckedIn ? (
-                  <>
-                    <CheckCircle2 size={16} color="var(--accent-cyan)" />
-                    <span style={{ color: 'var(--accent-cyan)' }}>
-                      All {totalQuota} Wristbands Issued ({attendee.wristbandColor || 'Neon Cyan'}) · Quota Completed
-                    </span>
-                  </>
-                ) : isPartiallyCheckedIn ? (
-                  <>
-                    <UserCheck size={16} color="#6ee7b7" />
-                    <span style={{ color: '#6ee7b7' }}>
-                      {admittedCount} of {totalQuota} Wristbands Issued ({remaining} Remaining)
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck size={16} color="var(--status-approved)" />
-                    <span style={{ color: 'var(--status-approved)' }}>
-                      {totalQuota > 1 
-                        ? `Assigned: ${totalQuota} × ${attendee.wristbandColor || 'Neon Cyan'} Wristbands`
-                        : `Assigned: ${attendee.wristbandColor || 'Neon Cyan Wristband (General Access)'}`}
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Condition: PENDING */}
-          {isPending && (
-            <div style={{
-              padding: '30px 20px',
-              borderRadius: 'var(--radius-md)',
-              background: 'rgba(245, 158, 11, 0.08)',
-              border: '1px dashed rgba(245, 158, 11, 0.3)',
-              textAlign: 'center'
-            }}>
-              <div style={{
-                width: 56,
-                height: 56,
-                borderRadius: '50%',
-                background: 'rgba(245, 158, 11, 0.15)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 16px'
-              }}>
-                <Clock size={28} color="var(--status-pending)" />
-              </div>
-              <h4 style={{ color: 'var(--status-pending)', fontSize: '1.1rem', marginBottom: 8 }}>
-                Application Under Verification
-              </h4>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 1.5, maxWidth: 340, margin: '0 auto' }}>
-                Your registration was received. The college organizing team is currently cross-verifying your student records. Your QR Entry Pass will appear here immediately once approved!
-              </p>
-            </div>
-          )}
-
-          {/* Condition: REJECTED */}
-          {isRejected && (
-            <div style={{
-              padding: '30px 20px',
-              borderRadius: 'var(--radius-md)',
-              background: 'rgba(239, 68, 68, 0.08)',
-              border: '1px dashed rgba(239, 68, 68, 0.3)',
-              textAlign: 'center'
-            }}>
-              <div style={{
-                width: 56,
-                height: 56,
-                borderRadius: '50%',
-                background: 'rgba(239, 68, 68, 0.15)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 16px'
-              }}>
-                <AlertTriangle size={28} color="var(--status-rejected)" />
-              </div>
-              <h4 style={{ color: 'var(--status-rejected)', fontSize: '1.1rem', marginBottom: 8 }}>
-                Application Not Approved
-              </h4>
-              <p style={{ color: '#fca5a5', fontSize: '0.85rem', lineHeight: 1.5, maxWidth: 340, margin: '0 auto 12px' }}>
-                Reason: {attendee.rejectionReason || "Details did not match official college enrollment records."}
-              </p>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-sub)' }}>
-                Please visit the Student Council Helpdesk with your physical college ID card if you believe this is an error.
-              </span>
             </div>
           )}
         </div>
 
-        {/* Ticket Footer Security Watermark */}
-        <div className="ticket-footer">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.72rem', color: 'var(--text-sub)' }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent-cyan)' }} />
-            <span>SECURE ANTI-FRAUD PASS</span>
-          </div>
+        {/* Perforated Tear Line */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          background: 'var(--bg-page)',
+          padding: '8px 0',
+          borderTop: '1px dashed var(--border-black)',
+          borderBottom: '1px dashed var(--border-black)',
+        }}>
+          <div style={{ width: 14, height: 28, background: 'var(--bg-page)', borderRight: '1px solid var(--border-black)' }} />
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.15em', color: 'var(--text-secondary)' }}>
+            TEAR LINE • OFFICIAL GATE SCAN AREA
+          </span>
+          <div style={{ width: 14, height: 28, background: 'var(--bg-page)', borderLeft: '1px solid var(--border-black)' }} />
+        </div>
 
-          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-            {liveClock}
-          </div>
+        {/* QR Code Scan Area */}
+        <div style={{ padding: '24px', background: '#fff', textAlign: 'center' }}>
+          {isApproved ? (
+            <div>
+              <div style={{
+                display: 'inline-block',
+                padding: '12px',
+                background: '#fff',
+                border: '1px solid var(--border-black)',
+                marginBottom: 12
+              }}>
+                <canvas ref={canvasRef} style={{ display: 'block', maxWidth: '100%', height: 'auto' }} />
+              </div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+                SCAN AT SECURITY GATE FOR ADMISSION
+              </div>
+            </div>
+          ) : isPending ? (
+            <div style={{ padding: '32px 16px', background: 'var(--accent-ochre)', border: '1px solid var(--border-black)' }}>
+              <Clock size={32} style={{ margin: '0 auto 12px', color: '#78350f' }} />
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', fontWeight: 800 }}>
+                APPROVAL PENDING
+              </div>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', color: '#78350f', marginTop: 4 }}>
+                QR pass will unlock once the committee validates your submitted details.
+              </p>
+            </div>
+          ) : (
+            <div style={{ padding: '32px 16px', background: '#fee2e2', border: '1px solid var(--border-black)' }}>
+              <XCircle size={32} style={{ margin: '0 auto 12px', color: '#991b1b' }} />
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', fontWeight: 800 }}>
+                REGISTRATION DENIED
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Action Controls */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          borderTop: '1px solid var(--border-black)',
+          background: 'var(--bg-card-alt)'
+        }} className="no-print">
+          <button
+            type="button"
+            onClick={handleDownloadImage}
+            disabled={!isApproved}
+            className="btn-neo-outline"
+            style={{ border: 'none', borderRight: '1px solid var(--border-black)', padding: '14px' }}
+          >
+            <Download size={15} />
+            DOWNLOAD ↗
+          </button>
+          <button
+            type="button"
+            onClick={handlePrint}
+            className="btn-neo-black"
+            style={{ border: 'none', padding: '14px' }}
+          >
+            <Printer size={15} />
+            PRINT / PDF ↗
+          </button>
         </div>
       </div>
-
-      {/* Action Buttons */}
-      {isApproved && (
-        <div className="no-print" style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-          <button onClick={handleDownloadImage} className="btn btn-secondary" style={{ flex: 1, fontSize: '0.85rem' }}>
-            <Download size={16} />
-            Save QR Code
-          </button>
-          <button onClick={handlePrint} className="btn btn-primary" style={{ flex: 1, fontSize: '0.85rem' }}>
-            <Printer size={16} />
-            Print Pass
-          </button>
-        </div>
-      )}
     </div>
   );
 }
