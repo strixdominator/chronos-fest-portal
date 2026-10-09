@@ -75,6 +75,8 @@ export async function POST(request: NextRequest) {
       channel: channel === 'PHONE' ? 'SMS' : 'Email',
       isRealDelivery: dispatchResult?.isReal || false,
       deliveryProvider: dispatchResult?.provider || 'SIMULATION',
+      dispatchError: dispatchResult?.error,
+      simulationNotice: dispatchResult?.provider === 'SIMULATION' ? dispatchResult.message : undefined,
     });
   } catch (error: any) {
     return NextResponse.json(

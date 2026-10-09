@@ -48,12 +48,22 @@ export async function sendEmailOtp({
 
   try {
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: Number(process.env.SMTP_PORT) || 465,
+      secure: process.env.SMTP_SECURE ? process.env.SMTP_SECURE === 'true' : true,
       auth: {
         user: gmailUser,
         pass: gmailPassword.replace(/\s+/g, ''), // Strip any spaces from the 16-letter App Password
       },
-    });
+      tls: {
+        rejectUnauthorized: false,
+      },
+      // Force IPv4 to prevent cloud container (Render/AWS) IPv6 DNS timeouts
+      family: 4,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
+    } as any);
 
     const htmlContent = `
 <!DOCTYPE html>
@@ -63,15 +73,15 @@ export async function sendEmailOtp({
   <title>Your Pass Security Code</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0b0f19; margin: 0; padding: 20px; color: #f8fafc; }
-    .card { max-width: 540px; margin: 0 auto; background: #111827; border: 1px solid #1e293b; border-radius: 16px; overflow: hidden; }
-    .header { background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); padding: 24px; text-align: center; color: #050b14; }
-    .header h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; }
-    .header p { margin: 4px 0 0; font-size: 13px; font-weight: 600; opacity: 0.9; }
+    .card { max-width: 540px; margin: 0 auto; background: #111827; border: 1px solid #1e293b; border-radius: 0px; overflow: hidden; }
+    .header { background: #0a192f; padding: 24px; text-align: center; color: #ffffff; border-bottom: 2px solid #1d4ed8; }
+    .header h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; }
+    .header p { margin: 6px 0 0; font-size: 13px; font-weight: 600; opacity: 0.9; color: #93c5fd; }
     .content { padding: 32px 24px; text-align: center; }
     .greeting { font-size: 18px; font-weight: 700; color: #ffffff; margin-bottom: 8px; }
     .subtext { font-size: 14px; color: #94a3b8; line-height: 1.5; margin-bottom: 24px; }
-    .otp-box { background: #1e293b; border: 2px dashed #00f2fe; border-radius: 12px; padding: 18px; margin: 20px auto; display: inline-block; }
-    .otp-code { font-family: monospace; font-size: 36px; font-weight: 800; letter-spacing: 0.25em; color: #00f2fe; margin: 0; padding-left: 0.25em; }
+    .otp-box { background: #1e293b; border: 2px dashed #3b82f6; border-radius: 0px; padding: 18px; margin: 20px auto; display: inline-block; }
+    .otp-code { font-family: monospace; font-size: 38px; font-weight: 800; letter-spacing: 0.25em; color: #60a5fa; margin: 0; padding-left: 0.25em; }
     .warning { font-size: 12px; color: #f59e0b; margin-top: 18px; }
     .footer { border-top: 1px solid #1e293b; padding: 18px; text-align: center; font-size: 12px; color: #64748b; background: #0f172a; }
   </style>
@@ -79,8 +89,8 @@ export async function sendEmailOtp({
 <body>
   <div class="card">
     <div class="header">
-      <h1>CHRONOS FEST 2026</h1>
-      <p>Official Graduate & Alumni Pass Portal</p>
+      <h1>MILAN 2026</h1>
+      <p>Don Bosco Institute of Technology · Official Alumni Pass Portal</p>
     </div>
     <div class="content">
       <div class="greeting">Hello, ${recipientName}!</div>
@@ -100,8 +110,8 @@ export async function sendEmailOtp({
       </div>
     </div>
     <div class="footer">
-      College Student Council & Security Affairs Committee<br>
-      Automated Digital Ticketing System · Chronos Fest '26
+      DBIT Alumni Affairs & Student Council<br>
+      Automated Digital Pass System · MILAN 2026
     </div>
   </div>
 </body>
@@ -109,10 +119,10 @@ export async function sendEmailOtp({
     `;
 
     await transporter.sendMail({
-      from: `"Chronos Fest 2026" <${gmailUser}>`,
+      from: `"MILAN 2026" <${gmailUser}>`,
       to: toEmail,
-      subject: `${otp} is your Chronos Fest '26 Verification Code (USN: ${usn})`,
-      text: `Hello ${recipientName},\n\nYour 6-digit verification code for Chronos Fest 2026 entry pass (${usn}) is: ${otp}\n\nThis code expires in 10 minutes. Do not share it with anyone.`,
+      subject: `${otp} is your MILAN 2026 Verification Code (USN: ${usn})`,
+      text: `Hello ${recipientName},\n\nYour 6-digit verification code for MILAN 2026 entry pass (${usn}) is: ${otp}\n\nThis code expires in 10 minutes. Do not share it with anyone.`,
       html: htmlContent,
     });
 

@@ -72,6 +72,8 @@ export async function POST(request: NextRequest) {
         maskedTarget: channel === 'PHONE' ? maskPhone(phone) : maskEmail(email),
         isRealDelivery: dispatchResult?.isReal || false,
         deliveryProvider: dispatchResult?.provider || 'SIMULATION',
+        dispatchError: dispatchResult?.error,
+        simulationNotice: dispatchResult?.provider === 'SIMULATION' ? dispatchResult.message : undefined,
       });
     }
 
