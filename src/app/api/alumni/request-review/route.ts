@@ -5,7 +5,7 @@ import { createAttendee, getAttendees } from '@/lib/db';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { usn, newEmail, newPhone, reason, degreeProofUrl } = body;
+    const { usn, newEmail, newPhone, reason, degreeProofUrl, familyCount, familyMembers } = body;
 
     if (!usn || !newEmail || !newPhone) {
       return NextResponse.json(
@@ -35,7 +35,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create a PENDING attendee with updated contact details flag
+    const parsedFamilyCount = Math.min(4, Math.max(0, Number(familyCount) || 0));
+    const sanitizedFamilyMembers = Array.isArray(familyMembers) ? familyMembers.slice(0, parsedFamilyCount) : [];
+
+    // Create a PENDING attendee with updated contact details flag and family allocation
     const result = createAttendee({
       fullName: alumnus.fullName,
       email: newEmail.trim().toLowerCase(),
@@ -50,7 +53,9 @@ export async function POST(request: NextRequest) {
       originalPhone: alumnus.phone,
       reviewReason: reason || 'Graduate has changed contact email/phone number since graduation.',
       degreeProofUrl: degreeProofUrl || undefined,
-      notes: `Contact changed from [${alumnus.officialEmail} / ${alumnus.phone}] to [${newEmail} / ${newPhone}]`,
+      notes: `Contact changed from [${alumnus.officialEmail} / ${alumnus.phone}] to [${newEmail} / ${newPhone}]${parsedFamilyCount > 0 ? ` with ${parsedFamilyCount} guest(s)` : ''}`,
+      familyCount: parsedFamilyCount,
+      familyMembers: sanitizedFamilyMembers,
     });
 
     if (!result.success) {

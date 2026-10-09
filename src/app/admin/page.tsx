@@ -77,7 +77,14 @@ export default function AdminPage() {
   const [importStatus, setImportStatus] = useState<string | null>(null);
 
   // Selected ID / Degree Proof modal
-  const [viewingProof, setViewingProof] = useState<{ name: string; url: string; roll: string; reason?: string } | null>(null);
+  const [viewingProof, setViewingProof] = useState<{
+    name: string;
+    url: string;
+    roll: string;
+    reason?: string;
+    familyCount?: number;
+    familyMembers?: Array<{ name: string; relation: string; age?: string }>;
+  } | null>(null);
 
   // Rejection modal
   const [rejectingId, setRejectingId] = useState<string | null>(null);
@@ -819,7 +826,9 @@ export default function AdminPage() {
                                     name: attendee.fullName,
                                     url: attendee.degreeProofUrl!,
                                     roll: attendee.usn || attendee.rollNumber,
-                                    reason: attendee.reviewReason
+                                    reason: attendee.reviewReason,
+                                    familyCount: attendee.familyCount,
+                                    familyMembers: attendee.familyMembers,
                                   })}
                                   className="btn-neo-outline"
                                   style={{ padding: '3px 8px', fontSize: '0.7rem', marginTop: 4 }}
@@ -1181,6 +1190,22 @@ export default function AdminPage() {
               {viewingProof.reason && (
                 <div style={{ padding: '10px 14px', background: 'var(--bg-blue-tint)', border: '1px solid var(--border-black)', marginBottom: 14, fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>
                   Note: {viewingProof.reason}
+                </div>
+              )}
+
+              {viewingProof.familyMembers && viewingProof.familyMembers.length > 0 && (
+                <div style={{ padding: '12px 14px', background: 'var(--card-blue-1)', border: '1px solid var(--border-black)', marginBottom: 14 }}>
+                  <div className="mono-label" style={{ fontSize: '0.68rem', marginBottom: 6 }}>
+                    REQUESTED FAMILY GUESTS ({viewingProof.familyMembers.length})
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {viewingProof.familyMembers.map((guest, idx) => (
+                      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-mono)', fontSize: '0.78rem', background: '#fff', padding: '6px 10px', border: '1px solid var(--border-black)' }}>
+                        <span style={{ fontWeight: 800 }}>#{idx + 1} {guest.name}</span>
+                        <span style={{ color: 'var(--text-secondary)' }}>{guest.relation}{guest.age ? ` · ${guest.age} yrs` : ''}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 

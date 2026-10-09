@@ -379,6 +379,15 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
     e.preventDefault();
     if (!alumnus || !newEmail || !newPhone) return;
 
+    if (familyCount > 0) {
+      for (let i = 0; i < familyCount; i++) {
+        if (!familyMembers[i]?.name?.trim()) {
+          setReviewError(`Please enter the full name for Guest #${i + 1}.`);
+          return;
+        }
+      }
+    }
+
     setSubmittingReview(true);
     setReviewError(null);
 
@@ -392,6 +401,8 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
           newPhone,
           reason: reviewReason,
           degreeProofUrl: proofPreview || undefined,
+          familyCount,
+          familyMembers: familyCount > 0 ? familyMembers.slice(0, familyCount) : [],
         }),
       });
       const data = await res.json();
@@ -741,6 +752,81 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
               />
             </div>
 
+            {/* Family Members Option */}
+            <div style={{
+              padding: '14px',
+              background: 'var(--bg-card-alt)',
+              border: '1px solid var(--border-black)',
+              marginBottom: 16
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <span className="mono-label" style={{ fontSize: '0.68rem' }}>FAMILY GUEST ACCESS (OPTIONAL)</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', fontWeight: 800, background: 'var(--bg-black)', color: '#fff', padding: '2px 6px' }}>
+                  MAX 4 GUESTS
+                </span>
+              </div>
+
+              <div style={{ marginBottom: familyCount > 0 ? 12 : 0 }}>
+                <select
+                  className="neo-select"
+                  value={familyCount}
+                  onChange={e => handleFamilyCountChange(parseInt(e.target.value, 10))}
+                  style={{ width: '100%', fontSize: '0.78rem' }}
+                >
+                  <option value={0}>0 — Alumnus Only (1 Entry Pass)</option>
+                  <option value={1}>+1 Family Member (2 Entry Passes Total)</option>
+                  <option value={2}>+2 Family Members (3 Entry Passes Total)</option>
+                  <option value={3}>+3 Family Members (4 Entry Passes Total)</option>
+                  <option value={4}>+4 Family Members (5 Entry Passes Total - Maximum)</option>
+                </select>
+              </div>
+
+              {familyCount > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
+                  {Array.from({ length: familyCount }).map((_, idx) => (
+                    <div key={idx} style={{ padding: '10px', background: '#fff', border: '1px solid var(--border-black)' }}>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '0.7rem', marginBottom: 4 }}>
+                        GUEST #{idx + 1}
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 6 }}>
+                        <input
+                          type="text"
+                          required
+                          className="neo-input"
+                          style={{ padding: '6px', fontSize: '0.76rem' }}
+                          placeholder="Full Name *"
+                          value={familyMembers[idx]?.name || ''}
+                          onChange={e => handleMemberChange(idx, 'name', e.target.value)}
+                        />
+                        <select
+                          className="neo-select"
+                          style={{ padding: '6px', fontSize: '0.76rem' }}
+                          value={familyMembers[idx]?.relation || 'Spouse'}
+                          onChange={e => handleMemberChange(idx, 'relation', e.target.value)}
+                        >
+                          <option value="Spouse">Spouse</option>
+                          <option value="Parent">Parent</option>
+                          <option value="Child">Child</option>
+                          <option value="Sibling">Sibling</option>
+                          <option value="Family Guest">Family Guest</option>
+                        </select>
+                        <input
+                          type="number"
+                          className="neo-input"
+                          style={{ padding: '6px', fontSize: '0.76rem' }}
+                          placeholder="Age (opt)"
+                          min={1}
+                          max={110}
+                          value={familyMembers[idx]?.age || ''}
+                          onChange={e => handleMemberChange(idx, 'age', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
               <button
                 type="button"
@@ -985,6 +1071,109 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
               {proofPreview && (
                 <div style={{ marginTop: 10, border: '1px solid var(--border-black)', padding: 6, background: '#fff' }}>
                   <img src={proofPreview} alt="Proof Preview" style={{ maxHeight: 150, display: 'block', margin: '0 auto' }} />
+                </div>
+              )}
+            </div>
+
+            {/* Family Members Option */}
+            <div style={{
+              padding: '16px',
+              background: 'var(--bg-card-alt)',
+              border: '1px solid var(--border-black)',
+              marginBottom: 18
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <span className="mono-label">FAMILY GUEST ACCESS (OPTIONAL)</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 800, background: 'var(--bg-black)', color: '#fff', padding: '2px 6px' }}>
+                  MAX 4 GUESTS
+                </span>
+              </div>
+
+              <div style={{ marginBottom: familyCount > 0 ? 14 : 0 }}>
+                <label className="mono-label" style={{ display: 'block', marginBottom: 6, fontSize: '0.68rem' }}>
+                  BRINGING FAMILY MEMBERS?
+                </label>
+                <select
+                  className="neo-select"
+                  value={familyCount}
+                  onChange={e => handleFamilyCountChange(parseInt(e.target.value, 10))}
+                  style={{ width: '100%' }}
+                >
+                  <option value={0}>0 — Alumnus Only (1 Entry Pass)</option>
+                  <option value={1}>+1 Family Member (2 Entry Passes Total)</option>
+                  <option value={2}>+2 Family Members (3 Entry Passes Total)</option>
+                  <option value={3}>+3 Family Members (4 Entry Passes Total)</option>
+                  <option value={4}>+4 Family Members (5 Entry Passes Total - Maximum)</option>
+                </select>
+              </div>
+
+              {familyCount > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
+                  <div className="mono-label" style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>
+                    GUEST DETAILS (FOR GATE ADMISSION)
+                  </div>
+                  {Array.from({ length: familyCount }).map((_, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        padding: '12px',
+                        background: '#ffffff',
+                        border: '1px solid var(--border-black)',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '0.72rem' }}>
+                          GUEST #{idx + 1}
+                        </span>
+                        <span className="mono-tag" style={{ fontSize: '0.62rem' }}>ENTRY PERMIT</span>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 8 }}>
+                        <div>
+                          <label className="mono-label" style={{ fontSize: '0.62rem', display: 'block', marginBottom: 3 }}>FULL NAME *</label>
+                          <input
+                            type="text"
+                            required
+                            className="neo-input"
+                            style={{ padding: '8px', fontSize: '0.8rem' }}
+                            placeholder="Guest Name"
+                            value={familyMembers[idx]?.name || ''}
+                            onChange={e => handleMemberChange(idx, 'name', e.target.value)}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="mono-label" style={{ fontSize: '0.62rem', display: 'block', marginBottom: 3 }}>RELATION</label>
+                          <select
+                            className="neo-select"
+                            style={{ padding: '8px', fontSize: '0.8rem' }}
+                            value={familyMembers[idx]?.relation || 'Spouse'}
+                            onChange={e => handleMemberChange(idx, 'relation', e.target.value)}
+                          >
+                            <option value="Spouse">Spouse</option>
+                            <option value="Parent">Parent</option>
+                            <option value="Child">Child</option>
+                            <option value="Sibling">Sibling</option>
+                            <option value="Family Guest">Family Guest</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="mono-label" style={{ fontSize: '0.62rem', display: 'block', marginBottom: 3 }}>AGE (OPTIONAL)</label>
+                          <input
+                            type="number"
+                            className="neo-input"
+                            style={{ padding: '8px', fontSize: '0.8rem' }}
+                            placeholder="Age"
+                            min={1}
+                            max={110}
+                            value={familyMembers[idx]?.age || ''}
+                            onChange={e => handleMemberChange(idx, 'age', e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
