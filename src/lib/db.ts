@@ -472,3 +472,43 @@ export function resetCheckIn(id: string): Attendee | null {
   saveAttendees(attendees);
   return attendees[index];
 }
+
+export function deleteAttendee(idOrUsn: string): { success: boolean; deletedAttendee?: Attendee; error?: string } {
+  const attendees = getAttendees();
+  const query = idOrUsn.trim().toLowerCase();
+  const index = attendees.findIndex(a => 
+    a.id.toLowerCase() === query || 
+    (a.usn && a.usn.toLowerCase() === query) ||
+    a.rollNumber.toLowerCase() === query ||
+    a.ticketCode.toLowerCase() === query
+  );
+
+  if (index === -1) {
+    return { success: false, error: 'Attendee pass not found.' };
+  }
+
+  const [deleted] = attendees.splice(index, 1);
+  saveAttendees(attendees);
+  return { success: true, deletedAttendee: deleted };
+}
+
+export function deleteAllAttendees(): { success: boolean; count: number } {
+  const attendees = getAttendees();
+  const count = attendees.length;
+  saveAttendees([]);
+  return { success: true, count };
+}
+
+export function deleteSelectedAttendees(ids: string[]): { success: boolean; count: number } {
+  const attendees = getAttendees();
+  const idSet = new Set(ids.map(i => i.trim().toLowerCase()));
+  const remaining = attendees.filter(a => 
+    !idSet.has(a.id.toLowerCase()) && 
+    !(a.usn && idSet.has(a.usn.toLowerCase())) &&
+    !idSet.has(a.rollNumber.toLowerCase())
+  );
+  const count = attendees.length - remaining.length;
+  saveAttendees(remaining);
+  return { success: true, count };
+}
+

@@ -27,7 +27,8 @@ import {
   Phone,
   Send,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Trash2
 } from 'lucide-react';
 import { Attendee, AttendeeStatus, EventSettings, AlumniRecord } from '@/lib/types';
 import Link from 'next/link';
@@ -62,6 +63,11 @@ export default function AdminPage() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // Delete & Re-registration state
+  const [deletingAttendee, setDeletingAttendee] = useState<Attendee | null>(null);
+  const [showResetAllModal, setShowResetAllModal] = useState(false);
+
 
   // Alumni Master state
   const [alumniList, setAlumniList] = useState<AlumniRecord[]>([]);
@@ -206,6 +212,53 @@ export default function AdminPage() {
       setActionLoading(null);
     }
   };
+
+  // Delete Single Pass & Allow Re-registration
+  const handleDeleteAttendee = async (id: string) => {
+    setActionLoading(id);
+    try {
+      const res = await fetch(`/api/attendees/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success) {
+        setDeletingAttendee(null);
+        fetchAttendees();
+        alert(data.message || 'Pass deleted. Alumnus can now register again.');
+      } else {
+        alert(data.error || 'Failed to delete pass.');
+      }
+    } catch (e: any) {
+      alert('Error deleting pass: ' + e.message);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Bulk Purge All Passes & Allow Everyone to Re-register
+  const handleResetAllAttendees = async () => {
+    setActionLoading('resetAll');
+    try {
+      const res = await fetch('/api/attendees', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resetAll: true }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setShowResetAllModal(false);
+        fetchAttendees();
+        alert(data.message || 'All passes have been deleted. Alumni can now register again.');
+      } else {
+        alert(data.error || 'Failed to reset passes.');
+      }
+    } catch (e: any) {
+      alert('Error: ' + e.message);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
 
   // Import Excel (.xlsx, .xls) or CSV file
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -625,12 +678,12 @@ export default function AdminPage() {
                 </button>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 280 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 280, flexWrap: 'wrap' }}>
                 <input
                   type="text"
                   placeholder="SEARCH USN, NAME, EMAIL..."
                   className="neo-input"
-                  style={{ padding: '10px 14px', fontSize: '0.82rem' }}
+                  style={{ padding: '10px 14px', fontSize: '0.82rem', flex: 1, minWidth: 180 }}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                 />
@@ -644,7 +697,19 @@ export default function AdminPage() {
                     APPROVE ALL PENDING ({stats.pending}) ↗
                   </button>
                 )}
+                {stats.total > 0 && (
+                  <button
+                    onClick={() => setShowResetAllModal(true)}
+                    className="btn-neo-outline"
+                    style={{ whiteSpace: 'nowrap', padding: '10px 14px', fontSize: '0.76rem', color: '#dc2626', borderColor: '#dc2626', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                    title="Delete all registered passes and allow everyone to re-register"
+                  >
+                    <Trash2 size={13} />
+                    RESET ALL PASSES ({stats.total}) ↗
+                  </button>
+                )}
               </div>
+
             </div>
 
             {/* Attendees Data Table */}
@@ -824,6 +889,16 @@ export default function AdminPage() {
                                 RESET ↗
                               </button>
                             )}
+
+                            <button
+                              onClick={() => setDeletingAttendee(attendee)}
+                              className="btn-neo-outline"
+                              style={{ padding: '6px 10px', fontSize: '0.75rem', color: '#dc2626', borderColor: '#fca5a5' }}
+                              title="Delete Pass & Unlock Re-registration for this USN"
+                            >
+                              <Trash2 size={12} />
+                              DELETE ↗
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -1219,6 +1294,114 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+
+      {/* MODAL 5: DELETE SINGLE PASS & ALLOW RE-REGISTRATION */}
+      {deletingAttendee && (
+        <div className="neo-modal-backdrop" onClick={() => setDeletingAttendee(null)}>
+          <div className="neo-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 520 }}>
+            <div className="neo-modal-header" style={{ background: '#991b1b' }}>
+              <span className="mono-tag" style={{ color: '#fee2e2' }}>
+                DELETE PASS & ALLOW RE-REGISTRATION
+              </span>
+              <button onClick={() => setDeletingAttendee(null)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ padding: '24px' }}>
+              <div style={{ background: '#fee2e2', border: '1px solid #dc2626', padding: '16px', marginBottom: 20 }}>
+                <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', fontWeight: 900, color: '#991b1b' }}>
+                  DELETE PASS FOR {deletingAttendee.fullName.toUpperCase()}?
+                </h4>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: '#7f1d1d', marginTop: 4 }}>
+                  USN: <strong>{deletingAttendee.usn || deletingAttendee.rollNumber}</strong> · Ticket: {deletingAttendee.ticketCode}
+                </p>
+              </div>
+
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: 20, lineHeight: 1.6 }}>
+                <p style={{ fontWeight: 600, color: 'var(--text-main)', marginBottom: 6 }}>This action will immediately:</p>
+                <ul style={{ paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <li><strong>Invalidate QR code and pass</strong>: Any attempt to scan this pass at gates will be blocked.</li>
+                  <li><strong>Unlock re-registration</strong>: The alumnus can go back to the portal, enter this USN, and claim a pass again fresh.</li>
+                  <li><strong>Purge active sessions</strong>: Resets any active OTP tokens and sessions for this seat number.</li>
+                </ul>
+              </div>
+
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => setDeletingAttendee(null)}
+                  className="btn-neo-outline"
+                  style={{ flex: 1, padding: '12px' }}
+                >
+                  CANCEL
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteAttendee(deletingAttendee.id)}
+                  disabled={actionLoading === deletingAttendee.id}
+                  className="btn-neo-black"
+                  style={{ flex: 2, background: '#dc2626', borderColor: '#991b1b', padding: '12px', fontSize: '0.8rem' }}
+                >
+                  {actionLoading === deletingAttendee.id ? 'DELETING...' : 'YES, DELETE & UNLOCK RE-REGISTER ↗'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 6: RESET ALL PASSES (DANGER ZONE) */}
+      {showResetAllModal && (
+        <div className="neo-modal-backdrop" onClick={() => setShowResetAllModal(false)}>
+          <div className="neo-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 540 }}>
+            <div className="neo-modal-header" style={{ background: '#7f1d1d' }}>
+              <span className="mono-tag" style={{ color: '#fee2e2' }}>
+                DANGER ZONE · PURGE ALL REGISTERED PASSES
+              </span>
+              <button onClick={() => setShowResetAllModal(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ padding: '24px' }}>
+              <div style={{ background: '#fee2e2', border: '2px solid #dc2626', padding: '16px', marginBottom: 20 }}>
+                <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', fontWeight: 900, color: '#991b1b' }}>
+                  PURGE ALL {stats.total} REGISTERED PASSES?
+                </h4>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: '#7f1d1d', marginTop: 6 }}>
+                  This will permanently delete all claimed passes from the database and invalidate every issued QR code.
+                </p>
+              </div>
+
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: 20, lineHeight: 1.6 }}>
+                After this purge is executed, <strong>all alumni listed in the university master directory will be unlocked and permitted to register again</strong> from scratch.
+              </p>
+
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => setShowResetAllModal(false)}
+                  className="btn-neo-outline"
+                  style={{ flex: 1, padding: '12px' }}
+                >
+                  CANCEL
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetAllAttendees}
+                  disabled={actionLoading === 'resetAll'}
+                  className="btn-neo-black"
+                  style={{ flex: 2, background: '#dc2626', borderColor: '#7f1d1d', padding: '12px', fontSize: '0.8rem' }}
+                >
+                  {actionLoading === 'resetAll' ? 'PURGING...' : 'YES, PURGE ALL & RESET RE-REGISTRATION ↗'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

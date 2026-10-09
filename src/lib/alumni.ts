@@ -290,3 +290,40 @@ export function verifySessionToken(usn: string, token: string): boolean {
   if (!session) return false;
   return session.usn.toUpperCase() === usn.trim().toUpperCase();
 }
+
+export function clearAlumniSession(usn?: string): void {
+  ensureDir();
+  if (fs.existsSync(OTPS_FILE)) {
+    try {
+      if (usn) {
+        const otps = JSON.parse(fs.readFileSync(OTPS_FILE, 'utf-8'));
+        delete otps[usn.trim().toUpperCase()];
+        fs.writeFileSync(OTPS_FILE, JSON.stringify(otps, null, 2));
+      } else {
+        fs.writeFileSync(OTPS_FILE, JSON.stringify({}, null, 2));
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  if (fs.existsSync(SESSIONS_FILE)) {
+    try {
+      if (usn) {
+        const sessions = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf-8'));
+        const cleanedUsn = usn.trim().toUpperCase();
+        for (const token of Object.keys(sessions)) {
+          if (sessions[token]?.usn?.toUpperCase() === cleanedUsn) {
+            delete sessions[token];
+          }
+        }
+        fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 2));
+      } else {
+        fs.writeFileSync(SESSIONS_FILE, JSON.stringify({}, null, 2));
+      }
+    } catch {
+      // ignore
+    }
+  }
+}
+

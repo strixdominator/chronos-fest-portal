@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAttendees, getSettings } from '@/lib/db';
+import { getAttendees, getSettings, deleteAllAttendees, deleteSelectedAttendees } from '@/lib/db';
+import { clearAlumniSession } from '@/lib/alumni';
 
 export async function GET(request: NextRequest) {
   try {
@@ -50,6 +51,45 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message || 'Failed to fetch attendees' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json().catch(() => ({}));
+    const { ids, resetAll } = body;
+
+    if (resetAll === true) {
+      const result = deleteAllAttendees();
+      clearAlumniSession(); // Clear all active sessions and OTPs
+      return NextResponse.json({
+        success: true,
+        count: result.count,
+        message: `Successfully deleted all ${result.count} registered passes. All alumni can now register again fresh.`,
+      });
+    }
+
+    if (Array.isArray(ids) && ids.length > 0) {
+      const result = deleteSelectedAttendees(ids);
+      for (const id of ids) {
+        clearAlumniSession(id);
+      }
+      return NextResponse.json({
+        success: true,
+        count: result.count,
+        message: `Successfully deleted ${result.count} selected pass(es). They can now register again.`,
+      });
+    }
+
+    return NextResponse.json(
+      { success: false, error: 'Specify either "resetAll: true" or an array of "ids" to delete.' },
+      { status: 400 }
+    );
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, error: error.message || 'Bulk delete failed' },
       { status: 500 }
     );
   }
