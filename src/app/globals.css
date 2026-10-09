@@ -1,26 +1,32 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');
 
 :root {
-  /* Sharp-Edged Swiss Brutalist Color System */
-  --bg-page: #f3efe6;
+  /* DBIT Blue & White Sharp Architectural System */
+  --bg-page: #f8fafc;
+  --bg-blue-tint: #eaf1fb; /* Half blue shade */
+  --bg-blue-soft: #f1f6fd; /* Soft cool blue tint */
   --bg-card: #ffffff;
-  --bg-card-alt: #faf8f3;
-  --bg-black: #0a0a0a;
+  --bg-card-alt: #f1f5fa;
+  --bg-black: #0a192f; /* DBIT Deep Navy */
   
-  --text-main: #0a0a0a;
-  --text-secondary: #404040;
-  --text-muted: #737373;
+  --text-main: #0a192f; /* Deep Navy */
+  --text-secondary: #334155; /* Slate */
+  --text-muted: #64748b; /* Muted Slate */
   --text-light: #ffffff;
   
-  --border-black: #0a0a0a;
-  --border-subtle: rgba(10, 10, 10, 0.15);
+  --border-black: #0a192f; /* Sharp 1px Deep Navy border */
+  --border-subtle: rgba(10, 25, 47, 0.15);
   
-  /* Muted Architectural Accents from Figma */
-  --accent-coral: #d94a38;
-  --accent-coral-subtle: rgba(217, 74, 56, 0.12);
-  --accent-lilac: #ded9ee;
-  --accent-sage: #d8e4dd;
-  --accent-ochre: #eedfcb;
+  /* DBIT Royal & Ice Blue Accents */
+  --accent-blue: #1d4ed8; /* DBIT Royal Blue */
+  --accent-coral: #1d4ed8; /* DBIT Royal Blue accent */
+  --accent-blue-subtle: rgba(29, 78, 216, 0.12);
+  --accent-navy: #0f2b5c;
+  
+  /* 3-Card Section Blue Shades */
+  --card-blue-1: #e2edfc; /* Ice Blue */
+  --card-blue-2: #d2e3fa; /* Soft Slate/Sky Blue */
+  --card-blue-3: #ffffff; /* Crisp White */
   
   /* Status Colors */
   --status-approved: #0e8a5a;
@@ -420,7 +426,7 @@ html, body {
   flex-direction: column;
   justify-content: space-between;
   border-right: 1px solid var(--border-black);
-  background: var(--bg-page);
+  background: var(--bg-blue-tint); /* Half blue shade */
 }
 
 .neo-hero-left-content {
@@ -450,7 +456,7 @@ html, body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   border-top: 1px solid var(--border-black);
-  background: var(--bg-page);
+  background: var(--bg-blue-tint);
 }
 
 .neo-hero-stat-cell {
@@ -483,7 +489,7 @@ html, body {
 
 .neo-hero-right {
   padding: 56px 48px;
-  background: var(--bg-page);
+  background: #ffffff; /* Half white shade */
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -494,10 +500,12 @@ html, body {
   max-width: 560px;
   background: #ffffff;
   border: 1px solid var(--border-black);
+  box-shadow: 4px 4px 0px 0px var(--border-black);
 }
 
 .neo-portal-body {
   padding: 36px 36px;
+  background: #ffffff;
 }
 
 /* ==========================================================================
@@ -505,7 +513,7 @@ html, body {
    ========================================================================== */
 .before-arrive-section {
   border-bottom: 1px solid var(--border-black);
-  background: var(--bg-page);
+  background: #ffffff;
 }
 
 .before-arrive-header {
@@ -515,6 +523,7 @@ html, body {
   gap: 32px;
   padding: 64px 48px 48px;
   border-bottom: 1px solid var(--border-black);
+  background: #ffffff;
 }
 
 .before-arrive-title {
@@ -553,15 +562,15 @@ html, body {
 }
 
 .before-arrive-card.card-sage {
-  background: var(--accent-sage);
+  background: var(--card-blue-1); /* Ice blue */
 }
 
 .before-arrive-card.card-lilac {
-  background: var(--accent-lilac);
+  background: var(--card-blue-2); /* Soft Sky/Royal blue tint */
 }
 
 .before-arrive-card.card-ochre {
-  background: var(--accent-ochre);
+  background: var(--card-blue-3); /* Crisp white */
 }
 
 .before-arrive-card-num {
@@ -596,7 +605,7 @@ html, body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   border-bottom: 1px solid var(--border-black);
-  background: var(--bg-page);
+  background: #ffffff;
 }
 
 .manifesto-left {
@@ -605,6 +614,7 @@ html, body {
   flex-direction: column;
   justify-content: space-between;
   border-right: 1px solid var(--border-black);
+  background: var(--bg-blue-tint); /* Half blue shade */
 }
 
 .manifesto-top-meta {
@@ -666,7 +676,7 @@ html, body {
   align-items: center;
   justify-content: space-between;
   padding: 14px 20px;
-  background: var(--bg-page);
+  background: var(--bg-blue-soft);
   border-top: 1px solid var(--border-black);
   font-family: var(--font-mono);
   font-size: 0.7rem;
@@ -680,7 +690,7 @@ html, body {
    FOOTER (SHARP EDITORIAL)
    ========================================================================== */
 .neo-footer {
-  background: var(--bg-page);
+  background: #ffffff;
   border-top: 1px solid var(--border-black);
 }
 
@@ -690,6 +700,7 @@ html, body {
   align-items: center;
   padding: 40px 48px;
   border-bottom: 1px solid var(--border-black);
+  background: #ffffff;
 }
 
 .neo-footer-bottom {
@@ -703,6 +714,7 @@ html, body {
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  background: var(--bg-blue-soft);
 }
 
 /* ==========================================================================
