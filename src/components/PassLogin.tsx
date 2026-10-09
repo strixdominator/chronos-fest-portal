@@ -33,6 +33,7 @@ export default function PassLogin({ initialUsn = '', settings, onUnlocked }: Pas
   const [otpCode, setOtpCode] = useState('');
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [otpTarget, setOtpTarget] = useState('');
+  const [deliveryInfo, setDeliveryInfo] = useState<{ isReal: boolean; message: string; simulationCode?: string } | null>(null);
 
   // Unlocked pass
   const [unlockedPass, setUnlockedPass] = useState<Attendee | null>(null);
@@ -101,6 +102,11 @@ export default function PassLogin({ initialUsn = '', settings, onUnlocked }: Pas
       setOtpChannel(channel);
       setOtpSent(true);
       setOtpTarget(data.maskedTarget);
+      setDeliveryInfo({
+        isReal: !!data.isRealDelivery,
+        message: data.message,
+        simulationCode: data.simulationCode,
+      });
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -310,6 +316,29 @@ export default function PassLogin({ initialUsn = '', settings, onUnlocked }: Pas
             </div>
           ) : (
             <form onSubmit={handleVerifyOtp}>
+              {/* Delivery Confirmation Feedback Banner */}
+              {deliveryInfo && (
+                <div style={{
+                  padding: '12px 14px',
+                  background: deliveryInfo.isReal ? '#ecfdf5' : '#eff6ff',
+                  border: `1.5px solid ${deliveryInfo.isReal ? '#059669' : '#1d4ed8'}`,
+                  color: deliveryInfo.isReal ? '#065f46' : '#1e3a8a',
+                  marginBottom: 16
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 800, fontSize: '0.82rem' }}>
+                    <span>{deliveryInfo.isReal ? '✓' : 'ℹ️'}</span>
+                    <span>{deliveryInfo.isReal ? 'CODE DISPATCHED SUCCESSFULLY' : 'HOST SERVER IN SIMULATION MODE'}</span>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', marginTop: 3, lineHeight: 1.4 }}>
+                    {deliveryInfo.isReal ? (
+                      <>Security unlock code delivered to <strong>{otpTarget}</strong>. Please check your <strong>Inbox</strong>, <strong>Updates</strong>, and <strong>Spam / Junk</strong> folder.</>
+                    ) : (
+                      <>Live mail credentials not active in environment. For testing, use code: <strong style={{ color: '#1d4ed8', fontSize: '0.9rem', letterSpacing: '0.1em' }}>{deliveryInfo.simulationCode}</strong></>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div style={{ marginBottom: 16 }}>
                 <label className="mono-label" style={{ display: 'block', marginBottom: 8 }}>
                   ENTER 6-DIGIT CODE SENT TO {otpTarget}

@@ -66,15 +66,27 @@ export async function POST(request: NextRequest) {
       console.error('[DISPATCH ERROR]', dispatchErr);
     }
 
+    // If real delivery failed, report error so UI does not falsely pretend it succeeded
+    if (dispatchResult && !dispatchResult.success && dispatchResult.provider !== 'SIMULATION') {
+      return NextResponse.json({
+        success: false,
+        error: dispatchResult.error 
+          ? `Email delivery failed: ${dispatchResult.error}`
+          : 'Could not deliver email to registered contact. Please check credentials or request committee manual review.',
+        dispatchError: dispatchResult.error,
+      }, { status: 502 });
+    }
+
     return NextResponse.json({
       success: true,
       message: dispatchResult?.isReal 
         ? `Real verification code sent to ${otpData.maskedTarget}!`
-        : `A 6-digit verification code was sent to ${otpData.maskedTarget}`,
+        : `Simulation Mode: Verification code is ${otpData.otp}`,
       maskedTarget: otpData.maskedTarget,
       channel: channel === 'PHONE' ? 'SMS' : 'Email',
       isRealDelivery: dispatchResult?.isReal || false,
       deliveryProvider: dispatchResult?.provider || 'SIMULATION',
+      simulationCode: !dispatchResult?.isReal ? otpData.otp : undefined,
       dispatchError: dispatchResult?.error,
       simulationNotice: dispatchResult?.provider === 'SIMULATION' ? dispatchResult.message : undefined,
     });

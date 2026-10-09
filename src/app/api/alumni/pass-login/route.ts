@@ -64,14 +64,26 @@ export async function POST(request: NextRequest) {
         });
       }
 
+      // If real delivery failed, report error so UI does not falsely pretend it succeeded
+      if (dispatchResult && !dispatchResult.success && dispatchResult.provider !== 'SIMULATION') {
+        return NextResponse.json({
+          success: false,
+          error: dispatchResult.error 
+            ? `Email delivery failed: ${dispatchResult.error}`
+            : 'Could not deliver unlock code to registered contact. Please check credentials or contact organizers.',
+          dispatchError: dispatchResult.error,
+        }, { status: 502 });
+      }
+
       return NextResponse.json({
         success: true,
         message: dispatchResult?.isReal
           ? `Real unlock code delivered to ${channel === 'PHONE' ? maskPhone(phone) : maskEmail(email)}!`
-          : `Security code sent to ${channel === 'PHONE' ? maskPhone(phone) : maskEmail(email)}`,
+          : `Simulation Mode: Unlock code is ${otpResult.otp}`,
         maskedTarget: channel === 'PHONE' ? maskPhone(phone) : maskEmail(email),
         isRealDelivery: dispatchResult?.isReal || false,
         deliveryProvider: dispatchResult?.provider || 'SIMULATION',
+        simulationCode: !dispatchResult?.isReal ? otpResult.otp : undefined,
         dispatchError: dispatchResult?.error,
         simulationNotice: dispatchResult?.provider === 'SIMULATION' ? dispatchResult.message : undefined,
       });

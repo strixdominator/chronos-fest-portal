@@ -87,6 +87,10 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
 
+  // Delivery Confirmation Info (Real vs Simulation)
+  const [deliveryInfo, setDeliveryInfo] = useState<{ isReal: boolean; message: string; simulationCode?: string } | null>(null);
+  const [claimedDeliveryInfo, setClaimedDeliveryInfo] = useState<{ isReal: boolean; message: string; simulationCode?: string } | null>(null);
+
   // Completed Pass
   const [issuedPass, setIssuedPass] = useState<Attendee | null>(null);
 
@@ -167,6 +171,11 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
       setClaimedOtpChannel(channel);
       setClaimedOtpSent(true);
       setClaimedOtpTarget(data.maskedTarget);
+      setClaimedDeliveryInfo({
+        isReal: !!data.isRealDelivery,
+        message: data.message,
+        simulationCode: data.simulationCode,
+      });
     } catch (err: any) {
       setClaimedOtpError(err.message);
     } finally {
@@ -248,6 +257,11 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
       setOtpChannel(channel);
       setOtpSent(true);
       setOtpTarget(data.maskedTarget);
+      setDeliveryInfo({
+        isReal: !!data.isRealDelivery,
+        message: data.message,
+        simulationCode: data.simulationCode,
+      });
     } catch (err: any) {
       setOtpError(err.message);
     } finally {
@@ -614,6 +628,29 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
         {/* Claimed OTP Sent Form */}
         {claimedOtpSent && !showManualReview && (
           <form onSubmit={handleVerifyClaimedOtp}>
+            {/* Delivery Confirmation Feedback Banner */}
+            {claimedDeliveryInfo && (
+              <div style={{
+                padding: '12px 14px',
+                background: claimedDeliveryInfo.isReal ? '#ecfdf5' : '#eff6ff',
+                border: `1.5px solid ${claimedDeliveryInfo.isReal ? '#059669' : '#1d4ed8'}`,
+                color: claimedDeliveryInfo.isReal ? '#065f46' : '#1e3a8a',
+                marginBottom: 16
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 800, fontSize: '0.82rem' }}>
+                  <span>{claimedDeliveryInfo.isReal ? '✓' : 'ℹ️'}</span>
+                  <span>{claimedDeliveryInfo.isReal ? 'CODE DISPATCHED SUCCESSFULLY' : 'HOST SERVER IN SIMULATION MODE'}</span>
+                </div>
+                <div style={{ fontSize: '0.75rem', marginTop: 3, lineHeight: 1.4 }}>
+                  {claimedDeliveryInfo.isReal ? (
+                    <>Security code delivered to <strong>{claimedOtpTarget}</strong>. Please check your <strong>Inbox</strong>, <strong>Updates</strong>, and <strong>Spam / Junk</strong> folder.</>
+                  ) : (
+                    <>Live mail server credentials not set in host environment. For testing, use code: <strong style={{ color: '#1d4ed8', fontSize: '0.9rem', letterSpacing: '0.1em' }}>{claimedDeliveryInfo.simulationCode}</strong></>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div style={{ marginBottom: 16 }}>
               <label className="mono-label" style={{ display: 'block', marginBottom: 8 }}>
                 ENTER 6-DIGIT CODE SENT TO {claimedOtpTarget}
@@ -977,6 +1014,29 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
         {/* OTP Code Form */}
         {otpSent && (
           <form onSubmit={handleVerifyOtp}>
+            {/* Delivery Confirmation Feedback Banner */}
+            {deliveryInfo && (
+              <div style={{
+                padding: '12px 14px',
+                background: deliveryInfo.isReal ? '#ecfdf5' : '#eff6ff',
+                border: `1.5px solid ${deliveryInfo.isReal ? '#059669' : '#1d4ed8'}`,
+                color: deliveryInfo.isReal ? '#065f46' : '#1e3a8a',
+                marginBottom: 16
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 800, fontSize: '0.82rem' }}>
+                  <span>{deliveryInfo.isReal ? '✓' : 'ℹ️'}</span>
+                  <span>{deliveryInfo.isReal ? 'CODE DISPATCHED SUCCESSFULLY' : 'HOST SERVER IN SIMULATION MODE'}</span>
+                </div>
+                <div style={{ fontSize: '0.75rem', marginTop: 3, lineHeight: 1.4 }}>
+                  {deliveryInfo.isReal ? (
+                    <>Verification code delivered to <strong>{otpTarget}</strong>. Please check your <strong>Inbox</strong>, <strong>Updates</strong>, and <strong>Spam / Junk</strong> folder.</>
+                  ) : (
+                    <>Live mail server credentials not set in host environment. For testing, use code: <strong style={{ color: '#1d4ed8', fontSize: '0.9rem', letterSpacing: '0.1em' }}>{deliveryInfo.simulationCode}</strong></>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div style={{ marginBottom: 16 }}>
               <label className="mono-label" style={{ display: 'block', marginBottom: 8 }}>
                 ENTER 6-DIGIT CODE SENT TO {otpTarget}
