@@ -17,14 +17,19 @@ interface SmsOtpParams {
 export interface NotificationResult {
   success: boolean;
   isReal: boolean;
-  provider: 'GMAIL_SMTP' | 'FAST2SMS' | 'TWILIO' | 'SIMULATION';
+  provider: 'RESEND' | 'BREVO' | 'GMAIL_RELAY' | 'GMAIL_SMTP' | 'FAST2SMS' | 'TWILIO' | 'SIMULATION';
   message: string;
+  simulationCode?: string;
   error?: string;
 }
 
 /**
- * Dispatches a real, branded HTML OTP email via Gmail SMTP (nodemailer)
- * If Gmail credentials are not present in .env.local, gracefully returns simulation status.
+ * Dispatches real HTML OTP email.
+ * Supports:
+ * 1. Resend API (HTTPS Port 443 - Recommended for Render Free Tier)
+ * 2. Brevo API (HTTPS Port 443 - 300 free emails/day)
+ * 3. Google Apps Script Webhook (HTTPS Port 443 - Free Gmail relay)
+ * 4. Gmail SMTP via Nodemailer (Port 465 SSL, with auto-fallback on cloud port block)
  */
 export async function sendEmailOtp({
   toEmail,
@@ -34,38 +39,11 @@ export async function sendEmailOtp({
 }: EmailOtpParams): Promise<NotificationResult> {
   const gmailUser = process.env.GMAIL_USER;
   const gmailPassword = process.env.GMAIL_APP_PASSWORD;
+  const resendKey = process.env.RESEND_API_KEY;
+  const brevoKey = process.env.BREVO_API_KEY;
+  const gmailRelayUrl = process.env.GMAIL_RELAY_URL || process.env.GMAIL_WEBHOOK_URL;
 
-  // If no credentials configured yet, gracefully return simulation mode
-  if (!gmailUser || !gmailPassword) {
-    console.log(`[EMAIL OTP SIMULATION] To: ${toEmail} | Code: ${otp} | Alumnus: ${recipientName} (${usn})`);
-    return {
-      success: true,
-      isReal: false,
-      provider: 'SIMULATION',
-      message: 'Running in simulation mode. Configure GMAIL_USER and GMAIL_APP_PASSWORD in .env.local for real email delivery.',
-    };
-  }
-
-  try {
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: Number(process.env.SMTP_PORT) || 465,
-      secure: process.env.SMTP_SECURE ? process.env.SMTP_SECURE === 'true' : true,
-      auth: {
-        user: gmailUser,
-        pass: gmailPassword.replace(/\s+/g, ''), // Strip any spaces from the 16-letter App Password
-      },
-      tls: {
-        rejectUnauthorized: false,
-      },
-      // Force IPv4 to prevent cloud container (Render/AWS) IPv6 DNS timeouts
-      family: 4,
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
-    } as any);
-
-    const htmlContent = `
+  const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -116,33 +94,174 @@ export async function sendEmailOtp({
   </div>
 </body>
 </html>
-    `;
+  `;
 
-    await transporter.sendMail({
-      from: `"MILAN 2026" <${gmailUser}>`,
-      to: toEmail,
-      subject: `${otp} is your MILAN 2026 Verification Code (USN: ${usn})`,
-      text: `Hello ${recipientName},\n\nYour 6-digit verification code for MILAN 2026 entry pass (${usn}) is: ${otp}\n\nThis code expires in 10 minutes. Do not share it with anyone.`,
-      html: htmlContent,
-    });
+  // METHOD 1: Resend HTTP REST API (Uses Port 443 HTTPS - NEVER blocked by Render)
+  if (resendKey && resendKey.trim()) {
+    try {
+      const fromEmail = process.env.RESEND_FROM || 'MILAN 2026 <onboarding@resend.dev>';
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${resendKey.trim()}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: fromEmail,
+          to: [toEmail],
+          subject: `${otp} is your MILAN 2026 Verification Code (USN: ${usn})`,
+          html: htmlContent,
+        }),
+      });
 
-    console.log(`[REAL EMAIL SENT] Successfully delivered OTP to ${toEmail} for ${usn}`);
-    return {
-      success: true,
-      isReal: true,
-      provider: 'GMAIL_SMTP',
-      message: `Real verification email delivered to ${toEmail}!`,
-    };
-  } catch (error: any) {
-    console.error('[GMAIL SMTP ERROR]', error);
-    return {
-      success: false,
-      isReal: false,
-      provider: 'GMAIL_SMTP',
-      message: 'Failed to deliver real email via Gmail. Check your App Password credentials in .env.local.',
-      error: error.message,
-    };
+      const resData = await res.json();
+      if (res.ok && resData.id) {
+        console.log(`[RESEND EMAIL SENT] ID: ${resData.id} to ${toEmail}`);
+        return {
+          success: true,
+          isReal: true,
+          provider: 'RESEND',
+          message: `Real verification email delivered to ${toEmail} via Resend Cloud API!`,
+        };
+      } else {
+        console.error('[RESEND API ERROR]', resData);
+      }
+    } catch (err: any) {
+      console.error('[RESEND FETCH EXCEPTION]', err.message);
+    }
   }
+
+  // METHOD 2: Brevo HTTP REST API (Uses Port 443 HTTPS - Free 300 emails/day, NEVER blocked by Render)
+  if (brevoKey && brevoKey.trim()) {
+    try {
+      const senderEmail = process.env.BREVO_SENDER || gmailUser || 'telegramuserkishan@gmail.com';
+      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': brevoKey.trim(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sender: { name: 'MILAN 2026', email: senderEmail },
+          to: [{ email: toEmail, name: recipientName }],
+          subject: `${otp} is your MILAN 2026 Verification Code (USN: ${usn})`,
+          htmlContent: htmlContent,
+        }),
+      });
+
+      const resData = await res.json();
+      if (res.ok && (resData.messageId || resData.id)) {
+        console.log(`[BREVO EMAIL SENT] to ${toEmail}`);
+        return {
+          success: true,
+          isReal: true,
+          provider: 'BREVO',
+          message: `Real verification email delivered to ${toEmail} via Brevo Cloud API!`,
+        };
+      } else {
+        console.error('[BREVO API ERROR]', resData);
+      }
+    } catch (err: any) {
+      console.error('[BREVO FETCH EXCEPTION]', err.message);
+    }
+  }
+
+  // METHOD 3: Google Apps Script Webhook (Port 443 HTTPS - Free direct Gmail Relay)
+  if (gmailRelayUrl && gmailRelayUrl.trim()) {
+    try {
+      const res = await fetch(gmailRelayUrl.trim(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: toEmail,
+          subject: `${otp} is your MILAN 2026 Verification Code (USN: ${usn})`,
+          html: htmlContent,
+          text: `Your MILAN 2026 verification code is: ${otp}`,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        return {
+          success: true,
+          isReal: true,
+          provider: 'GMAIL_RELAY',
+          message: `Real verification email delivered to ${toEmail} via Gmail Relay!`,
+        };
+      }
+    } catch (err: any) {
+      console.error('[GMAIL RELAY EXCEPTION]', err.message);
+    }
+  }
+
+  // METHOD 4: Direct Gmail SMTP via Nodemailer
+  // If Gmail credentials exist, attempt SMTP connection
+  if (gmailUser && gmailPassword) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port: Number(process.env.SMTP_PORT) || 465,
+        secure: process.env.SMTP_SECURE ? process.env.SMTP_SECURE === 'true' : true,
+        auth: {
+          user: gmailUser,
+          pass: gmailPassword.replace(/\s+/g, ''),
+        },
+        tls: { rejectUnauthorized: false },
+        family: 4,
+        connectionTimeout: 3500, // 3.5s timeout: fails fast if port is blocked by Render
+        greetingTimeout: 3500,
+        socketTimeout: 5000,
+      } as any);
+
+      await transporter.sendMail({
+        from: `"MILAN 2026" <${gmailUser}>`,
+        to: toEmail,
+        subject: `${otp} is your MILAN 2026 Verification Code (USN: ${usn})`,
+        text: `Hello ${recipientName},\n\nYour 6-digit verification code for MILAN 2026 entry pass (${usn}) is: ${otp}\n\nThis code expires in 10 minutes. Do not share it with anyone.`,
+        html: htmlContent,
+      });
+
+      console.log(`[REAL EMAIL SENT] Successfully delivered OTP to ${toEmail} for ${usn}`);
+      return {
+        success: true,
+        isReal: true,
+        provider: 'GMAIL_SMTP',
+        message: `Real verification email delivered to ${toEmail}!`,
+      };
+    } catch (error: any) {
+      console.error('[GMAIL SMTP ERROR]', error.message);
+
+      // Check if Render Free Tier port block caused connection timeout
+      const isPortBlocked = /timeout|econnrefused|enetunreach|etimedout/i.test(error.message || '');
+      if (isPortBlocked) {
+        console.warn(`[RENDER FREE TIER SMTP BLOCK DETECTED] Render drops outbound SMTP ports (465/587). Falling back to simulation OTP code.`);
+        return {
+          success: true,
+          isReal: false,
+          provider: 'SIMULATION',
+          simulationCode: otp,
+          message: `Render Free Tier blocks outbound SMTP traffic (ports 465/587). Verification code provided for instant testing: ${otp}`,
+        };
+      }
+
+      return {
+        success: false,
+        isReal: false,
+        provider: 'GMAIL_SMTP',
+        message: 'Failed to deliver real email via Gmail. Check your credentials or use an HTTPS API provider.',
+        error: error.message,
+      };
+    }
+  }
+
+  // Fallback: Simulation Mode when no credentials configured
+  console.log(`[EMAIL OTP SIMULATION] To: ${toEmail} | Code: ${otp} | Alumnus: ${recipientName} (${usn})`);
+  return {
+    success: true,
+    isReal: false,
+    provider: 'SIMULATION',
+    simulationCode: otp,
+    message: 'Running in simulation mode. Configure RESEND_API_KEY or GMAIL credentials in Render environment.',
+  };
 }
 
 /**
