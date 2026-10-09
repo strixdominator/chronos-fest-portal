@@ -2,11 +2,15 @@ import fs from 'fs';
 import path from 'path';
 import * as XLSX from 'xlsx';
 import { AlumniRecord, OtpRecord } from './types';
+import { safeReadJson, safeWriteJson } from './storage';
+
+declare global {
+  var __ALUMNI_MASTER__: AlumniRecord[] | undefined;
+  var __ACTIVE_OTPS__: Record<string, OtpRecord> | undefined;
+  var __VERIFIED_SESSIONS__: Record<string, any> | undefined;
+}
 
 const DATA_DIR = path.join(process.cwd(), 'data');
-const ALUMNI_FILE = path.join(DATA_DIR, 'alumni_master.json');
-const OTPS_FILE = path.join(DATA_DIR, 'active_otps.json');
-const SESSIONS_FILE = path.join(DATA_DIR, 'verified_sessions.json');
 
 const INITIAL_ALUMNI_MASTER: AlumniRecord[] = [
   {
@@ -117,22 +121,17 @@ export function maskPhone(phone?: string): string {
 }
 
 export function getAlumniMaster(): AlumniRecord[] {
-  ensureDir();
-  if (!fs.existsSync(ALUMNI_FILE)) {
-    fs.writeFileSync(ALUMNI_FILE, JSON.stringify(INITIAL_ALUMNI_MASTER, null, 2));
-    return INITIAL_ALUMNI_MASTER;
+  if (globalThis.__ALUMNI_MASTER__ && globalThis.__ALUMNI_MASTER__.length > 0) {
+    return globalThis.__ALUMNI_MASTER__;
   }
-  try {
-    const raw = fs.readFileSync(ALUMNI_FILE, 'utf-8');
-    return JSON.parse(raw);
-  } catch {
-    return INITIAL_ALUMNI_MASTER;
-  }
+  const loaded = safeReadJson<AlumniRecord[]>('alumni_master.json', INITIAL_ALUMNI_MASTER);
+  globalThis.__ALUMNI_MASTER__ = loaded;
+  return loaded;
 }
 
 export function saveAlumniMaster(list: AlumniRecord[]): void {
-  ensureDir();
-  fs.writeFileSync(ALUMNI_FILE, JSON.stringify(list, null, 2));
+  globalThis.__ALUMNI_MASTER__ = list;
+  safeWriteJson('alumni_master.json', list);
 }
 
 export function findAlumnusByUsn(usn: string): AlumniRecord | undefined {
@@ -437,15 +436,7 @@ export function createOtp(
   const target = customTarget || (channel === 'EMAIL' ? alumnus?.officialEmail : alumnus?.phone);
   if (!target) return null;
 
-  ensureDir();
-  let otps: Record<string, OtpRecord> = {};
-  if (fs.existsSync(OTPS_FILE)) {
-    try {
-      otps = JSON.parse(fs.readFileSync(OTPS_FILE, 'utf-8'));
-    } catch {
-      otps = {};
-    }
-  }
+  let otps: Record<string, OtpRecord> = globalThis.__ACTIVE_OTPS__ || safeReadJson<Record<string, OtpRecord>>('active_otps.json', {});
 
   // Generate 6-digit OTP
   const code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -459,7 +450,8 @@ export function createOtp(
     expiresAt: Date.now() + 10 * 60 * 1000, // 10 minutes
   };
 
-  fs.writeFileSync(OTPS_FILE, JSON.stringify(otps, null, 2));
+  globalThis.__ACTIVE_OTPS__ = otps;
+  safeWriteJson('active_otps.json', otps);
 
   return { otp: code, target, maskedTarget };
 }
@@ -470,17 +462,7 @@ export function verifyOtp(usn: string, inputCode: string): {
   target?: string; 
   channel?: 'EMAIL' | 'PHONE' 
 } {
-  ensureDir();
-  if (!fs.existsSync(OTPS_FILE)) {
-    return { valid: false, error: 'No OTP requested. Please request an OTP first.' };
-  }
-
-  let otps: Record<string, OtpRecord> = {};
-  try {
-    otps = JSON.parse(fs.readFileSync(OTPS_FILE, 'utf-8'));
-  } catch {
-    return { valid: false, error: 'OTP record corrupted. Please request a new OTP.' };
-  }
+  const otps: Record<string, OtpRecord> = globalThis.__ACTIVE_OTPS__ || safeReadJson<Record<string, OtpRecord>>('active_otps.json', {});
 
   const record = otps[usn.trim().toUpperCase()];
   if (!record) {
@@ -489,7 +471,8 @@ export function verifyOtp(usn: string, inputCode: string): {
 
   if (Date.now() > record.expiresAt) {
     delete otps[usn.trim().toUpperCase()];
-    fs.writeFileSync(OTPS_FILE, JSON.stringify(otps, null, 2));
+    globalThis.__ACTIVE_OTPS__ = otps;
+    safeWriteJson('active_otps.json', otps);
     return { valid: false, error: 'OTP has expired (valid for 10 minutes). Please request a new one.' };
   }
 
@@ -502,21 +485,15 @@ export function verifyOtp(usn: string, inputCode: string): {
 
   // Consume OTP
   delete otps[usn.trim().toUpperCase()];
-  fs.writeFileSync(OTPS_FILE, JSON.stringify(otps, null, 2));
+  globalThis.__ACTIVE_OTPS__ = otps;
+  safeWriteJson('active_otps.json', otps);
 
   return { valid: true, target, channel };
 }
 
 export function createVerifiedSession(usn: string, contactInfo?: { email?: string; phone?: string }): string {
-  ensureDir();
-  let sessions: Record<string, { usn: string; email?: string; phone?: string; expiresAt: number }> = {};
-  if (fs.existsSync(SESSIONS_FILE)) {
-    try {
-      sessions = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf-8'));
-    } catch {
-      sessions = {};
-    }
-  }
+  let sessions: Record<string, { usn: string; email?: string; phone?: string; expiresAt: number }> =
+    globalThis.__VERIFIED_SESSIONS__ || safeReadJson<Record<string, any>>('verified_sessions.json', {});
 
   const token = `VTOK_${Math.random().toString(36).substring(2, 8).toUpperCase()}_${Date.now()}`;
   sessions[token] = {
@@ -526,22 +503,18 @@ export function createVerifiedSession(usn: string, contactInfo?: { email?: strin
     expiresAt: Date.now() + 20 * 60 * 1000, // 20 minutes to complete registration
   };
 
-  fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 2));
+  globalThis.__VERIFIED_SESSIONS__ = sessions;
+  safeWriteJson('verified_sessions.json', sessions);
   return token;
 }
 
 export function getSessionData(token: string): { usn: string; email?: string; phone?: string } | null {
-  ensureDir();
-  if (!fs.existsSync(SESSIONS_FILE)) return null;
-  try {
-    const sessions = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf-8'));
-    const record = sessions[token];
-    if (!record) return null;
-    if (Date.now() > record.expiresAt) return null;
-    return record;
-  } catch {
-    return null;
-  }
+  const sessions: Record<string, any> =
+    globalThis.__VERIFIED_SESSIONS__ || safeReadJson<Record<string, any>>('verified_sessions.json', {});
+  const record = sessions[token];
+  if (!record) return null;
+  if (Date.now() > record.expiresAt) return null;
+  return record;
 }
 
 export function verifySessionToken(usn: string, token: string): boolean {
@@ -551,38 +524,27 @@ export function verifySessionToken(usn: string, token: string): boolean {
 }
 
 export function clearAlumniSession(usn?: string): void {
-  ensureDir();
-  if (fs.existsSync(OTPS_FILE)) {
-    try {
-      if (usn) {
-        const otps = JSON.parse(fs.readFileSync(OTPS_FILE, 'utf-8'));
-        delete otps[usn.trim().toUpperCase()];
-        fs.writeFileSync(OTPS_FILE, JSON.stringify(otps, null, 2));
-      } else {
-        fs.writeFileSync(OTPS_FILE, JSON.stringify({}, null, 2));
-      }
-    } catch {
-      // ignore
-    }
+  let otps: Record<string, OtpRecord> = globalThis.__ACTIVE_OTPS__ || safeReadJson<Record<string, OtpRecord>>('active_otps.json', {});
+  if (usn) {
+    delete otps[usn.trim().toUpperCase()];
+  } else {
+    otps = {};
   }
+  globalThis.__ACTIVE_OTPS__ = otps;
+  safeWriteJson('active_otps.json', otps);
 
-  if (fs.existsSync(SESSIONS_FILE)) {
-    try {
-      if (usn) {
-        const sessions = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf-8'));
-        const cleanedUsn = usn.trim().toUpperCase();
-        for (const token of Object.keys(sessions)) {
-          if (sessions[token]?.usn?.toUpperCase() === cleanedUsn) {
-            delete sessions[token];
-          }
-        }
-        fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 2));
-      } else {
-        fs.writeFileSync(SESSIONS_FILE, JSON.stringify({}, null, 2));
+  let sessions: Record<string, any> = globalThis.__VERIFIED_SESSIONS__ || safeReadJson<Record<string, any>>('verified_sessions.json', {});
+  if (usn) {
+    const cleanedUsn = usn.trim().toUpperCase();
+    for (const token of Object.keys(sessions)) {
+      if (sessions[token]?.usn?.toUpperCase() === cleanedUsn) {
+        delete sessions[token];
       }
-    } catch {
-      // ignore
     }
+  } else {
+    sessions = {};
   }
+  globalThis.__VERIFIED_SESSIONS__ = sessions;
+  safeWriteJson('verified_sessions.json', sessions);
 }
 

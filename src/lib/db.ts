@@ -1,10 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 import { Attendee, EventSettings, AttendeeStatus } from './types';
+import { safeReadJson, safeWriteJson } from './storage';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const ATTENDEES_FILE = path.join(DATA_DIR, 'attendees.json');
-const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
+declare global {
+  var __ATTENDEES__: Attendee[] | undefined;
+  var __EVENT_SETTINGS__: EventSettings | undefined;
+}
 
 const DEFAULT_SETTINGS: EventSettings = {
   eventName: "CHRONOS FEST 2026",
@@ -20,51 +22,35 @@ const DEFAULT_SETTINGS: EventSettings = {
 
 const INITIAL_ATTENDEES: Attendee[] = [];
 
-function ensureDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-}
-
 export function getSettings(): EventSettings {
-  ensureDir();
-  if (!fs.existsSync(SETTINGS_FILE)) {
-    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(DEFAULT_SETTINGS, null, 2));
-    return DEFAULT_SETTINGS;
+  if (globalThis.__EVENT_SETTINGS__) {
+    return globalThis.__EVENT_SETTINGS__;
   }
-  try {
-    const raw = fs.readFileSync(SETTINGS_FILE, 'utf-8');
-    return JSON.parse(raw);
-  } catch {
-    return DEFAULT_SETTINGS;
-  }
+  const loaded = safeReadJson<EventSettings>('settings.json', DEFAULT_SETTINGS);
+  globalThis.__EVENT_SETTINGS__ = loaded;
+  return loaded;
 }
 
 export function updateSettings(newSettings: Partial<EventSettings>): EventSettings {
-  ensureDir();
   const current = getSettings();
   const updated = { ...current, ...newSettings };
-  fs.writeFileSync(SETTINGS_FILE, JSON.stringify(updated, null, 2));
+  globalThis.__EVENT_SETTINGS__ = updated;
+  safeWriteJson('settings.json', updated);
   return updated;
 }
 
 export function getAttendees(): Attendee[] {
-  ensureDir();
-  if (!fs.existsSync(ATTENDEES_FILE)) {
-    fs.writeFileSync(ATTENDEES_FILE, JSON.stringify(INITIAL_ATTENDEES, null, 2));
-    return INITIAL_ATTENDEES;
+  if (globalThis.__ATTENDEES__) {
+    return globalThis.__ATTENDEES__;
   }
-  try {
-    const raw = fs.readFileSync(ATTENDEES_FILE, 'utf-8');
-    return JSON.parse(raw);
-  } catch {
-    return INITIAL_ATTENDEES;
-  }
+  const loaded = safeReadJson<Attendee[]>('attendees.json', INITIAL_ATTENDEES);
+  globalThis.__ATTENDEES__ = loaded;
+  return loaded;
 }
 
 export function saveAttendees(attendees: Attendee[]): void {
-  ensureDir();
-  fs.writeFileSync(ATTENDEES_FILE, JSON.stringify(attendees, null, 2));
+  globalThis.__ATTENDEES__ = attendees;
+  safeWriteJson('attendees.json', attendees);
 }
 
 export function getAttendeeById(id: string): Attendee | undefined {
