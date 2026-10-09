@@ -1,86 +1,117 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as XLSX from 'xlsx';
-import { getAlumniMaster, importAlumniRecords } from '@/lib/alumni';
+import { 
+  getAlumniMaster, 
+  importAlumniRecords, 
+  parseWorkbookBuffer, 
+  syncDataFolderWorkbooks,
+  normalizeRecordFromObject 
+} from '@/lib/alumni';
 import { AlumniRecord } from '@/lib/types';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET() {
   try {
     const list = getAlumniMaster();
-    return NextResponse.json({ success: true, count: list.length, alumni: list });
+    
+    // Group counts by department
+    const departmentCounts: Record<string, number> = {};
+    for (const r of list) {
+      departmentCounts[r.department] = (departmentCounts[r.department] || 0) + 1;
+    }
+
+    return NextResponse.json({ 
+      success: true, 
+      count: list.length, 
+      alumni: list,
+      departmentCounts 
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+      }
+    });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
-function normalizeRecord(row: Record<string, any>): AlumniRecord | null {
-  const keys = Object.keys(row);
-  const findVal = (patterns: string[]) => {
-    const key = keys.find(k => patterns.some(p => k.toLowerCase().replace(/[^a-z0-9]/g, '').includes(p)));
-    return key ? String(row[key] || '').trim() : '';
-  };
-
-  const usn = findVal(['usn', 'roll', 'seat', 'regno', 'id', 'serial']);
-  if (!usn) return null;
-
-  const fullName = findVal(['name', 'studentname', 'fullname', 'candidate']) || 'Graduate';
-  const officialEmail = findVal(['email', 'mail', 'emailid']);
-  const phone = findVal(['phone', 'mobile', 'contact', 'cell']);
-  const department = findVal(['dept', 'department', 'branch', 'course']) || 'Engineering';
-  const batchYear = findVal(['batch', 'year', 'gradyear', 'passout', 'passing']) || 'Alumni';
-
-  return {
-    usn: usn.toUpperCase(),
-    fullName,
-    officialEmail: officialEmail.toLowerCase(),
-    phone,
-    department,
-    batchYear,
-  };
-}
-
 export async function POST(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const action = searchParams.get('action');
+
+    // Case 0: Sync all Excel/CSV files in data/ directory
+    if (action === 'syncDataDir') {
+      const syncResult = syncDataFolderWorkbooks();
+      return NextResponse.json({
+        success: true,
+        message: `Synced ${syncResult.totalFiles} spreadsheet file(s) in "data/" directory (${syncResult.recordsParsed} records parsed).`,
+        ...syncResult,
+      });
+    }
+
     const contentType = request.headers.get('content-type') || '';
 
-    // Case 1: Excel or CSV file upload via FormData
+    // Case 1: Multi-file / single-file Excel or CSV upload via FormData
     if (contentType.includes('multipart/form-data')) {
       const formData = await request.formData();
-      const file = formData.get('file') as File | null;
+      const files = formData.getAll('files') as File[];
+      const singleFile = formData.get('file') as File | null;
+      const fileList = files.length > 0 ? files : (singleFile ? [singleFile] : []);
 
-      if (!file) {
-        return NextResponse.json({ success: false, error: 'No file provided in form-data' }, { status: 400 });
+      if (fileList.length === 0) {
+        return NextResponse.json({ success: false, error: 'No files provided in form-data' }, { status: 400 });
       }
 
-      const bytes = await file.arrayBuffer();
-      const workbook = XLSX.read(Buffer.from(bytes), { type: 'buffer' });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const rawRows: Record<string, any>[] = XLSX.utils.sheet_to_json(sheet);
+      let allParsed: AlumniRecord[] = [];
+      const fileSummaries: string[] = [];
 
-      const parsedRecords: AlumniRecord[] = [];
-      for (const row of rawRows) {
-        const item = normalizeRecord(row);
-        if (item) parsedRecords.push(item);
+      for (const file of fileList) {
+        const bytes = await file.arrayBuffer();
+        const records = parseWorkbookBuffer(Buffer.from(bytes), file.name);
+        if (records.length > 0) {
+          allParsed = allParsed.concat(records);
+          fileSummaries.push(`${file.name} (${records.length} records)`);
+        }
       }
 
-      if (parsedRecords.length === 0) {
+      if (allParsed.length === 0) {
         return NextResponse.json({
           success: false,
-          error: 'Could not detect any USN or Name columns in the provided sheet. Please ensure columns include USN and Name.'
+          error: 'Could not detect any USN or Name columns in the provided files. Please ensure the sheets contain USN and Name.'
         }, { status: 400 });
       }
 
-      const result = importAlumniRecords(parsedRecords);
+      const deptBreakdown: Record<string, number> = {};
+      for (const r of allParsed) {
+        deptBreakdown[r.department] = (deptBreakdown[r.department] || 0) + 1;
+      }
+
+      const result = importAlumniRecords(allParsed);
       return NextResponse.json({
         success: true,
-        message: `Successfully imported ${parsedRecords.length} records from Excel sheet "${file.name}". (${result.added} added, ${result.updated} updated).`,
+        message: `Successfully imported ${allParsed.length} records from ${fileList.length} file(s)! (${result.added} added, ${result.updated} updated).`,
+        filesProcessed: fileSummaries,
+        departmentBreakdown: deptBreakdown,
         ...result,
       });
     }
 
     // Case 2: JSON payload
-    const body = await request.json();
-    const { records } = body;
+    const body = await request.json().catch(() => ({}));
+
+    if (body.action === 'syncDataDir') {
+      const syncResult = syncDataFolderWorkbooks();
+      return NextResponse.json({
+        success: true,
+        message: `Synced ${syncResult.totalFiles} spreadsheet file(s) in "data/" directory (${syncResult.recordsParsed} records parsed).`,
+        ...syncResult,
+      });
+    }
+
+    const { records, defaultDept, defaultBatch } = body;
 
     if (!Array.isArray(records)) {
       return NextResponse.json({ success: false, error: 'Expected records array' }, { status: 400 });
@@ -88,18 +119,8 @@ export async function POST(request: NextRequest) {
 
     const normalizedList: AlumniRecord[] = [];
     for (const r of records) {
-      const norm = normalizeRecord(r);
+      const norm = normalizeRecordFromObject(r, defaultDept || 'Engineering', defaultBatch || 'Alumni');
       if (norm) normalizedList.push(norm);
-      else if (r.usn) {
-        normalizedList.push({
-          usn: String(r.usn).trim().toUpperCase(),
-          fullName: String(r.fullName || r.name || 'Graduate').trim(),
-          officialEmail: String(r.officialEmail || r.email || '').trim().toLowerCase(),
-          phone: String(r.phone || r.mobile || '').trim(),
-          department: String(r.department || r.branch || 'Engineering').trim(),
-          batchYear: String(r.batchYear || r.batch || 'Alumni').trim(),
-        });
-      }
     }
 
     const result = importAlumniRecords(normalizedList);

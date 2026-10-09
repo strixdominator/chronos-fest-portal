@@ -78,6 +78,9 @@ export default function AdminPage() {
   // Alumni Master state
   const [alumniList, setAlumniList] = useState<AlumniRecord[]>([]);
   const [alumniSearch, setAlumniSearch] = useState('');
+  const [selectedDeptFilter, setSelectedDeptFilter] = useState<string>('ALL');
+  const [departmentCounts, setDepartmentCounts] = useState<Record<string, number>>({});
+  const [syncingDataFolder, setSyncingDataFolder] = useState<boolean>(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [csvText, setCsvText] = useState('');
   const [importStatus, setImportStatus] = useState<string | null>(null);
@@ -135,10 +138,18 @@ export default function AdminPage() {
 
   const fetchAlumniMaster = async () => {
     try {
-      const res = await fetch('/api/alumni/master');
+      const res = await fetch(`/api/alumni/master?_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        },
+      });
       const data = await res.json();
       if (data.success) {
-        setAlumniList(data.alumni);
+        setAlumniList(data.alumni || []);
+        if (data.departmentCounts) {
+          setDepartmentCounts(data.departmentCounts);
+        }
       }
     } catch (e) {
       console.error(e);
@@ -307,16 +318,18 @@ export default function AdminPage() {
   };
 
 
-  // Import Excel (.xlsx, .xls) or CSV file
+  // Import Multiple Excel (.xlsx, .xls) or CSV files
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
     const formData = new FormData();
-    formData.append('file', file);
+    for (let i = 0; i < files.length; i++) {
+      formData.append('files', files[i]);
+    }
 
     try {
-      setImportStatus(`Reading and normalizing "${file.name}"...`);
+      setImportStatus(`Reading and normalizing ${files.length} spreadsheet file(s)...`);
       const res = await fetch('/api/alumni/master', {
         method: 'POST',
         body: formData,
@@ -328,14 +341,36 @@ export default function AdminPage() {
         setTimeout(() => {
           setShowImportModal(false);
           setImportStatus(null);
-        }, 1500);
+        }, 2000);
       } else {
-        alert(data.error || 'Failed to import Excel file.');
+        alert(data.error || 'Failed to import Excel files.');
         setImportStatus(null);
       }
     } catch (err: any) {
       alert('Upload error: ' + err.message);
       setImportStatus(null);
+    }
+  };
+
+  // Sync all Excel/CSV files in data/ directory
+  const handleSyncDataFolder = async () => {
+    setSyncingDataFolder(true);
+    try {
+      const res = await fetch('/api/alumni/master?action=syncDataDir', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`Sync Complete!\n\n${data.message}\nTotal Master Alumni Records on file: ${data.totalMaster}`);
+        fetchAlumniMaster();
+      } else {
+        alert(data.error || 'Failed to sync data folder.');
+      }
+    } catch (err: any) {
+      alert('Sync error: ' + err.message);
+    } finally {
+      setSyncingDataFolder(false);
     }
   };
 
@@ -408,6 +443,24 @@ export default function AdminPage() {
   };
 
   const filteredAlumni = alumniList.filter(a => {
+    if (selectedDeptFilter !== 'ALL') {
+      const d = (a.department || '').toLowerCase();
+      const target = selectedDeptFilter.toLowerCase();
+      if (d !== target) {
+        if (selectedDeptFilter === 'CSE' && !d.includes('cse') && !d.includes('computer')) return false;
+        if (selectedDeptFilter === 'ISE' && !d.includes('ise') && !d.includes('info') && d !== 'is') return false;
+        if (selectedDeptFilter === 'AI & DS' && !d.includes('data') && !d.includes('aids') && !d.includes('ai&ds') && !d.includes('ai & ds') && d !== 'ad') return false;
+        if (selectedDeptFilter === 'AI & ML' && !d.includes('machine') && !d.includes('aiml') && !d.includes('ai&ml') && !d.includes('ai & ml') && d !== 'am') return false;
+        if (selectedDeptFilter === 'ECE' && !d.includes('ece') && !d.includes('electron') && d !== 'ec') return false;
+        if (selectedDeptFilter === 'Mechanical' && !d.includes('mech') && d !== 'me') return false;
+        if (selectedDeptFilter === 'Civil' && !d.includes('civil') && d !== 'cv') return false;
+        if (selectedDeptFilter === 'EEE' && !d.includes('eee') && !d.includes('electrical') && d !== 'ee') return false;
+        if (selectedDeptFilter === 'TCE' && !d.includes('tce') && !d.includes('telecom') && d !== 'te' && d !== 'tc') return false;
+        if (selectedDeptFilter === 'MBA' && !d.includes('mba') && !d.includes('business')) return false;
+        if (selectedDeptFilter === 'M.Tech' && !d.includes('mtech') && !d.includes('m.tech') && d !== 'scs') return false;
+      }
+    }
+
     if (!alumniSearch.trim()) return true;
     const q = alumniSearch.toLowerCase();
     return (
@@ -1024,42 +1077,125 @@ export default function AdminPage() {
         {/* SECTION 2: ALUMNI MASTER DIRECTORY */}
         {activeSection === 'MASTER_DIRECTORY' && (
           <div className="neo-box" style={{ borderTop: 'none', background: '#ffffff', padding: '24px' }}>
+            {/* Top controls strip */}
             <div style={{
               display: 'flex',
               flexWrap: 'wrap',
               justifyContent: 'space-between',
               alignItems: 'center',
               gap: 14,
-              marginBottom: 20,
-              paddingBottom: 20,
+              marginBottom: 16,
+              paddingBottom: 16,
               borderBottom: '1px solid var(--border-black)'
             }}>
               <div>
                 <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 900 }}>
-                  COLLEGE ALUMNI MASTER DIRECTORY ({alumniList.length} RECORDS)
+                  COLLEGE ALUMNI MASTER DIRECTORY ({alumniList.length} TOTAL RECORDS)
                 </h3>
                 <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: 2 }}>
-                  Pre-approved graduate database. Only USNs listed here can claim a digital pass or request OTP.
+                  Pre-approved graduate database across all college departments. Only USNs listed here can claim a pass or request OTP.
                 </p>
               </div>
 
-              <div style={{ display: 'flex', gap: 10 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
                 <input
                   type="text"
-                  placeholder="SEARCH MASTER USN OR NAME..."
+                  placeholder="SEARCH USN, NAME, EMAIL..."
                   className="neo-input"
-                  style={{ width: 260, padding: '10px 14px', fontSize: '0.82rem' }}
+                  style={{ width: 220, padding: '10px 14px', fontSize: '0.82rem' }}
                   value={alumniSearch}
                   onChange={e => setAlumniSearch(e.target.value)}
                 />
                 <button
+                  onClick={handleSyncDataFolder}
+                  disabled={syncingDataFolder}
+                  className="btn-neo-outline"
+                  style={{ fontSize: '0.78rem', padding: '10px 16px', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                  title="Scan all .xlsx and .csv files in data/ directory and sync into database"
+                >
+                  <RefreshCw size={13} className={syncingDataFolder ? 'animate-spin' : ''} />
+                  {syncingDataFolder ? 'SYNCING...' : 'SYNC "DATA/" FOLDER ↗'}
+                </button>
+                <button
                   onClick={() => setShowImportModal(true)}
                   className="btn-neo-black"
-                  style={{ fontSize: '0.78rem', padding: '10px 18px', whiteSpace: 'nowrap' }}
+                  style={{ fontSize: '0.78rem', padding: '10px 18px', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 6 }}
                 >
-                  IMPORT EXCEL / CSV ↗
+                  <Upload size={13} />
+                  IMPORT FILES ↗
                 </button>
               </div>
+            </div>
+
+            {/* Department Filter Tabs */}
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 6,
+              marginBottom: 20,
+              paddingBottom: 16,
+              borderBottom: '1px dashed var(--border-black)'
+            }}>
+              {[
+                { id: 'ALL', label: 'ALL DEPARTMENTS' },
+                { id: 'CSE', label: 'CSE' },
+                { id: 'ISE', label: 'ISE' },
+                { id: 'AI & DS', label: 'AI & DS' },
+                { id: 'AI & ML', label: 'AI & ML' },
+                { id: 'ECE', label: 'ECE' },
+                { id: 'Mechanical', label: 'MECHANICAL' },
+                { id: 'Civil', label: 'CIVIL' },
+                { id: 'EEE', label: 'EEE' },
+                { id: 'TCE', label: 'TCE' },
+                { id: 'MBA', label: 'MBA' },
+                { id: 'M.Tech', label: 'M.TECH' },
+              ].map(dept => {
+                const count = dept.id === 'ALL'
+                  ? alumniList.length
+                  : (departmentCounts[dept.id] || alumniList.filter(a => {
+                      const d = (a.department || '').toLowerCase();
+                      const target = dept.id.toLowerCase();
+                      if (d === target) return true;
+                      if (dept.id === 'CSE') return d.includes('cse') || d.includes('computer');
+                      if (dept.id === 'ISE') return d.includes('ise') || d.includes('info') || d === 'is';
+                      if (dept.id === 'AI & DS') return d.includes('data') || d.includes('aids') || d.includes('ai&ds') || d.includes('ai & ds') || d === 'ad';
+                      if (dept.id === 'AI & ML') return d.includes('machine') || d.includes('aiml') || d.includes('ai&ml') || d.includes('ai & ml') || d === 'am';
+                      if (dept.id === 'ECE') return d.includes('ece') || d.includes('electron') || d === 'ec';
+                      if (dept.id === 'Mechanical') return d.includes('mech') || d === 'me';
+                      if (dept.id === 'Civil') return d.includes('civil') || d === 'cv';
+                      if (dept.id === 'EEE') return d.includes('eee') || d.includes('electrical') || d === 'ee';
+                      if (dept.id === 'TCE') return d.includes('tce') || d.includes('telecom') || d === 'te' || d === 'tc';
+                      if (dept.id === 'MBA') return d.includes('mba') || d.includes('business');
+                      if (dept.id === 'M.Tech') return d.includes('mtech') || d.includes('m.tech') || d === 'scs';
+                      return false;
+                    }).length);
+                const isActive = selectedDeptFilter === dept.id;
+                return (
+                  <button
+                    key={dept.id}
+                    onClick={() => setSelectedDeptFilter(dept.id)}
+                    className={isActive ? 'btn-neo-black' : 'btn-neo-outline'}
+                    style={{
+                      padding: '5px 10px',
+                      fontSize: '0.72rem',
+                      fontWeight: 800,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6
+                    }}
+                  >
+                    <span>{dept.label}</span>
+                    <span style={{
+                      fontSize: '0.64rem',
+                      background: isActive ? '#fff' : 'var(--bg-black)',
+                      color: isActive ? '#000' : '#fff',
+                      padding: '1px 5px',
+                    }}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
             <div style={{ overflowX: 'auto' }}>
@@ -1075,20 +1211,32 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredAlumni.map((alumnus, idx) => (
-                    <tr key={idx}>
-                      <td>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '0.88rem', background: 'var(--card-blue-1)', padding: '2px 8px', border: '1px solid var(--border-black)' }}>
-                          {alumnus.usn}
-                        </span>
+                  {filteredAlumni.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                        NO RECORDS FOUND FOR {selectedDeptFilter} DEPT. CLICK &quot;IMPORT FILES&quot; OR &quot;SYNC DATA FOLDER&quot; TO ADD EXCEL FILES.
                       </td>
-                      <td><strong>{alumnus.fullName}</strong></td>
-                      <td>{alumnus.department}</td>
-                      <td><span className="neo-badge neo-badge-approved">{alumnus.batchYear}</span></td>
-                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>{alumnus.officialEmail}</td>
-                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>{alumnus.phone}</td>
                     </tr>
-                  ))}
+                  ) : (
+                    filteredAlumni.map((alumnus, idx) => (
+                      <tr key={idx}>
+                        <td>
+                          <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '0.88rem', background: 'var(--card-blue-1)', padding: '2px 8px', border: '1px solid var(--border-black)' }}>
+                            {alumnus.usn}
+                          </span>
+                        </td>
+                        <td><strong>{alumnus.fullName}</strong></td>
+                        <td>
+                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 700, background: '#f1f5f9', padding: '2px 6px', border: '1px solid #cbd5e1' }}>
+                            {alumnus.department}
+                          </span>
+                        </td>
+                        <td><span className="neo-badge neo-badge-approved">{alumnus.batchYear}</span></td>
+                        <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>{alumnus.officialEmail || '—'}</td>
+                        <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>{alumnus.phone || '—'}</td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -1207,9 +1355,9 @@ export default function AdminPage() {
       {/* MODAL 1: IMPORT CSV / EXCEL */}
       {showImportModal && (
         <div className="neo-modal-backdrop" onClick={() => setShowImportModal(false)}>
-          <div className="neo-modal" onClick={e => e.stopPropagation()}>
+          <div className="neo-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 580 }}>
             <div className="neo-modal-header">
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 700 }}>IMPORT ALUMNI DATABASE</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 700 }}>IMPORT COLLEGE ALUMNI DATABASE</span>
               <button onClick={() => setShowImportModal(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
                 <X size={18} />
               </button>
@@ -1226,20 +1374,31 @@ export default function AdminPage() {
               }}>
                 <input
                   type="file"
+                  multiple
                   accept=".xlsx,.xls,.csv"
                   onChange={handleFileUpload}
                   style={{ display: 'none' }}
                   id="excel-file-input"
                 />
                 <label htmlFor="excel-file-input" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                  <Upload size={28} color="var(--accent-blue)" />
-                  <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.05rem', fontWeight: 800 }}>
-                    Click to Upload Excel / CSV (.xlsx, .xls, .csv)
+                  <Upload size={32} color="var(--accent-blue)" />
+                  <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 800 }}>
+                    Click to Select Files (.xlsx, .xls, .csv)
                   </span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                    Auto-maps USN, Name, Email, Phone, Department & Batch
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: 'var(--text-secondary)', lineHeight: 1.4, maxWidth: 440 }}>
+                    Select single or multiple department spreadsheets (e.g. <strong>ISE.xlsx</strong>, <strong>AIDS.xlsx</strong>, <strong>AIML.xlsx</strong>, <strong>ECE.xlsx</strong>, <strong>Mechanical.xlsx</strong>, <strong>Civil.xlsx</strong>, <strong>EEE.xlsx</strong>, <strong>TCE.xlsx</strong>, <strong>MBA.xlsx</strong>, <strong>MTech.xlsx</strong>).
+                  </span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--accent-blue)', fontWeight: 700, marginTop: 4 }}>
+                    ✓ Multi-sheet workbooks & batches are automatically parsed
                   </span>
                 </label>
+              </div>
+
+              <div style={{ padding: '12px 14px', background: 'var(--card-blue-1)', border: '1px solid var(--border-black)', marginBottom: 14 }}>
+                <div className="mono-label" style={{ fontSize: '0.65rem', marginBottom: 2 }}>PRO-TIP: LOCAL FOLDER SYNC</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: 'var(--text-main)', lineHeight: 1.4 }}>
+                  You can also directly copy/paste your department files into the project&apos;s <code>data/</code> folder and click <strong>&quot;SYNC DATA/ FOLDER&quot;</strong> in the directory header!
+                </div>
               </div>
 
               <div style={{ textAlign: 'center', margin: '14px 0', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
@@ -1247,16 +1406,16 @@ export default function AdminPage() {
               </div>
 
               <textarea
-                rows={6}
+                rows={5}
                 className="neo-input"
-                style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', resize: 'vertical' }}
-                placeholder={`1MS20CS099, John Doe, john.doe@gmail.com, +91 98765 11223, Computer Science, Batch of 2024`}
+                style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', resize: 'vertical' }}
+                placeholder={`1DB20IS045, John Doe, john.doe@gmail.com, 9876543210, ISE, Batch of 2024\n1DB21EC088, Jane Smith, jane@gmail.com, 9876511223, ECE, Batch of 2025`}
                 value={csvText}
                 onChange={e => setCsvText(e.target.value)}
               />
 
               {importStatus && (
-                <div style={{ color: '#0e8a5a', fontFamily: 'var(--font-mono)', fontSize: '0.82rem', marginTop: 10, fontWeight: 700 }}>
+                <div style={{ color: '#0e8a5a', fontFamily: 'var(--font-mono)', fontSize: '0.82rem', marginTop: 12, fontWeight: 700, padding: '8px 12px', background: '#ecfdf5', border: '1px solid #059669' }}>
                   {importStatus}
                 </div>
               )}

@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import * as XLSX from 'xlsx';
 import { AlumniRecord, OtpRecord } from './types';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
@@ -166,6 +167,194 @@ export function importAlumniRecords(newRecords: AlumniRecord[]): { added: number
   const result = Array.from(map.values());
   saveAlumniMaster(result);
   return { added, updated, total: result.length };
+}
+
+export function normalizeDepartmentName(raw?: string, fallback: string = 'Engineering'): string {
+  if (!raw) return fallback;
+  const nameOnly = raw.replace(/\.[a-zA-Z0-9]+$/, '').trim();
+  const s = nameOnly.toLowerCase();
+
+  if (s.includes('info') || s.includes('ise') || s === 'is') return 'ISE';
+  if (s.includes('data science') || s.includes('aids') || s.includes('ai&ds') || s.includes('ai & ds') || s === 'ad') return 'AI & DS';
+  if (s.includes('machine learning') || s.includes('aiml') || s.includes('ai&ml') || s.includes('ai & ml') || s === 'am') return 'AI & ML';
+  if (s.includes('electron') || s.includes('ece') || s === 'ec') return 'ECE';
+  if (s.includes('mech') || s === 'me') return 'Mechanical';
+  if (s.includes('civil') || s === 'cv') return 'Civil';
+  if (s.includes('electrical') || s.includes('eee') || s === 'ee') return 'EEE';
+  if (s.includes('telecom') || s.includes('tce') || s === 'te' || s === 'tc') return 'TCE';
+  if (s.includes('mba') || s.includes('business admin') || s === 'ba') return 'MBA';
+  if (s.includes('mtech') || s.includes('m.tech') || s.includes('master of tech') || s === 'scs') return 'M.Tech';
+  if (s.includes('computer') || s.includes('cse') || s === 'cs') return 'CSE';
+
+  return nameOnly.toUpperCase();
+}
+
+export function normalizeRecordFromObject(
+  row: Record<string, any>, 
+  defaultDept: string = 'Engineering',
+  defaultBatch: string = 'Alumni'
+): AlumniRecord | null {
+  const keys = Object.keys(row);
+  const findVal = (patterns: string[]) => {
+    const key = keys.find(k => patterns.some(p => k.toLowerCase().replace(/[^a-z0-9]/g, '').includes(p)));
+    return key ? String(row[key] || '').trim() : '';
+  };
+
+  const usn = findVal(['usn', 'roll', 'seat', 'regno', 'id', 'serial']);
+  if (!usn || usn.length < 5 || /usn|sl\.?|total/i.test(usn)) return null;
+
+  const fullName = findVal(['name', 'studentname', 'fullname', 'candidate']) || 'Graduate';
+  if (/name|total|sl\.?/i.test(fullName)) return null;
+
+  let officialEmail = findVal(['email', 'mail', 'emailid']).toLowerCase();
+  if (officialEmail && (!officialEmail.includes('@') || officialEmail.includes(' '))) officialEmail = '';
+
+  let phone = findVal(['phone', 'mobile', 'contact', 'cell']);
+  if (phone) phone = phone.replace(/[^0-9+]/g, '');
+
+  const deptVal = findVal(['dept', 'department', 'branch', 'course']);
+  const department = deptVal ? normalizeDepartmentName(deptVal, defaultDept) : defaultDept;
+
+  const batchVal = findVal(['batch', 'year', 'gradyear', 'passout', 'passing']);
+  const batchYear = batchVal || (defaultBatch.match(/^\d{4}$/) ? `Batch of ${defaultBatch}` : defaultBatch);
+
+  return {
+    usn: usn.toUpperCase(),
+    fullName,
+    officialEmail,
+    phone,
+    department,
+    batchYear,
+  };
+}
+
+export function parseWorkbookBuffer(buffer: Buffer, fileName: string): AlumniRecord[] {
+  const wb = XLSX.read(buffer, { type: 'buffer' });
+  const detectedDept = normalizeDepartmentName(fileName);
+  const records: AlumniRecord[] = [];
+
+  for (const sheetName of wb.SheetNames) {
+    const sheet = wb.Sheets[sheetName];
+    if (!sheet) continue;
+
+    const rawRows = XLSX.utils.sheet_to_json<any[]>(sheet, { header: 1 });
+    if (!rawRows || rawRows.length < 2) continue;
+
+    let headerIdx = -1;
+    let usnCol = -1;
+    let nameCol = -1;
+    let emailCol = -1;
+    let phoneCol = -1;
+    let deptCol = -1;
+    let batchCol = -1;
+
+    for (let r = 0; r < Math.min(15, rawRows.length); r++) {
+      const row = rawRows[r];
+      if (!Array.isArray(row)) continue;
+      const validCols = row.filter(c => c !== undefined && c !== null && String(c).trim() !== '');
+      if (validCols.length < 3) continue;
+
+      const uIdx = row.findIndex(c => typeof c === 'string' && /\busn\b|\broll\b|\bseat\b|\breg\.?\s*no/i.test(c.trim()) && !/student|passed|collect|depart/i.test(c.trim()));
+      const nIdx = row.findIndex(c => typeof c === 'string' && /\bname\b|student\s*name|candidate/i.test(c.trim()) && !/org|company|college|depart|collect|passed/i.test(c.trim()));
+      if (uIdx !== -1 && nIdx !== -1 && uIdx !== nIdx) {
+        headerIdx = r;
+        usnCol = uIdx;
+        nameCol = nIdx;
+        emailCol = row.findIndex(c => typeof c === 'string' && /email|mail/i.test(c.trim()));
+        phoneCol = row.findIndex(c => typeof c === 'string' && /phone|mobile|contact|cell/i.test(c.trim()));
+        deptCol = row.findIndex(c => typeof c === 'string' && /dept|branch|course/i.test(c.trim()));
+        batchCol = row.findIndex(c => typeof c === 'string' && /batch|passout|grad/i.test(c.trim()));
+        break;
+      }
+    }
+
+    if (headerIdx !== -1) {
+      for (let r = headerIdx + 1; r < rawRows.length; r++) {
+        const row = rawRows[r];
+        if (!Array.isArray(row)) continue;
+        const usnRaw = String(row[usnCol] || '').trim();
+        const cleanUsn = usnRaw.toUpperCase();
+        if (!cleanUsn || cleanUsn.length < 5 || /usn|sl\.?|total|heading|contact|directory|department|batch/i.test(cleanUsn)) continue;
+
+        const nameRaw = String(row[nameCol] || '').trim();
+        if (!nameRaw || /name|total|sl\.?|contact|directory|department/i.test(nameRaw)) continue;
+
+        let email = emailCol !== -1 ? String(row[emailCol] || '').trim().toLowerCase() : '';
+        if (email && (!email.includes('@') || email.includes(' '))) email = '';
+
+        let phone = phoneCol !== -1 ? String(row[phoneCol] || '').trim() : '';
+        if (phone) phone = phone.replace(/[^0-9+]/g, '');
+
+        let dept = deptCol !== -1 && row[deptCol] ? normalizeDepartmentName(String(row[deptCol]), detectedDept) : detectedDept;
+        let batch = batchCol !== -1 && row[batchCol] ? String(row[batchCol]).trim() : (sheetName.match(/^\d{4}$/) ? `Batch of ${sheetName}` : sheetName);
+
+        records.push({
+          usn: cleanUsn,
+          fullName: nameRaw,
+          officialEmail: email,
+          phone,
+          department: dept,
+          batchYear: batch,
+        });
+      }
+    } else {
+      const jsonRows = XLSX.utils.sheet_to_json<Record<string, any>>(sheet);
+      for (const row of jsonRows) {
+        const item = normalizeRecordFromObject(row, detectedDept, sheetName);
+        if (item) records.push(item);
+      }
+    }
+  }
+
+  return records;
+}
+
+export function syncDataFolderWorkbooks(): {
+  totalFiles: number;
+  filesProcessed: string[];
+  recordsParsed: number;
+  departmentStats: Record<string, number>;
+  added: number;
+  updated: number;
+  totalMaster: number;
+} {
+  ensureDir();
+  const allFiles = fs.readdirSync(DATA_DIR);
+  const spreadsheetFiles = allFiles.filter(f => /\.(xlsx|xls|csv)$/i.test(f));
+
+  let allParsedRecords: AlumniRecord[] = [];
+  const filesProcessed: string[] = [];
+
+  for (const fileName of spreadsheetFiles) {
+    const fullPath = path.join(DATA_DIR, fileName);
+    try {
+      const buffer = fs.readFileSync(fullPath);
+      const records = parseWorkbookBuffer(buffer, fileName);
+      if (records.length > 0) {
+        allParsedRecords = allParsedRecords.concat(records);
+        filesProcessed.push(`${fileName} (${records.length} records)`);
+      }
+    } catch (err) {
+      console.error(`Error reading ${fileName}:`, err);
+    }
+  }
+
+  const departmentStats: Record<string, number> = {};
+  for (const r of allParsedRecords) {
+    departmentStats[r.department] = (departmentStats[r.department] || 0) + 1;
+  }
+
+  const { added, updated, total } = importAlumniRecords(allParsedRecords);
+
+  return {
+    totalFiles: spreadsheetFiles.length,
+    filesProcessed,
+    recordsParsed: allParsedRecords.length,
+    departmentStats,
+    added,
+    updated,
+    totalMaster: total,
+  };
 }
 
 // In-Memory & File-Backed OTP Store
