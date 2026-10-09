@@ -372,16 +372,13 @@ export default function GateScannerPage() {
                 </label>
                 <input
                   type="password"
-                  placeholder="Enter PIN (e.g. gate2026)"
+                  placeholder="Enter PIN"
                   className="neo-input"
                   value={pin}
                   onChange={e => setPin(e.target.value)}
                   autoFocus
                   required
                 />
-                <span style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 6 }}>
-                  DEFAULT GATE PINS: gate2026, admin123
-                </span>
               </div>
 
               <button
@@ -426,22 +423,14 @@ export default function GateScannerPage() {
             className="btn-neo-outline"
             style={{ padding: '8px 14px', fontSize: '0.75rem' }}
           >
-            1. ALUMNI PASS PORTAL ↗
+            ALUMNI PASS PORTAL ↗
           </Link>
           <span
             className="btn-neo-black"
             style={{ padding: '8px 14px', fontSize: '0.75rem', cursor: 'default' }}
           >
-            2. GATE SCANNER (ACTIVE)
+            GATE SCANNER (ACTIVE)
           </span>
-          <Link
-            href="/admin"
-            target="_blank"
-            className="btn-neo-outline"
-            style={{ padding: '8px 14px', fontSize: '0.75rem' }}
-          >
-            3. ADMIN CENTER ↗
-          </Link>
         </div>
       </div>
 

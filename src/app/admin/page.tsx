@@ -424,7 +424,7 @@ export default function AdminPage() {
                 <input
                   type="password"
                   required
-                  placeholder="Enter Passcode (e.g. admin123)"
+                  placeholder="Enter Passcode"
                   className="neo-input"
                   value={adminPasscode}
                   onChange={e => setAdminPasscode(e.target.value)}
