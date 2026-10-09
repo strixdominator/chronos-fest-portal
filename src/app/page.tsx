@@ -9,22 +9,28 @@ import { EventSettings } from '@/lib/types';
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<'register' | 'lookup'>('register');
   const [stats, setStats] = useState<{ total: number; capacity: number; checkedIn: number }>({
-    total: 850,
+    total: 0,
     capacity: 1000,
-    checkedIn: 345,
+    checkedIn: 0,
   });
   const [settings, setSettings] = useState<EventSettings | null>(null);
 
   useEffect(() => {
-    fetch('/api/attendees')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          setStats(data.stats);
-          setSettings(data.settings);
-        }
-      })
-      .catch(err => console.error("Error fetching stats:", err));
+    const loadStats = () => {
+      fetch('/api/attendees')
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setStats(data.stats);
+            setSettings(data.settings);
+          }
+        })
+        .catch(err => console.error("Error fetching stats:", err));
+    };
+
+    loadStats();
+    const interval = setInterval(loadStats, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -46,12 +52,12 @@ export default function HomePage() {
 
           <div className="neo-hero-stats">
             <div className="neo-hero-stat-cell">
-              <div className="neo-hero-stat-value">OPEN</div>
+              <div className="neo-hero-stat-value">{stats.total}</div>
               <div className="neo-hero-stat-label">PASSES CLAIMED</div>
             </div>
             <div className="neo-hero-stat-cell">
               <div className="neo-hero-stat-value">+4</div>
-              <div className="neo-hero-stat-label">FAMILY ACCESS</div>
+              <div className="neo-hero-stat-label">FAMILY GUESTS MAX</div>
             </div>
           </div>
         </div>

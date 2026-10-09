@@ -64,10 +64,20 @@ export default function GateScannerPage() {
     isSuccess: boolean;
   }>>([]);
 
-  const [stats, setStats] = useState<{ checkedIn: number; approved: number; total: number }>({
+  const [stats, setStats] = useState<{
+    checkedIn: number;
+    approved: number;
+    total: number;
+    admittedPeople?: number;
+    approvedPeople?: number;
+    remainingAtGate?: number;
+  }>({
     checkedIn: 0,
     approved: 0,
-    total: 0
+    total: 0,
+    admittedPeople: 0,
+    approvedPeople: 0,
+    remainingAtGate: 0,
   });
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
@@ -84,6 +94,9 @@ export default function GateScannerPage() {
           checkedIn: data.stats.checkedIn,
           approved: data.stats.approved,
           total: data.stats.total,
+          admittedPeople: data.stats.admittedPeople,
+          approvedPeople: data.stats.approvedPeople,
+          remainingAtGate: data.stats.remainingAtGate,
         });
       }
     } catch (e) {
@@ -94,6 +107,8 @@ export default function GateScannerPage() {
   useEffect(() => {
     if (isAuthenticated) {
       refreshStats();
+      const interval = setInterval(refreshStats, 4000);
+      return () => clearInterval(interval);
     }
   }, [isAuthenticated]);
 
@@ -479,30 +494,30 @@ export default function GateScannerPage() {
         <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
           <span className="mono-label">GATE ADMITTED</span>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.2rem', fontWeight: 900, margin: '6px 0 2px', color: '#0e8a5a' }}>
-            {stats.checkedIn}
+            {stats.admittedPeople ?? stats.checkedIn}
           </div>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
-            Wristbands attached
+            Persons admitted ({stats.checkedIn} primary passes)
           </span>
         </div>
 
         <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
-          <span className="mono-label">ISSUED PASSES</span>
+          <span className="mono-label">ACTIVE ISSUED PASSES</span>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.2rem', fontWeight: 900, margin: '6px 0 2px', color: 'var(--accent-blue)' }}>
             {stats.approved}
           </div>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
-            Active QR tickets
+            {stats.approvedPeople ?? stats.approved} persons authorized
           </span>
         </div>
 
         <div className="neo-stat-card" style={{ borderBottom: 'none' }}>
           <span className="mono-label">PENDING ARRIVAL</span>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.2rem', fontWeight: 900, margin: '6px 0 2px', color: 'var(--text-main)' }}>
-            {Math.max(0, stats.approved - stats.checkedIn)}
+            {stats.remainingAtGate ?? Math.max(0, stats.approved - stats.checkedIn)}
           </div>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
-            Expected at gates
+            Persons expected at gates
           </span>
         </div>
       </div>

@@ -51,13 +51,19 @@ export default function AdminPage() {
   const [settings, setSettings] = useState<EventSettings | null>(null);
   const [stats, setStats] = useState({
     total: 0,
+    totalFamilyMembers: 0,
+    totalPeople: 0,
     capacity: 1000,
     pending: 0,
     approved: 0,
+    approvedPeople: 0,
     checkedIn: 0,
-    rejected: 0,
+    admittedPeople: 0,
     remainingAtGate: 0,
+    rejected: 0,
   });
+  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
+  const [isLiveSyncing, setIsLiveSyncing] = useState<boolean>(false);
 
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'CHECKED_IN' | 'REJECTED'>('PENDING');
   const [search, setSearch] = useState('');
@@ -94,8 +100,10 @@ export default function AdminPage() {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [settingsForm, setSettingsForm] = useState<Partial<EventSettings>>({});
 
-  const fetchAttendees = async () => {
-    setLoading(true);
+  const fetchAttendees = async (silent: boolean = false) => {
+    if (!silent) setLoading(true);
+    else setIsLiveSyncing(true);
+
     try {
       const queryParams = new URLSearchParams();
       if (statusFilter !== 'ALL') queryParams.set('status', statusFilter);
@@ -107,12 +115,14 @@ export default function AdminPage() {
         setAttendees(data.attendees);
         setStats(data.stats);
         setSettings(data.settings);
-        setSettingsForm(data.settings);
+        if (!silent) setSettingsForm(data.settings);
+        setLastSyncedAt(new Date());
       }
     } catch (e) {
       console.error(e);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
+      setIsLiveSyncing(false);
     }
   };
 
@@ -136,6 +146,19 @@ export default function AdminPage() {
         fetchAlumniMaster();
       }
     }
+  }, [isAuthenticated, activeSection, statusFilter, search]);
+
+  // Real-time automatic polling every 3 seconds to sync live DB changes
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const interval = setInterval(() => {
+      if (activeSection === 'ATTENDEES') {
+        fetchAttendees(true); // silent background fetch
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
   }, [isAuthenticated, activeSection, statusFilter, search]);
 
   const handleAuth = (e: React.FormEvent) => {
@@ -521,7 +544,35 @@ export default function AdminPage() {
           </p>
         </div>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '8px 14px',
+            background: '#ffffff',
+            border: '1px solid var(--border-black)',
+            boxShadow: '2px 2px 0px 0px var(--border-black)'
+          }}>
+            <span style={{
+              display: 'inline-block',
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: '#10b981',
+              boxShadow: isLiveSyncing ? '0 0 10px #10b981' : '0 0 4px #10b981',
+              transition: 'box-shadow 0.2s ease',
+            }} />
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-main)' }}>
+              LIVE DB AUTO-SYNC (3s)
+            </span>
+            {lastSyncedAt && (
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-secondary)' }}>
+                · {lastSyncedAt.toLocaleTimeString()}
+              </span>
+            )}
+          </div>
+
           <button
             onClick={() => setShowSettingsModal(true)}
             className="btn-neo-outline"
@@ -540,30 +591,61 @@ export default function AdminPage() {
             EXPORT CSV ↗
           </a>
           <button
-            onClick={fetchAttendees}
+            onClick={() => fetchAttendees(false)}
             className="btn-neo-black"
             style={{ padding: '10px 18px', fontSize: '0.78rem' }}
+            title="Force immediate reload from database"
           >
-            <RefreshCw size={14} />
-            SYNC ↗
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            REFRESH DB ↗
           </button>
         </div>
       </div>
 
-      {/* STAT COUNTERS GRID */}
+      {/* STAT COUNTERS GRID - REAL-TIME DB METRICS */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
         borderBottom: '1px solid var(--border-black)',
         background: '#ffffff'
       }}>
         <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
-          <span className="mono-label">TOTAL PASSES CLAIMED</span>
+          <span className="mono-label">TOTAL REGISTERED PASSES</span>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, margin: '8px 0 2px' }}>
-            {stats.total} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/ {stats.capacity}</span>
+            {stats.total} <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>/ {stats.capacity} max</span>
+          </div>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+            {stats.totalPeople} Total Persons ({stats.total} alumni + {stats.totalFamilyMembers} guests)
+          </span>
+        </div>
+
+        <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
+          <span className="mono-label">FAMILY GUESTS</span>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, margin: '8px 0 2px', color: '#4f46e5' }}>
+            +{stats.totalFamilyMembers}
           </div>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
-            {Math.round((stats.total / (stats.capacity || 1000)) * 100)}% capacity
+            Accompanying family members
+          </span>
+        </div>
+
+        <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
+          <span className="mono-label">ACTIVE PASSES ISSUED</span>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, margin: '8px 0 2px', color: 'var(--accent-blue)' }}>
+            {stats.approved}
+          </div>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+            Permits {stats.approvedPeople} admissible persons
+          </span>
+        </div>
+
+        <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
+          <span className="mono-label">GATE ADMITTED</span>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, margin: '8px 0 2px', color: '#0e8a5a' }}>
+            {stats.admittedPeople}
+          </div>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+            {stats.remainingAtGate} persons yet to arrive ({stats.checkedIn} primary passes)
           </span>
         </div>
 
@@ -573,27 +655,7 @@ export default function AdminPage() {
             {stats.pending}
           </div>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
-            Contact change requests
-          </span>
-        </div>
-
-        <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
-          <span className="mono-label">OTP VERIFIED PASSES</span>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, margin: '8px 0 2px', color: 'var(--accent-blue)' }}>
-            {stats.approved}
-          </div>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
-            Active QR passes issued
-          </span>
-        </div>
-
-        <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
-          <span className="mono-label">ADMITTED AT GATE</span>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, margin: '8px 0 2px', color: '#0e8a5a' }}>
-            {stats.checkedIn}
-          </div>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
-            {stats.remainingAtGate} yet to arrive
+            Awaiting committee verification
           </span>
         </div>
 
@@ -603,7 +665,7 @@ export default function AdminPage() {
             {stats.rejected}
           </div>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
-            Flagged unverified
+            Denied verification requests
           </span>
         </div>
       </div>

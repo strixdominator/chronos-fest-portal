@@ -32,14 +32,32 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const totalAlumni = allAttendees.length;
+    const totalFamilyMembers = allAttendees.reduce((sum, a) => sum + (Number(a.familyCount) || 0), 0);
+    const totalPeople = allAttendees.reduce((sum, a) => sum + (Number(a.totalQuota) || (1 + (Number(a.familyCount) || 0))), 0);
+
+    const pendingAlumni = allAttendees.filter(a => a.status === 'PENDING');
+    const approvedAlumni = allAttendees.filter(a => a.status === 'APPROVED');
+    const rejectedAlumni = allAttendees.filter(a => a.status === 'REJECTED');
+    const checkedInAlumni = allAttendees.filter(a => a.checkedIn);
+
+    const totalApprovedPasses = approvedAlumni.length;
+    const totalApprovedPeople = approvedAlumni.reduce((sum, a) => sum + (Number(a.totalQuota) || (1 + (Number(a.familyCount) || 0))), 0);
+    const totalAdmittedPeople = allAttendees.reduce((sum, a) => sum + (Number(a.admittedCount) || (a.checkedIn ? 1 : 0)), 0);
+    const remainingPeopleAtGate = Math.max(0, totalApprovedPeople - totalAdmittedPeople);
+
     const stats = {
-      total: allAttendees.length,
+      total: totalAlumni,
+      totalFamilyMembers,
+      totalPeople,
       capacity: settings.totalCapacity,
-      pending: allAttendees.filter(a => a.status === 'PENDING').length,
-      approved: allAttendees.filter(a => a.status === 'APPROVED').length,
-      checkedIn: allAttendees.filter(a => a.checkedIn).length,
-      rejected: allAttendees.filter(a => a.status === 'REJECTED').length,
-      remainingAtGate: allAttendees.filter(a => a.status === 'APPROVED' && !a.checkedIn).length,
+      pending: pendingAlumni.length,
+      approved: totalApprovedPasses,
+      approvedPeople: totalApprovedPeople,
+      checkedIn: checkedInAlumni.length,
+      admittedPeople: totalAdmittedPeople,
+      remainingAtGate: remainingPeopleAtGate,
+      rejected: rejectedAlumni.length,
     };
 
     return NextResponse.json({
