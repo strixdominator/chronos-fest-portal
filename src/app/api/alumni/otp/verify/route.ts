@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyOtp, findAlumnusByUsn, createVerifiedSession, verifySessionToken, getSessionData } from '@/lib/alumni';
 import { createAttendee } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -10,9 +13,9 @@ export async function POST(request: NextRequest) {
       otp, 
       action, 
       verifyOnly, 
-      sessionToken, 
-      familyCount = 0, 
-      familyMembers = [] 
+      sessionToken,
+      organization,
+      designation,
     } = body;
 
     if (!usn || typeof usn !== 'string') {
@@ -28,7 +31,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Graduate record not found.' }, { status: 404 });
     }
 
-    // MODE 1: VERIFY OTP ONLY (Unlocks Step 3: Family Selection)
+    // MODE 1: VERIFY OTP ONLY (Unlocks Step 3: Professional details)
     if (action === 'VERIFY_ONLY' || verifyOnly) {
       if (!otp || typeof otp !== 'string') {
         return NextResponse.json(
@@ -57,7 +60,7 @@ export async function POST(request: NextRequest) {
           department: alumnus.department,
           batchYear: alumnus.batchYear,
         },
-        message: 'Identity confirmed via OTP! You may now specify accompanying family members.',
+        message: 'Identity confirmed via OTP! Please provide your organisation and designation to complete pass issuance.',
       });
     }
 
@@ -87,16 +90,6 @@ export async function POST(request: NextRequest) {
       directVerification = { target: verification.target, channel: verification.channel };
     }
 
-    // Auto-create APPROVED attendee pass with family members quota
-    const parsedFamilyCount = Math.min(4, Math.max(0, Number(familyCount) || 0));
-    const cleanFamilyMembers = Array.isArray(familyMembers) 
-      ? familyMembers.slice(0, parsedFamilyCount).map((m: any) => ({
-          name: String(m.name || '').trim(),
-          relation: String(m.relation || 'Family Guest').trim(),
-          age: m.age ? String(m.age).trim() : undefined,
-        }))
-      : [];
-
     const sessionData = sessionToken ? getSessionData(sessionToken) : null;
     const finalEmail = sessionData?.email || (directVerification?.channel === 'EMAIL' ? directVerification.target : null) || alumnus.officialEmail || 'alumni@chronosfest.com';
     const finalPhone = sessionData?.phone || (directVerification?.channel === 'PHONE' ? directVerification.target : null) || alumnus.phone || '+91 99999 99999';
@@ -110,8 +103,10 @@ export async function POST(request: NextRequest) {
       department: alumnus.department,
       year: alumnus.batchYear,
       isVerifiedOtp: true,
-      familyCount: parsedFamilyCount,
-      familyMembers: cleanFamilyMembers,
+      organization: organization ? String(organization).trim() : undefined,
+      designation: designation ? String(designation).trim() : undefined,
+      familyCount: 0,
+      familyMembers: [],
     });
 
     if (!result.success) {

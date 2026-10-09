@@ -46,6 +46,10 @@ export interface Attendee {
   wristbandNumber?: string;
   notes?: string;
 
+  // Professional details filled upon registration
+  organization?: string;
+  designation?: string;
+
   // Family & Accompanying Guest Quota Tracking (Max 4 guests)
   familyCount?: number; // 0 to 4 additional family members
   familyMembers?: FamilyMember[];

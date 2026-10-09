@@ -87,7 +87,13 @@ export default function GateScannerPage() {
   // Load live stats
   const refreshStats = async () => {
     try {
-      const res = await fetch('/api/attendees');
+      const res = await fetch(`/api/attendees?_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
+      });
       const data = await res.json();
       if (data.success) {
         setStats({

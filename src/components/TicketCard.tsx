@@ -175,6 +175,16 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
             </div>
           </div>
 
+          {/* Professional Affiliation */}
+          {(attendee.organization || attendee.designation) && (
+            <div style={{ marginTop: 14, padding: '10px 14px', background: 'var(--bg-card-alt)', border: '1px solid var(--border-black)' }}>
+              <div className="mono-label" style={{ fontSize: '0.64rem', marginBottom: 2 }}>PROFESSIONAL AFFILIATION</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 800 }}>
+                {attendee.organization || ''}{attendee.organization && attendee.designation ? ' · ' : ''}{attendee.designation || ''}
+              </div>
+            </div>
+          )}
+
           {/* Group Quota Strip if > 1 */}
           {totalQuota > 1 && (
             <div style={{

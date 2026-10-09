@@ -17,7 +17,13 @@ export default function HomePage() {
 
   useEffect(() => {
     const loadStats = () => {
-      fetch('/api/attendees')
+      fetch(`/api/attendees?_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
+      })
         .then(res => res.json())
         .then(data => {
           if (data.success) {
@@ -56,8 +62,8 @@ export default function HomePage() {
               <div className="neo-hero-stat-label">PASSES CLAIMED</div>
             </div>
             <div className="neo-hero-stat-cell">
-              <div className="neo-hero-stat-value">+4</div>
-              <div className="neo-hero-stat-label">FAMILY GUESTS MAX</div>
+              <div className="neo-hero-stat-value">100%</div>
+              <div className="neo-hero-stat-label">VERIFIED ALUMNI</div>
             </div>
           </div>
         </div>
@@ -122,9 +128,9 @@ export default function HomePage() {
           <div className="before-arrive-card card-lilac">
             <span className="before-arrive-card-num">02</span>
             <div>
-              <h3 className="before-arrive-card-heading">FAMILY ACCESS</h3>
+              <h3 className="before-arrive-card-heading">INSTANT PASS</h3>
               <p className="before-arrive-card-body">
-                Add up to four family members after identity verification.
+                Receive your digital pass with high-security QR code instantly upon verification.
               </p>
             </div>
           </div>

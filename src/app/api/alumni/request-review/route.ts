@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { findAlumnusByUsn } from '@/lib/alumni';
 import { createAttendee, getAttendees } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { usn, newEmail, newPhone, reason, degreeProofUrl, familyCount, familyMembers } = body;
+    const { usn, newEmail, newPhone, reason, degreeProofUrl, organization, designation } = body;
 
     if (!usn || !newEmail || !newPhone) {
       return NextResponse.json(
@@ -35,10 +38,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const parsedFamilyCount = Math.min(4, Math.max(0, Number(familyCount) || 0));
-    const sanitizedFamilyMembers = Array.isArray(familyMembers) ? familyMembers.slice(0, parsedFamilyCount) : [];
-
-    // Create a PENDING attendee with updated contact details flag and family allocation
+    // Create a PENDING attendee with updated contact details flag and professional info
     const result = createAttendee({
       fullName: alumnus.fullName,
       email: newEmail.trim().toLowerCase(),
@@ -47,15 +47,17 @@ export async function POST(request: NextRequest) {
       usn: alumnus.usn,
       department: alumnus.department,
       year: alumnus.batchYear,
+      organization: organization ? String(organization).trim() : undefined,
+      designation: designation ? String(designation).trim() : undefined,
       isVerifiedOtp: false,
       isContactUpdated: true,
       originalEmail: alumnus.officialEmail,
       originalPhone: alumnus.phone,
       reviewReason: reason || 'Graduate has changed contact email/phone number since graduation.',
       degreeProofUrl: degreeProofUrl || undefined,
-      notes: `Contact changed from [${alumnus.officialEmail} / ${alumnus.phone}] to [${newEmail} / ${newPhone}]${parsedFamilyCount > 0 ? ` with ${parsedFamilyCount} guest(s)` : ''}`,
-      familyCount: parsedFamilyCount,
-      familyMembers: sanitizedFamilyMembers,
+      notes: `Contact changed from [${alumnus.officialEmail} / ${alumnus.phone}] to [${newEmail} / ${newPhone}]`,
+      familyCount: 0,
+      familyMembers: [],
     });
 
     if (!result.success) {

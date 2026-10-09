@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAttendees, getSettings, deleteAllAttendees, deleteSelectedAttendees } from '@/lib/db';
 import { clearAlumniSession } from '@/lib/alumni';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -28,35 +31,25 @@ export async function GET(request: NextRequest) {
         a.email.toLowerCase().includes(search) ||
         a.department.toLowerCase().includes(search) ||
         a.ticketCode.toLowerCase().includes(search) ||
+        (a.organization && a.organization.toLowerCase().includes(search)) ||
+        (a.designation && a.designation.toLowerCase().includes(search)) ||
         a.id.toLowerCase().includes(search)
       );
     }
 
     const totalAlumni = allAttendees.length;
-    const totalFamilyMembers = allAttendees.reduce((sum, a) => sum + (Number(a.familyCount) || 0), 0);
-    const totalPeople = allAttendees.reduce((sum, a) => sum + (Number(a.totalQuota) || (1 + (Number(a.familyCount) || 0))), 0);
-
     const pendingAlumni = allAttendees.filter(a => a.status === 'PENDING');
     const approvedAlumni = allAttendees.filter(a => a.status === 'APPROVED');
     const rejectedAlumni = allAttendees.filter(a => a.status === 'REJECTED');
     const checkedInAlumni = allAttendees.filter(a => a.checkedIn);
 
-    const totalApprovedPasses = approvedAlumni.length;
-    const totalApprovedPeople = approvedAlumni.reduce((sum, a) => sum + (Number(a.totalQuota) || (1 + (Number(a.familyCount) || 0))), 0);
-    const totalAdmittedPeople = allAttendees.reduce((sum, a) => sum + (Number(a.admittedCount) || (a.checkedIn ? 1 : 0)), 0);
-    const remainingPeopleAtGate = Math.max(0, totalApprovedPeople - totalAdmittedPeople);
-
     const stats = {
       total: totalAlumni,
-      totalFamilyMembers,
-      totalPeople,
       capacity: settings.totalCapacity,
       pending: pendingAlumni.length,
-      approved: totalApprovedPasses,
-      approvedPeople: totalApprovedPeople,
+      approved: approvedAlumni.length,
       checkedIn: checkedInAlumni.length,
-      admittedPeople: totalAdmittedPeople,
-      remainingAtGate: remainingPeopleAtGate,
+      remainingAtGate: Math.max(0, approvedAlumni.length - checkedInAlumni.length),
       rejected: rejectedAlumni.length,
     };
 
@@ -65,6 +58,12 @@ export async function GET(request: NextRequest) {
       attendees: filtered,
       stats,
       settings,
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      }
     });
   } catch (error: any) {
     return NextResponse.json(

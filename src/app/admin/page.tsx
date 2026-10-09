@@ -88,8 +88,8 @@ export default function AdminPage() {
     url: string;
     roll: string;
     reason?: string;
-    familyCount?: number;
-    familyMembers?: Array<{ name: string; relation: string; age?: string }>;
+    organization?: string;
+    designation?: string;
   } | null>(null);
 
   // Rejection modal
@@ -108,11 +108,18 @@ export default function AdminPage() {
       const queryParams = new URLSearchParams();
       if (statusFilter !== 'ALL') queryParams.set('status', statusFilter);
       if (search) queryParams.set('search', search);
+      queryParams.set('_t', Date.now().toString());
 
-      const res = await fetch(`/api/attendees?${queryParams.toString()}`);
+      const res = await fetch(`/api/attendees?${queryParams.toString()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
+      });
       const data = await res.json();
       if (data.success) {
-        setAttendees(data.attendees);
+        setAttendees(data.attendees || []);
         setStats(data.stats);
         setSettings(data.settings);
         if (!silent) setSettingsForm(data.settings);
@@ -247,13 +254,18 @@ export default function AdminPage() {
   const handleDeleteAttendee = async (id: string) => {
     setActionLoading(id);
     try {
-      const res = await fetch(`/api/attendees/${id}`, {
+      const res = await fetch(`/api/attendees/${id}?_t=${Date.now()}`, {
         method: 'DELETE',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
       });
       const data = await res.json();
       if (data.success) {
+        setAttendees(prev => prev.filter(a => a.id !== id));
         setDeletingAttendee(null);
-        fetchAttendees();
+        await fetchAttendees();
         alert(data.message || 'Pass deleted. Alumnus can now register again.');
       } else {
         alert(data.error || 'Failed to delete pass.');
@@ -269,15 +281,20 @@ export default function AdminPage() {
   const handleResetAllAttendees = async () => {
     setActionLoading('resetAll');
     try {
-      const res = await fetch('/api/attendees', {
+      const res = await fetch(`/api/attendees?_t=${Date.now()}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
         body: JSON.stringify({ resetAll: true }),
       });
       const data = await res.json();
       if (data.success) {
+        setAttendees([]);
         setShowResetAllModal(false);
-        fetchAttendees();
+        await fetchAttendees();
         alert(data.message || 'All passes have been deleted. Alumni can now register again.');
       } else {
         alert(data.error || 'Failed to reset passes.');
@@ -583,12 +600,24 @@ export default function AdminPage() {
           </button>
           <a
             href="/api/export"
-            download
-            className="btn-neo-outline"
-            style={{ padding: '10px 18px', fontSize: '0.78rem' }}
+            download="milan2026_registration_responses.csv"
+            className="btn-neo-yellow"
+            style={{
+              padding: '10px 18px',
+              fontSize: '0.8rem',
+              fontWeight: 800,
+              background: '#fde047',
+              color: '#000',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              border: '2px solid #000',
+              boxShadow: '3px 3px 0 #000',
+              textDecoration: 'none'
+            }}
           >
-            <Download size={14} />
-            EXPORT CSV ↗
+            <Download size={15} />
+            DOWNLOAD RESPONSES (CSV) ↗
           </a>
           <button
             onClick={() => fetchAttendees(false)}
@@ -605,27 +634,17 @@ export default function AdminPage() {
       {/* STAT COUNTERS GRID - REAL-TIME DB METRICS */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
         borderBottom: '1px solid var(--border-black)',
         background: '#ffffff'
       }}>
         <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
-          <span className="mono-label">TOTAL REGISTERED PASSES</span>
+          <span className="mono-label">TOTAL REGISTRATIONS</span>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, margin: '8px 0 2px' }}>
             {stats.total} <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>/ {stats.capacity} max</span>
           </div>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-            {stats.totalPeople} Total Persons ({stats.total} alumni + {stats.totalFamilyMembers} guests)
-          </span>
-        </div>
-
-        <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
-          <span className="mono-label">FAMILY GUESTS</span>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, margin: '8px 0 2px', color: '#4f46e5' }}>
-            +{stats.totalFamilyMembers}
-          </div>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
-            Accompanying family members
+            {stats.approved} approved passes · {stats.pending} pending
           </span>
         </div>
 
@@ -635,17 +654,17 @@ export default function AdminPage() {
             {stats.approved}
           </div>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
-            Permits {stats.approvedPeople} admissible persons
+            Official registered alumni
           </span>
         </div>
 
         <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
           <span className="mono-label">GATE ADMITTED</span>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, margin: '8px 0 2px', color: '#0e8a5a' }}>
-            {stats.admittedPeople}
+            {stats.checkedIn}
           </div>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
-            {stats.remainingAtGate} persons yet to arrive ({stats.checkedIn} primary passes)
+            {Math.max(0, stats.approved - stats.checkedIn)} passes yet to arrive
           </span>
         </div>
 
@@ -777,6 +796,29 @@ export default function AdminPage() {
                     RESET ALL PASSES ({stats.total}) ↗
                   </button>
                 )}
+                <a
+                  href="/api/export"
+                  download="milan2026_registration_responses.csv"
+                  className="btn-neo-yellow"
+                  style={{
+                    whiteSpace: 'nowrap',
+                    padding: '9px 14px',
+                    fontSize: '0.76rem',
+                    fontWeight: 800,
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    background: '#fde047',
+                    color: '#000',
+                    border: '1.5px solid #000',
+                    boxShadow: '2px 2px 0 #000'
+                  }}
+                  title="Download all attendee registration form responses as CSV"
+                >
+                  <Download size={13} />
+                  DOWNLOAD RESPONSES (CSV) ↗
+                </a>
               </div>
 
             </div>
@@ -790,7 +832,7 @@ export default function AdminPage() {
                     <th>USN</th>
                     <th>DEPT & BATCH</th>
                     <th>CONTACT & VERIFICATION</th>
-                    <th>QUOTA</th>
+                    <th>ORGANISATION & ROLE</th>
                     <th>STATUS</th>
                     <th>REVIEW NOTE / PROOF</th>
                     <th style={{ textAlign: 'right' }}>ACTIONS</th>
@@ -841,14 +883,12 @@ export default function AdminPage() {
                         </td>
 
                         <td>
-                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', fontWeight: 800 }}>
-                            {attendee.totalQuota || 1} {attendee.totalQuota && attendee.totalQuota > 1 ? 'PERSONS' : 'PERSON'}
-                          </span>
-                          {attendee.familyMembers && attendee.familyMembers.length > 0 && (
-                            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-secondary)' }}>
-                              +{attendee.familyMembers.length} guests
-                            </div>
-                          )}
+                          <div style={{ fontWeight: 700, fontSize: '0.84rem' }}>
+                            {attendee.organization || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Not provided</span>}
+                          </div>
+                          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: 'var(--text-secondary)', marginTop: 2 }}>
+                            {attendee.designation || 'Alumnus'}
+                          </div>
                         </td>
 
                         <td>
@@ -857,7 +897,7 @@ export default function AdminPage() {
                           )}
                           {attendee.status === 'APPROVED' && !attendee.checkedIn && attendee.admittedCount && attendee.admittedCount > 0 && (
                             <span className="neo-badge" style={{ background: 'var(--card-blue-2)', color: '#0f2b5c' }}>
-                              PARTIAL ({attendee.admittedCount}/{attendee.totalQuota || 1})
+                              ADMITTED
                             </span>
                           )}
                           {attendee.status === 'APPROVED' && attendee.checkedIn && (
@@ -889,8 +929,8 @@ export default function AdminPage() {
                                     url: attendee.degreeProofUrl!,
                                     roll: attendee.usn || attendee.rollNumber,
                                     reason: attendee.reviewReason,
-                                    familyCount: attendee.familyCount,
-                                    familyMembers: attendee.familyMembers,
+                                    organization: attendee.organization,
+                                    designation: attendee.designation,
                                   })}
                                   className="btn-neo-outline"
                                   style={{ padding: '3px 8px', fontSize: '0.7rem', marginTop: 4 }}
@@ -1255,18 +1295,13 @@ export default function AdminPage() {
                 </div>
               )}
 
-              {viewingProof.familyMembers && viewingProof.familyMembers.length > 0 && (
+              {viewingProof.organization && (
                 <div style={{ padding: '12px 14px', background: 'var(--card-blue-1)', border: '1px solid var(--border-black)', marginBottom: 14 }}>
-                  <div className="mono-label" style={{ fontSize: '0.68rem', marginBottom: 6 }}>
-                    REQUESTED FAMILY GUESTS ({viewingProof.familyMembers.length})
+                  <div className="mono-label" style={{ fontSize: '0.68rem', marginBottom: 4 }}>
+                    PROFESSIONAL AFFILIATION
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    {viewingProof.familyMembers.map((guest, idx) => (
-                      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-mono)', fontSize: '0.78rem', background: '#fff', padding: '6px 10px', border: '1px solid var(--border-black)' }}>
-                        <span style={{ fontWeight: 800 }}>#{idx + 1} {guest.name}</span>
-                        <span style={{ color: 'var(--text-secondary)' }}>{guest.relation}{guest.age ? ` · ${guest.age} yrs` : ''}</span>
-                      </div>
-                    ))}
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', fontWeight: 800 }}>
+                    {viewingProof.organization} · {viewingProof.designation || 'Alumnus'}
                   </div>
                 </div>
               )}

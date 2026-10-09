@@ -111,9 +111,8 @@ export function createAttendee(
   const ticketCode = `TKT-CHRONOS-${randomSuffix}${Math.floor(1000 + Math.random() * 9000)}`;
 
   const isApproved = Boolean(data.isVerifiedOtp);
-  const familyCount = Math.min(4, Math.max(0, Number(data.familyCount) || 0));
-  const totalQuota = 1 + familyCount;
-  const familyMembers = Array.isArray(data.familyMembers) ? data.familyMembers.slice(0, familyCount) : [];
+  const organization = data.organization ? String(data.organization).trim() : undefined;
+  const designation = data.designation ? String(data.designation).trim() : undefined;
 
   const newAttendee: Attendee = {
     ...data,
@@ -127,9 +126,11 @@ export function createAttendee(
     checkedIn: false,
     registeredAt: new Date().toISOString(),
     wristbandColor: "Neon Cyan (General)",
-    familyCount,
-    familyMembers,
-    totalQuota,
+    organization,
+    designation,
+    familyCount: 0,
+    familyMembers: [],
+    totalQuota: 1,
     admittedCount: 0,
     checkInLogs: [],
   };
