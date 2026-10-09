@@ -90,7 +90,7 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
         <div className="ticket-neo-header">
           <div>
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '1.25rem', letterSpacing: '-0.03em' }}>
-              CHRONOS<span style={{ color: 'var(--accent-coral)' }}>/26</span>
+              MILAN <span style={{ color: 'var(--accent-coral)' }}>2026</span>
             </div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: '#a3a3a3', letterSpacing: '0.08em', marginTop: 2 }}>
               OFFICIAL ALUMNI ENTRY PASS

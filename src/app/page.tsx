@@ -36,9 +36,8 @@ export default function HomePage() {
           <div className="neo-hero-left-content">
             <div className="mono-tag">01 / ACCESS</div>
             <h1 className="neo-hero-title">
-              YOUR WAY<br />
-              BACK TO<br />
-              CAMPUS.
+              RECONNECTING<br />
+              RELATIONS.
             </h1>
             <p className="neo-hero-desc">
               Every pass is matched against official alumni records. One identity, one verified pass — no screenshots, no transfers.
@@ -147,11 +146,11 @@ export default function HomePage() {
 
           <div>
             <h2 className="manifesto-title">
-              ONE NIGHT.<br />
-              EVERY ERA.
+              ONE DAY.<br />
+              ONE VIBE.
             </h2>
             <p className="manifesto-text">
-              Chronos is the annual return to campus — music, memory and a thousand stories meeting under one roof.
+              Milan 2026 is the annual return to campus — music, memory and a thousand stories meeting under one roof.
             </p>
           </div>
 
@@ -164,12 +163,12 @@ export default function HomePage() {
           <div className="manifesto-image-wrapper">
             <img 
               src="/fest-banner.jpg" 
-              alt="Chronos Fest Concert Grand Finale" 
+              alt="Milan 2026 Concert Grand Finale" 
               className="manifesto-image"
             />
           </div>
           <div className="manifesto-caption-bar">
-            <span>CHRONOS ARCHIVE / MAIN STAGE</span>
+            <span>MILAN ARCHIVE / MAIN STAGE</span>
             <span>001-026</span>
           </div>
         </div>
@@ -180,7 +179,7 @@ export default function HomePage() {
         <div className="neo-footer-main">
           <div>
             <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.25rem' }}>
-              CHRONOS<span style={{ color: 'var(--accent-coral)' }}>/26</span>
+              MILAN <span style={{ color: 'var(--accent-coral)' }}>2026</span>
             </span>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 4 }}>
               DON BOSCO INSTITUTE OF TECHNOLOGY • ANNUAL ALUMNI PASS PORTAL
@@ -199,7 +198,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="neo-footer-bottom">
-          <span>© 2026 CHRONOS FESTIVAL COMMITTEE. ALL RIGHTS RESERVED.</span>
+          <span>© 2026 MILAN FESTIVAL COMMITTEE. ALL RIGHTS RESERVED.</span>
           <span>STRICT PHOTO ID VERIFICATION AT GATE</span>
         </div>
       </footer>

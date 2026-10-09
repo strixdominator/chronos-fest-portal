@@ -7,7 +7,7 @@ export default function Navbar() {
   return (
     <header className="neo-nav no-print">
       <Link href="/" className="neo-nav-brand">
-        CHRONOS<span className="brand-slash">/26</span>
+        MILAN <span className="brand-slash">2026</span>
       </Link>
 
       <div className="neo-nav-links">

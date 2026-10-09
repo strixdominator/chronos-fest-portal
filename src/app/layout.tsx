@@ -4,8 +4,8 @@ import Navbar from "@/components/Navbar";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CHRONOS FEST '26 | College Event Registration & Digital QR Pass",
-  description: "Official event pass and wristband verification system for university fest. Anti-fraud QR entry with admin approval queue.",
+  title: "MILAN 2026 | College Event Registration & Digital QR Pass",
+  description: "Official Alumni Entry Portal for Milan 2026. Secure instant verification via University Seat Number (USN) and OTP confirmation.",
 };
 
 export default function RootLayout({

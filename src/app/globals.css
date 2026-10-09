@@ -775,26 +775,86 @@ html, body {
 }
 
 @media (max-width: 640px) {
+  .neo-nav-brand {
+    padding: 0 18px;
+    font-size: 1.25rem;
+  }
+
   .neo-nav-links .neo-nav-item {
     display: none;
   }
+
+  .neo-nav-cta {
+    padding: 0 18px;
+    font-size: 0.75rem;
+  }
   
-  .neo-hero-left-content,
-  .neo-hero-right,
-  .before-arrive-header,
-  .manifesto-left,
-  .neo-footer-main,
+  .neo-hero-left-content {
+    padding: 36px 20px 28px;
+  }
+
+  .neo-hero-title {
+    font-size: clamp(2.3rem, 10vw, 3.8rem);
+    letter-spacing: -0.04em;
+    word-break: break-word;
+    margin: 20px 0 16px;
+  }
+
+  .neo-hero-right {
+    padding: 24px 16px;
+  }
+
+  .neo-portal-body {
+    padding: 24px 18px;
+  }
+
+  .neo-input-group button {
+    padding: 0 14px;
+    font-size: 0.74rem;
+  }
+
+  .neo-input-group input {
+    padding: 12px 14px;
+    font-size: 0.95rem;
+  }
+
+  .before-arrive-header {
+    padding: 40px 20px 28px;
+  }
+
+  .before-arrive-card {
+    padding: 32px 24px;
+    min-height: auto;
+  }
+
+  .manifesto-left {
+    padding: 40px 20px;
+  }
+
+  .manifesto-title {
+    font-size: clamp(2.4rem, 10vw, 4rem);
+    margin: 28px 0 16px;
+  }
+
+  .neo-footer-main {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 32px 20px;
+  }
+
   .neo-footer-bottom {
-    padding-left: 20px;
-    padding-right: 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 16px 20px;
   }
 
   .neo-hero-stats {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 
-  .neo-hero-stat-cell:first-child {
-    border-right: none;
-    border-bottom: 1px solid var(--border-black);
+  .neo-hero-stat-cell {
+    padding: 20px 20px;
   }
 }
