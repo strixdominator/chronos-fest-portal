@@ -870,3 +870,196 @@ html, body {
     padding: 20px 20px;
   }
 }
+
+/* ==========================================================================
+   ADMIN & SCANNER BRUTALIST ARCHITECTURAL UTILITIES
+   ========================================================================== */
+.neo-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border: 1px solid var(--border-black);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+}
+
+.neo-table th {
+  background: var(--bg-black);
+  color: #ffffff;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 14px 16px;
+  text-align: left;
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.neo-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+  vertical-align: middle;
+}
+
+.neo-table tr:hover td {
+  background: var(--bg-blue-tint);
+}
+
+.neo-stat-card {
+  background: #ffffff;
+  border: 1px solid var(--border-black);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.neo-badge {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 8px;
+  border: 1px solid var(--border-black);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.neo-badge-approved { background: var(--card-blue-1); color: #0f2b5c; }
+.neo-badge-pending { background: #fef3c7; color: #78350f; }
+.neo-badge-rejected { background: #fee2e2; color: #991b1b; }
+.neo-badge-checkedin { background: #d1fae5; color: #065f46; }
+
+.neo-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 25, 47, 0.65);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.neo-modal {
+  background: #ffffff;
+  border: 2px solid var(--border-black);
+  box-shadow: 8px 8px 0px 0px var(--border-black);
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.neo-modal-header {
+  background: var(--bg-black);
+  color: #ffffff;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-black);
+}
+
+/* ==========================================================================
+   GATE SCANNER BRUTALIST CAMERA & CONTROLS
+   ========================================================================== */
+.scanner-camera-frame {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  height: 320px;
+  margin: 0 auto;
+  background: var(--bg-black);
+  border: 2px solid var(--border-black);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scanner-laser-line {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  height: 3px;
+  background: #38bdf8;
+  box-shadow: 0 0 12px 2px #38bdf8;
+  animation: scannerLaserSweep 2.2s ease-in-out infinite;
+  z-index: 10;
+  pointer-events: none;
+}
+
+@keyframes scannerLaserSweep {
+  0% { top: 8%; opacity: 0.8; }
+  50% { top: 92%; opacity: 1; }
+  100% { top: 8%; opacity: 0.8; }
+}
+
+.neo-stepper-btn {
+  width: 42px;
+  height: 42px;
+  background: #ffffff;
+  border: 1px solid var(--border-black);
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.neo-stepper-btn:hover:not(:disabled) {
+  background: var(--bg-black);
+  color: #ffffff;
+}
+
+.neo-stepper-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: #f1f5f9;
+}
+
+.neo-stepper-val {
+  min-width: 60px;
+  height: 42px;
+  background: var(--card-blue-1);
+  border: 1px solid var(--border-black);
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+}
+
+.neo-chip-btn {
+  padding: 6px 14px;
+  background: #ffffff;
+  border: 1px solid var(--border-black);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.neo-chip-btn:hover {
+  background: var(--bg-blue-tint);
+}
+
+.neo-chip-btn.active {
+  background: var(--bg-black);
+  color: #ffffff;
+}
+

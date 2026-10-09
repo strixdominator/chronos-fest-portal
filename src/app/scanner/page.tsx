@@ -13,16 +13,16 @@ import {
   Lock, 
   ShieldCheck, 
   Users, 
-  Volume2, 
   RefreshCw,
   X,
-  Sparkles,
-  ArrowRight,
   Plus,
   Minus,
   UserCheck,
-  Loader2
+  Loader2,
+  ExternalLink,
+  ArrowRight
 } from 'lucide-react';
+import Link from 'next/link';
 import { playSuccessSound, playErrorSound } from '@/lib/sound';
 import { Attendee, VerificationResult } from '@/lib/types';
 
@@ -61,6 +61,7 @@ export default function GateScannerPage() {
     rollNumber: string;
     status: string;
     time: string;
+    isSuccess: boolean;
   }>>([]);
 
   const [stats, setStats] = useState<{ checkedIn: number; approved: number; total: number }>({
@@ -190,7 +191,6 @@ export default function GateScannerPage() {
 
       // Status IS 'READY': show selection modal
       const rem = data.remaining || 1;
-      // Default to admitCount = 1 or all remaining if small
       setAdmitCount(rem > 1 ? 1 : rem);
       setScanPreview({
         code: codeToVerify.trim(),
@@ -254,7 +254,7 @@ export default function GateScannerPage() {
           particleCount: 60,
           spread: 70,
           origin: { y: 0.6 },
-          colors: ['#00f2fe', '#10b981', '#a855f7']
+          colors: ['#1d4ed8', '#0a192f', '#93c5fd', '#ffffff']
         });
       } else {
         playErrorSound();
@@ -268,6 +268,7 @@ export default function GateScannerPage() {
           rollNumber: result.attendee?.rollNumber || 'N/A',
           status: `${countToAdmit} Admitted (${result.code})`,
           time: new Date().toLocaleTimeString(),
+          isSuccess: result.valid,
         },
         ...prev.slice(0, 9)
       ]);
@@ -281,354 +282,486 @@ export default function GateScannerPage() {
     }
   };
 
-  // If volunteer is not authenticated yet
+  // 1. PIN AUTHENTICATION SCREEN
   if (!isAuthenticated) {
     return (
-      <div style={{ maxWidth: 440, margin: '60px auto', padding: '0 20px' }}>
-        <div className="glass-panel" style={{ padding: '36px', textAlign: 'center' }}>
-          <div style={{
-            width: 56,
-            height: 56,
-            borderRadius: '50%',
-            background: 'rgba(0, 242, 254, 0.15)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 16px'
-          }}>
-            <Lock size={28} color="var(--accent-cyan)" />
+      <div style={{ background: 'var(--bg-page)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <div className="neo-box" style={{ maxWidth: 440, width: '100%', background: '#ffffff', boxShadow: '6px 6px 0px 0px var(--border-black)' }}>
+          {/* Header */}
+          <div style={{ padding: '24px 28px', background: 'var(--bg-black)', color: '#ffffff', borderBottom: '1px solid var(--border-black)' }}>
+            <span className="mono-tag" style={{ color: 'var(--card-blue-2)' }}>VOLUNTEER STATION GATEWAY</span>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 900, marginTop: 4 }}>
+              MILAN 2026 • GATE SCANNER
+            </h2>
           </div>
 
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700, color: '#fff' }}>
-            Gate Staff Verification
-          </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: 4, marginBottom: 20 }}>
-            Enter your Gate volunteer PIN to launch the mobile entry QR camera scanner.
-          </p>
+          <div style={{ padding: '28px' }}>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: 20 }}>
+              Select your gate checkpoint station and enter the authorization PIN to unlock the live optical QR validator.
+            </p>
 
-          {pinError && (
-            <div style={{
-              background: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              borderRadius: 'var(--radius-sm)',
-              padding: '10px',
-              color: '#fca5a5',
-              fontSize: '0.85rem',
-              marginBottom: 16
-            }}>
-              {pinError}
-            </div>
-          )}
+            {pinError && (
+              <div style={{ padding: '10px 14px', background: '#fee2e2', border: '1px solid var(--border-black)', color: '#991b1b', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', fontWeight: 700, marginBottom: 16 }}>
+                {pinError}
+              </div>
+            )}
 
-          <form onSubmit={handlePinSubmit}>
-            <div className="form-group" style={{ textAlign: 'left' }}>
-              <label className="form-label">Gate / Station Name</label>
-              <select
-                className="form-select"
-                value={volunteerName}
-                onChange={e => setVolunteerName(e.target.value)}
+            <form onSubmit={handlePinSubmit}>
+              <div style={{ marginBottom: 16 }}>
+                <label className="mono-label" style={{ display: 'block', marginBottom: 6 }}>
+                  GATE / POST LOCATION
+                </label>
+                <select
+                  className="neo-input"
+                  value={volunteerName}
+                  onChange={e => setVolunteerName(e.target.value)}
+                  style={{ width: '100%' }}
+                >
+                  <option value="Gate 1 - North Entrance">Gate 1 - North Entrance</option>
+                  <option value="Gate 2 - South Arch">Gate 2 - South Arch</option>
+                  <option value="Gate 3 - Amphitheatre East">Gate 3 - Amphitheatre East</option>
+                  <option value="VIP & Performer Check-in">VIP & Performer Check-in</option>
+                </select>
+              </div>
+
+              <div style={{ marginBottom: 20 }}>
+                <label className="mono-label" style={{ display: 'block', marginBottom: 6 }}>
+                  VOLUNTEER PIN
+                </label>
+                <input
+                  type="password"
+                  placeholder="Enter PIN (e.g. gate2026)"
+                  className="neo-input"
+                  value={pin}
+                  onChange={e => setPin(e.target.value)}
+                  autoFocus
+                  required
+                />
+                <span style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 6 }}>
+                  DEFAULT GATE PINS: gate2026, admin123
+                </span>
+              </div>
+
+              <button
+                type="submit"
+                className="btn-neo-black"
+                style={{ width: '100%', padding: '14px' }}
               >
-                <option value="Gate 1 - North Entrance">Gate 1 - North Entrance</option>
-                <option value="Gate 2 - South Arch">Gate 2 - South Arch</option>
-                <option value="Gate 3 - Amphitheatre East">Gate 3 - Amphitheatre East</option>
-                <option value="VIP & Performer Check-in">VIP & Performer Check-in</option>
-              </select>
-            </div>
-
-            <div className="form-group" style={{ textAlign: 'left', marginTop: 12 }}>
-              <label className="form-label">Gate PIN</label>
-              <input
-                type="password"
-                placeholder="Enter Staff Authorization PIN"
-                className="form-input"
-                value={pin}
-                onChange={e => setPin(e.target.value)}
-                autoFocus
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="btn btn-primary"
-              style={{ width: '100%', marginTop: 16, padding: '12px' }}
-            >
-              Unlock Scanner
-            </button>
-          </form>
+                UNLOCK GATE SCANNER ↗
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     );
   }
 
+  // 2. MAIN GATE SCANNER INTERFACE
   return (
-    <div className="scanner-container">
-      {/* Live Gate Header Stats */}
-      <div className="glass-panel" style={{ padding: '16px 20px', marginBottom: 20 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <span style={{ fontSize: '0.72rem', color: 'var(--accent-cyan)', fontWeight: 700, textTransform: 'uppercase' }}>
-              {volunteerName}
-            </span>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>
-              Checked In: <span style={{ color: 'var(--status-approved)' }}>{stats.checkedIn}</span> / {stats.approved}
-            </h3>
+    <div style={{ background: 'var(--bg-page)', minHeight: '100vh', padding: '0 0 60px' }}>
+      {/* HUB NAVIGATOR STRIP */}
+      <div style={{
+        background: '#ffffff',
+        borderBottom: '1px solid var(--border-black)',
+        padding: '12px 32px',
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span className="mono-tag" style={{ color: 'var(--accent-blue)' }}>HUB:</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)' }}>
+            MILAN 2026 ADMISSION PROTOCOL
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          <Link
+            href="/"
+            target="_blank"
+            className="btn-neo-outline"
+            style={{ padding: '8px 14px', fontSize: '0.75rem' }}
+          >
+            1. ALUMNI PASS PORTAL ↗
+          </Link>
+          <span
+            className="btn-neo-black"
+            style={{ padding: '8px 14px', fontSize: '0.75rem', cursor: 'default' }}
+          >
+            2. GATE SCANNER (ACTIVE)
+          </span>
+          <Link
+            href="/admin"
+            target="_blank"
+            className="btn-neo-outline"
+            style={{ padding: '8px 14px', fontSize: '0.75rem' }}
+          >
+            3. ADMIN CENTER ↗
+          </Link>
+        </div>
+      </div>
+
+      {/* TOP SCANNER HEADER */}
+      <div style={{
+        padding: '28px 32px 20px',
+        borderBottom: '1px solid var(--border-black)',
+        background: 'var(--bg-blue-tint)',
+        display: 'flex',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+        gap: 20
+      }}>
+        <div>
+          <div className="mono-tag" style={{ color: 'var(--accent-blue)' }}>
+            STATION: {volunteerName.toUpperCase()}
           </div>
-          <button onClick={refreshStats} className="btn btn-secondary" style={{ padding: '8px 12px', fontSize: '0.8rem' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.8rem, 3.2vw, 2.5rem)', fontWeight: 900, textTransform: 'uppercase', marginTop: 4 }}>
+            Gate Entry & Wristband Terminal
+          </h1>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: 4 }}>
+            Optical validation with automated family split-quota admission tracking.
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button
+            onClick={refreshStats}
+            className="btn-neo-black"
+            style={{ padding: '10px 18px', fontSize: '0.78rem' }}
+          >
             <RefreshCw size={14} />
-            Sync
+            SYNC DATA ↗
           </button>
         </div>
       </div>
 
-      {/* Camera Viewfinder */}
-      <div className="glass-panel" style={{ padding: '20px', textAlign: 'center', marginBottom: 20 }}>
-        <div className="scanner-viewfinder">
-          <div id="qr-reader" style={{ width: '100%', height: '100%' }} />
-          {scanning && <div className="scanner-laser-line" />}
-          {!scanning && (
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--text-muted)',
-              gap: 12
-            }}>
-              <Camera size={44} color="var(--accent-cyan)" />
-              <p style={{ fontSize: '0.9rem', maxWidth: 220 }}>
-                Camera is off. Click below to start scanning.
-              </p>
+      {/* STAT COUNTERS GRID */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        borderBottom: '1px solid var(--border-black)',
+        background: '#ffffff'
+      }}>
+        <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
+          <span className="mono-label">GATE ADMITTED</span>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.2rem', fontWeight: 900, margin: '6px 0 2px', color: '#0e8a5a' }}>
+            {stats.checkedIn}
+          </div>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+            Wristbands attached
+          </span>
+        </div>
+
+        <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
+          <span className="mono-label">ISSUED PASSES</span>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.2rem', fontWeight: 900, margin: '6px 0 2px', color: 'var(--accent-blue)' }}>
+            {stats.approved}
+          </div>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+            Active QR tickets
+          </span>
+        </div>
+
+        <div className="neo-stat-card" style={{ borderBottom: 'none' }}>
+          <span className="mono-label">PENDING ARRIVAL</span>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.2rem', fontWeight: 900, margin: '6px 0 2px', color: 'var(--text-main)' }}>
+            {Math.max(0, stats.approved - stats.checkedIn)}
+          </div>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+            Expected at gates
+          </span>
+        </div>
+      </div>
+
+      {/* SCANNER BODY CONTAINER */}
+      <div style={{ maxWidth: 1000, margin: '32px auto 0', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+        
+        {/* CARD 1: CAMERA SCANNER */}
+        <div className="neo-box" style={{ background: '#ffffff', boxShadow: '4px 4px 0px 0px var(--border-black)' }}>
+          <div style={{
+            padding: '16px 24px',
+            borderBottom: '1px solid var(--border-black)',
+            background: 'var(--bg-black)',
+            color: '#ffffff',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Camera size={18} style={{ color: 'var(--card-blue-2)' }} />
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.06em' }}>
+                01 • OPTICAL QR CAMERA VIEW
+              </span>
             </div>
-          )}
-        </div>
+            <span className="neo-badge" style={{ background: scanning ? '#d1fae5' : '#e2e8f0', color: scanning ? '#065f46' : '#475569' }}>
+              {scanning ? '● LIVE SCANNING' : '○ SENSOR OFF'}
+            </span>
+          </div>
 
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 16 }}>
-          {!scanning ? (
-            <button onClick={startScanner} className="btn btn-primary" style={{ padding: '12px 24px' }}>
-              <Camera size={18} />
-              Start Camera Scanner
-            </button>
-          ) : (
-            <button onClick={stopScanner} className="btn btn-secondary" style={{ padding: '12px 24px' }}>
-              <CameraOff size={18} />
-              Stop Camera
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Manual Roll Number / Ticket Search Fallback */}
-      <div className="glass-panel" style={{ padding: '20px', marginBottom: 20 }}>
-        <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Search size={14} />
-          Manual Code / Roll Number Check-in (Fallback)
-        </h4>
-
-        <form onSubmit={e => { e.preventDefault(); handleVerify(manualCode); setManualCode(''); }} style={{ display: 'flex', gap: 10 }}>
-          <input
-            type="text"
-            placeholder="e.g. 2023CS104 or TKT-CHRONOS-8942"
-            className="form-input"
-            value={manualCode}
-            onChange={e => setManualCode(e.target.value)}
-          />
-          <button
-            type="submit"
-            disabled={verifying}
-            className="btn btn-primary"
-            style={{ whiteSpace: 'nowrap' }}
-          >
-            Verify
-          </button>
-        </form>
-
-        {/* Demo Fast Scan Buttons */}
-        <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-sub)', alignSelf: 'center' }}>Test Scans:</span>
-          <button
-            type="button"
-            onClick={() => handleVerify('2023CS104')}
-            className="btn btn-secondary"
-            style={{ fontSize: '0.75rem', padding: '4px 10px' }}
-          >
-            Valid: 2023CS104
-          </button>
-          <button
-            type="button"
-            onClick={() => handleVerify('2022EC215')}
-            className="btn btn-secondary"
-            style={{ fontSize: '0.75rem', padding: '4px 10px' }}
-          >
-            Already Used: 2022EC215
-          </button>
-          <button
-            type="button"
-            onClick={() => handleVerify('2024ME089')}
-            className="btn btn-secondary"
-            style={{ fontSize: '0.75rem', padding: '4px 10px' }}
-          >
-            Pending: 2024ME089
-          </button>
-          <button
-            type="button"
-            onClick={() => handleVerify('UNKNOWN-999')}
-            className="btn btn-secondary"
-            style={{ fontSize: '0.75rem', padding: '4px 10px' }}
-          >
-            Rejected: UNKNOWN-999
-          </button>
-        </div>
-      </div>
-
-      {/* Recent Scans Log */}
-      {recentScans.length > 0 && (
-        <div className="glass-panel" style={{ padding: '20px' }}>
-          <h4 style={{ fontSize: '0.85rem', color: 'var(--text-sub)', textTransform: 'uppercase', marginBottom: 12 }}>
-            Recent Gate Activity
-          </h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {recentScans.map((scan, i) => (
-              <div
-                key={i}
-                style={{
+          <div style={{ padding: '24px', textAlign: 'center' }}>
+            <div className="scanner-camera-frame">
+              <div id="qr-reader" style={{ width: '100%', height: '100%' }} />
+              {scanning && <div className="scanner-laser-line" />}
+              {!scanning && (
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
                   display: 'flex',
-                  justifyContent: 'space-between',
+                  flexDirection: 'column',
                   alignItems: 'center',
-                  padding: '8px 12px',
-                  borderRadius: 'var(--radius-sm)',
-                  background: 'rgba(255,255,255,0.02)',
-                  border: '1px solid var(--border-subtle)',
-                  fontSize: '0.85rem'
-                }}
-              >
-                <div>
-                  <span style={{ fontWeight: 600, color: '#fff' }}>{scan.name}</span>
-                  <span style={{ color: 'var(--text-sub)', marginLeft: 8, fontFamily: 'monospace' }}>
-                    {scan.rollNumber}
-                  </span>
+                  justifyContent: 'center',
+                  color: '#94a3b8',
+                  gap: 12,
+                  padding: 20
+                }}>
+                  <Camera size={48} style={{ color: 'var(--card-blue-2)' }} />
+                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: '#e2e8f0', maxWidth: 280 }}>
+                    Optical sensor is in standby mode. Click below to activate front or back camera.
+                  </p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    color: scan.status === 'SUCCESS' ? 'var(--status-approved)' : 'var(--status-rejected)'
-                  }}>
-                    {scan.status}
-                  </span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-sub)' }}>{scan.time}</span>
-                </div>
-              </div>
-            ))}
+              )}
+            </div>
+
+            <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center', gap: 12 }}>
+              {!scanning ? (
+                <button
+                  type="button"
+                  onClick={startScanner}
+                  className="btn-neo-black"
+                  style={{ padding: '14px 28px', fontSize: '0.82rem' }}
+                >
+                  <Camera size={16} />
+                  ACTIVATE CAMERA SCANNER ↗
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={stopScanner}
+                  className="btn-neo-outline"
+                  style={{ padding: '14px 28px', fontSize: '0.82rem' }}
+                >
+                  <CameraOff size={16} />
+                  DEACTIVATE CAMERA
+                </button>
+              )}
+            </div>
           </div>
         </div>
-      )}
 
-      {/* MODAL 1: SCAN PREVIEW & ADMISSION SELECTOR */}
-      {scanPreview && (
-        <div className="modal-backdrop">
-          <div className="modal-content" style={{
-            border: `2px solid ${
-              scanPreview.status === 'READY'
-                ? (scanPreview.admittedCount > 0 ? '#00f2fe' : '#10b981')
-                : scanPreview.status === 'ALREADY_CHECKED_IN'
-                ? '#f59e0b'
-                : '#ef4444'
-            }`,
-            boxShadow: `0 0 50px ${
-              scanPreview.status === 'READY'
-                ? 'rgba(0, 242, 254, 0.35)'
-                : scanPreview.status === 'ALREADY_CHECKED_IN'
-                ? 'rgba(245, 158, 11, 0.35)'
-                : 'rgba(239, 68, 68, 0.35)'
-            }`
+        {/* CARD 2: MANUAL ROLL CODE LOOKUP */}
+        <div className="neo-box" style={{ background: '#ffffff', boxShadow: '4px 4px 0px 0px var(--border-black)' }}>
+          <div style={{
+            padding: '16px 24px',
+            borderBottom: '1px solid var(--border-black)',
+            background: 'var(--bg-blue-tint)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
           }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Search size={18} style={{ color: 'var(--accent-blue)' }} />
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.06em' }}>
+                02 • MANUAL USN / TICKET CODE LOOKUP (FALLBACK)
+              </span>
+            </div>
+            <span className="mono-tag" style={{ color: 'var(--text-secondary)' }}>
+              KEYPAD INPUT
+            </span>
+          </div>
+
+          <div style={{ padding: '24px' }}>
+            <form onSubmit={e => { e.preventDefault(); handleVerify(manualCode); setManualCode(''); }}>
+              <div className="neo-input-group">
+                <input
+                  type="text"
+                  placeholder="Enter USN (e.g. 1DB20CS001 or 2023CS104)"
+                  value={manualCode}
+                  onChange={e => setManualCode(e.target.value)}
+                  style={{ width: '100%', textTransform: 'uppercase' }}
+                />
+                <button
+                  type="submit"
+                  disabled={verifying || !manualCode.trim()}
+                  className="btn-neo-black"
+                  style={{ padding: '0 24px' }}
+                >
+                  {verifying ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
+                  VERIFY CODE ↗
+                </button>
+              </div>
+            </form>
+
+            {/* Test demo shortcuts */}
+            <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+              <span className="mono-label">FAST DEMO PASSES:</span>
+              <button
+                type="button"
+                onClick={() => handleVerify('1DB15CS001')}
+                className="neo-chip-btn"
+              >
+                1DB15CS001 (Valid Pass)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleVerify('1DB01CS001')}
+                className="neo-chip-btn"
+              >
+                1DB01CS001 (Exhausted Quota)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleVerify('2024ME089')}
+                className="neo-chip-btn"
+              >
+                2024ME089 (Pending Review)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleVerify('UNKNOWN-999')}
+                className="neo-chip-btn"
+              >
+                UNKNOWN-999 (Invalid)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* CARD 3: RECENT GATE ACTIVITY */}
+        {recentScans.length > 0 && (
+          <div className="neo-box" style={{ background: '#ffffff', boxShadow: '4px 4px 0px 0px var(--border-black)' }}>
             <div style={{
-              padding: '28px 24px',
-              textAlign: 'center',
-              background: scanPreview.status === 'READY'
-                ? 'linear-gradient(180deg, rgba(0, 242, 254, 0.15) 0%, rgba(14, 18, 30, 0.98) 100%)'
-                : scanPreview.status === 'ALREADY_CHECKED_IN'
-                ? 'linear-gradient(180deg, rgba(245, 158, 11, 0.2) 0%, rgba(14, 18, 30, 0.98) 100%)'
-                : 'linear-gradient(180deg, rgba(239, 68, 68, 0.2) 0%, rgba(14, 18, 30, 0.98) 100%)'
+              padding: '16px 24px',
+              borderBottom: '1px solid var(--border-black)',
+              background: '#ffffff',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
             }}>
-              {/* Header Icon */}
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.06em' }}>
+                03 • RECENT GATE ACTIVITY AT THIS STATION ({recentScans.length})
+              </span>
+              <span className="mono-tag" style={{ color: 'var(--accent-blue)' }}>LIVE AUDIT</span>
+            </div>
+
+            <div style={{ overflowX: 'auto' }}>
+              <table className="neo-table" style={{ border: 'none' }}>
+                <thead>
+                  <tr>
+                    <th>ATTENDEE NAME</th>
+                    <th>USN / CODE</th>
+                    <th>OUTCOME</th>
+                    <th>TIMESTAMP</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentScans.map((scan, i) => (
+                    <tr key={i}>
+                      <td style={{ fontWeight: 700, color: 'var(--text-main)' }}>{scan.name}</td>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--accent-blue)' }}>
+                        {scan.rollNumber}
+                      </td>
+                      <td>
+                        <span className={`neo-badge ${scan.isSuccess ? 'neo-badge-checkedin' : 'neo-badge-rejected'}`}>
+                          {scan.status}
+                        </span>
+                      </td>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                        {scan.time}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* =========================================================================
+         MODAL 1: SCAN PREVIEW & ADMISSION SELECTOR (GROUP SPLIT QUOTA)
+         ========================================================================= */}
+      {scanPreview && (
+        <div className="neo-modal-backdrop">
+          <div className="neo-modal" style={{ maxWidth: 580 }}>
+            <div className="neo-modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span className="mono-tag" style={{ color: 'var(--card-blue-2)' }}>
+                  GATE DISPATCH PROTOCOL
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setScanPreview(null)}
+                style={{ background: 'transparent', border: 'none', color: '#ffffff', cursor: 'pointer' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ padding: '24px' }}>
+              {/* Header Status Card */}
               <div style={{
-                width: 68,
-                height: 68,
-                borderRadius: '50%',
+                padding: '16px 20px',
+                border: '1px solid var(--border-black)',
                 background: scanPreview.status === 'READY'
-                  ? (scanPreview.admittedCount > 0 ? 'var(--accent-cyan)' : 'var(--status-approved)')
+                  ? (scanPreview.admittedCount > 0 ? 'var(--card-blue-1)' : '#d1fae5')
                   : scanPreview.status === 'ALREADY_CHECKED_IN'
-                  ? 'var(--status-pending)'
-                  : 'var(--status-rejected)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 14px',
-                boxShadow: '0 0 25px rgba(0,0,0,0.5)'
+                  ? '#fef3c7'
+                  : '#fee2e2',
+                marginBottom: 20
               }}>
-                {scanPreview.status === 'READY' ? (
-                  scanPreview.admittedCount > 0 ? <UserCheck size={38} color="#07090e" /> : <CheckCircle2 size={40} color="#fff" />
-                ) : scanPreview.status === 'ALREADY_CHECKED_IN' ? (
-                  <AlertOctagon size={40} color="#fff" />
-                ) : (
-                  <AlertTriangle size={40} color="#fff" />
-                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  {scanPreview.status === 'READY' ? (
+                    scanPreview.admittedCount > 0 ? (
+                      <UserCheck size={24} style={{ color: '#0f2b5c' }} />
+                    ) : (
+                      <CheckCircle2 size={24} style={{ color: '#065f46' }} />
+                    )
+                  ) : scanPreview.status === 'ALREADY_CHECKED_IN' ? (
+                    <AlertOctagon size={24} style={{ color: '#92400e' }} />
+                  ) : (
+                    <AlertTriangle size={24} style={{ color: '#991b1b' }} />
+                  )}
+
+                  <div>
+                    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', fontWeight: 900, textTransform: 'uppercase' }}>
+                      {scanPreview.status === 'READY' && (
+                        scanPreview.admittedCount > 0
+                          ? `PARTIAL ENTRY (${scanPreview.remaining} REMAINING)`
+                          : `VALID PASS (${scanPreview.totalQuota} TOTAL QUOTA)`
+                      )}
+                      {scanPreview.status === 'ALREADY_CHECKED_IN' && 'QUOTA FULLY EXHAUSTED!'}
+                      {scanPreview.status === 'PENDING' && 'PENDING MANUAL APPROVAL'}
+                      {scanPreview.status === 'REJECTED' && 'PASS REJECTED'}
+                      {scanPreview.status === 'NOT_FOUND' && 'INVALID / NOT FOUND'}
+                    </h3>
+                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', marginTop: 2, color: 'var(--text-secondary)' }}>
+                      {scanPreview.message}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {/* Title */}
-              <h2 style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: '1.6rem',
-                fontWeight: 800,
-                color: scanPreview.status === 'READY'
-                  ? (scanPreview.admittedCount > 0 ? 'var(--accent-cyan)' : 'var(--status-approved)')
-                  : scanPreview.status === 'ALREADY_CHECKED_IN'
-                  ? 'var(--status-pending)'
-                  : 'var(--status-rejected)',
-                marginBottom: 4
-              }}>
-                {scanPreview.status === 'READY' && (
-                  scanPreview.admittedCount > 0 
-                    ? `PARTIAL ENTRY (${scanPreview.remaining} REMAINING)`
-                    : `VALID PASS (${scanPreview.totalQuota} TOTAL)`
-                )}
-                {scanPreview.status === 'ALREADY_CHECKED_IN' && 'QUOTA FULLY EXHAUSTED!'}
-                {scanPreview.status === 'PENDING' && 'PENDING APPROVAL'}
-                {scanPreview.status === 'REJECTED' && 'ENTRY REJECTED'}
-                {scanPreview.status === 'NOT_FOUND' && 'INVALID TICKET'}
-              </h2>
-
-              <p style={{ fontSize: '0.9rem', color: '#cbd5e1', marginBottom: 16 }}>
-                {scanPreview.message}
-              </p>
-
-              {/* Attendee Info Card */}
+              {/* Attendee Details Card */}
               {scanPreview.attendee && (
-                <div style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-md)',
-                  padding: '16px',
-                  textAlign: 'left',
-                  marginBottom: 18
-                }}>
+                <div style={{ border: '1px solid var(--border-black)', padding: '16px', background: 'var(--bg-card-alt)', marginBottom: 20 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--text-sub)', textTransform: 'uppercase' }}>GRADUATE ALUMNUS</span>
-                      <h4 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#fff' }}>
+                      <span className="mono-label">GRADUATE ALUMNUS</span>
+                      <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', fontWeight: 800, marginTop: 2 }}>
                         {scanPreview.attendee.fullName}
                       </h4>
-                      <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                        {scanPreview.attendee.department}
+                      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                        {scanPreview.attendee.department} · {scanPreview.attendee.batchYear || 'Alumnus'}
                       </p>
                     </div>
+
                     <div style={{ textAlign: 'right' }}>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--text-sub)', textTransform: 'uppercase' }}>USN / ROLL NO</span>
-                      <div style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent-cyan)', fontSize: '0.95rem' }}>
+                      <span className="mono-label">USN / ROLL NO</span>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.05rem', fontWeight: 800, color: 'var(--accent-blue)', marginTop: 2 }}>
                         {scanPreview.attendee.rollNumber}
                       </div>
                     </div>
@@ -636,33 +769,16 @@ export default function GateScannerPage() {
 
                   {/* Registered Family Members breakdown */}
                   {scanPreview.attendee.familyMembers && scanPreview.attendee.familyMembers.length > 0 && (
-                    <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border-subtle)' }}>
-                      <span style={{ fontSize: '0.72rem', color: 'var(--text-sub)', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>
+                    <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--border-subtle)' }}>
+                      <span className="mono-label" style={{ display: 'block', marginBottom: 8 }}>
                         REGISTERED MEMBERS ({scanPreview.totalQuota} TOTAL):
                       </span>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                        <span style={{
-                          background: 'rgba(0, 242, 254, 0.12)',
-                          border: '1px solid rgba(0, 242, 254, 0.25)',
-                          borderRadius: 4,
-                          padding: '2px 8px',
-                          fontSize: '0.75rem',
-                          color: '#fff'
-                        }}>
+                        <span className="neo-badge neo-badge-approved">
                           ★ {scanPreview.attendee.fullName} (Alumnus)
                         </span>
                         {scanPreview.attendee.familyMembers.map((fam, idx) => (
-                          <span
-                            key={idx}
-                            style={{
-                              background: 'rgba(255, 255, 255, 0.05)',
-                              border: '1px solid var(--border-subtle)',
-                              borderRadius: 4,
-                              padding: '2px 8px',
-                              fontSize: '0.75rem',
-                              color: '#cbd5e1'
-                            }}
-                          >
+                          <span key={idx} className="neo-badge" style={{ background: '#ffffff' }}>
                             {fam.name} ({fam.relation})
                           </span>
                         ))}
@@ -672,40 +788,39 @@ export default function GateScannerPage() {
 
                   {/* Quota Progress Strip */}
                   <div style={{
-                    marginTop: 12,
-                    paddingTop: 10,
+                    marginTop: 14,
+                    paddingTop: 12,
                     borderTop: '1px solid var(--border-subtle)',
                     display: 'grid',
                     gridTemplateColumns: '1fr 1fr 1fr',
                     gap: 8,
-                    textAlign: 'center',
-                    fontSize: '0.8rem'
+                    textAlign: 'center'
                   }}>
-                    <div style={{ background: 'rgba(0,0,0,0.25)', padding: '6px', borderRadius: 6 }}>
-                      <span style={{ color: 'var(--text-sub)', display: 'block', fontSize: '0.7rem' }}>Total Quota</span>
-                      <strong style={{ color: '#fff' }}>{scanPreview.totalQuota}</strong>
+                    <div style={{ background: '#ffffff', border: '1px solid var(--border-black)', padding: '8px' }}>
+                      <span className="mono-label" style={{ display: 'block', fontSize: '0.68rem' }}>Total Quota</span>
+                      <strong style={{ fontFamily: 'var(--font-mono)', fontSize: '1.1rem' }}>{scanPreview.totalQuota}</strong>
                     </div>
-                    <div style={{ background: 'rgba(0,0,0,0.25)', padding: '6px', borderRadius: 6 }}>
-                      <span style={{ color: 'var(--text-sub)', display: 'block', fontSize: '0.7rem' }}>Already In</span>
-                      <strong style={{ color: scanPreview.admittedCount > 0 ? 'var(--status-pending)' : 'var(--text-muted)' }}>
+                    <div style={{ background: '#ffffff', border: '1px solid var(--border-black)', padding: '8px' }}>
+                      <span className="mono-label" style={{ display: 'block', fontSize: '0.68rem' }}>Already In</span>
+                      <strong style={{ fontFamily: 'var(--font-mono)', fontSize: '1.1rem', color: scanPreview.admittedCount > 0 ? '#b45309' : 'var(--text-secondary)' }}>
                         {scanPreview.admittedCount}
                       </strong>
                     </div>
-                    <div style={{ background: 'rgba(0,0,0,0.25)', padding: '6px', borderRadius: 6 }}>
-                      <span style={{ color: 'var(--text-sub)', display: 'block', fontSize: '0.7rem' }}>Available Now</span>
-                      <strong style={{ color: scanPreview.remaining > 0 ? '#6ee7b7' : 'var(--status-rejected)' }}>
+                    <div style={{ background: '#ffffff', border: '1px solid var(--border-black)', padding: '8px' }}>
+                      <span className="mono-label" style={{ display: 'block', fontSize: '0.68rem' }}>Available Now</span>
+                      <strong style={{ fontFamily: 'var(--font-mono)', fontSize: '1.1rem', color: scanPreview.remaining > 0 ? '#0e8a5a' : '#dc2626' }}>
                         {scanPreview.remaining}
                       </strong>
                     </div>
                   </div>
 
-                  {/* Check-in logs if already partially admitted */}
+                  {/* Previous Check-in logs if already partially admitted */}
                   {scanPreview.attendee.checkInLogs && scanPreview.attendee.checkInLogs.length > 0 && (
-                    <div style={{ marginTop: 10, fontSize: '0.75rem', color: 'var(--text-sub)' }}>
-                      <span style={{ fontWeight: 600 }}>Previous Admissions:</span>
+                    <div style={{ marginTop: 12, fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
+                      <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>Previous Check-in Log:</span>
                       {scanPreview.attendee.checkInLogs.map((log, idx) => (
                         <div key={idx} style={{ marginTop: 2 }}>
-                          • {log.admitted} member(s) admitted at {new Date(log.timestamp).toLocaleTimeString()} ({log.gateVolunteer})
+                          • {log.admitted} member(s) admitted at {new Date(log.timestamp).toLocaleTimeString()} by {log.gateVolunteer}
                         </div>
                       ))}
                     </div>
@@ -715,63 +830,23 @@ export default function GateScannerPage() {
 
               {/* ACTION SECTION FOR VOLUNTEER */}
               {scanPreview.status === 'READY' && (
-                <div style={{
-                  background: 'rgba(0, 0, 0, 0.3)',
-                  border: '1px solid var(--border-focus)',
-                  borderRadius: 'var(--radius-md)',
-                  padding: '16px',
-                  marginBottom: 18
-                }}>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '0.88rem',
-                    fontWeight: 700,
-                    color: '#fff',
-                    marginBottom: 12
-                  }}>
-                    How many members are present at the gate right now?
+                <div style={{ border: '1px solid var(--border-black)', padding: '18px', background: 'var(--bg-blue-tint)', marginBottom: 20 }}>
+                  <label className="mono-label" style={{ display: 'block', marginBottom: 12, textAlign: 'center' }}>
+                    MEMBERS PRESENT AT GATE RIGHT NOW:
                   </label>
 
-                  {/* Number Stepper */}
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 16,
-                    marginBottom: 14
-                  }}>
+                  {/* Stepper */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 16 }}>
                     <button
                       type="button"
                       disabled={admitCount <= 1}
                       onClick={() => setAdmitCount(prev => Math.max(1, prev - 1))}
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 12,
-                        background: 'rgba(255,255,255,0.1)',
-                        border: '1px solid var(--border-subtle)',
-                        color: '#fff',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: admitCount <= 1 ? 'not-allowed' : 'pointer',
-                        opacity: admitCount <= 1 ? 0.4 : 1
-                      }}
+                      className="neo-stepper-btn"
                     >
-                      <Minus size={20} />
+                      <Minus size={18} />
                     </button>
 
-                    <div style={{
-                      minWidth: 70,
-                      padding: '8px 16px',
-                      borderRadius: 12,
-                      background: 'rgba(0, 242, 254, 0.15)',
-                      border: '1px solid rgba(0, 242, 254, 0.4)',
-                      fontFamily: 'monospace',
-                      fontSize: '1.8rem',
-                      fontWeight: 800,
-                      color: 'var(--accent-cyan)'
-                    }}>
+                    <div className="neo-stepper-val">
                       {admitCount}
                     </div>
 
@@ -779,21 +854,9 @@ export default function GateScannerPage() {
                       type="button"
                       disabled={admitCount >= scanPreview.remaining}
                       onClick={() => setAdmitCount(prev => Math.min(scanPreview.remaining, prev + 1))}
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 12,
-                        background: 'rgba(255,255,255,0.1)',
-                        border: '1px solid var(--border-subtle)',
-                        color: '#fff',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: admitCount >= scanPreview.remaining ? 'not-allowed' : 'pointer',
-                        opacity: admitCount >= scanPreview.remaining ? 0.4 : 1
-                      }}
+                      className="neo-stepper-btn"
                     >
-                      <Plus size={20} />
+                      <Plus size={18} />
                     </button>
                   </div>
 
@@ -808,16 +871,7 @@ export default function GateScannerPage() {
                             key={val}
                             type="button"
                             onClick={() => setAdmitCount(val)}
-                            style={{
-                              padding: '5px 12px',
-                              borderRadius: 999,
-                              fontSize: '0.8rem',
-                              fontWeight: 700,
-                              background: isSelected ? 'var(--accent-cyan)' : 'rgba(255,255,255,0.06)',
-                              color: isSelected ? '#07090e' : '#cbd5e1',
-                              border: isSelected ? 'none' : '1px solid var(--border-subtle)',
-                              cursor: 'pointer'
-                            }}
+                            className={`neo-chip-btn ${isSelected ? 'active' : ''}`}
                           >
                             {val === scanPreview.remaining ? `All ${val} Present` : `${val} Member${val > 1 ? 's' : ''}`}
                           </button>
@@ -831,15 +885,15 @@ export default function GateScannerPage() {
                     type="button"
                     disabled={admitting}
                     onClick={() => handleConfirmCheckIn(admitCount)}
-                    className="btn btn-primary"
+                    className="btn-neo-black"
                     style={{
                       width: '100%',
-                      padding: '14px',
-                      fontSize: '1.05rem',
-                      fontWeight: 800,
-                      background: 'linear-gradient(135deg, #10b981 0%, #00f2fe 100%)',
-                      border: 'none',
-                      color: '#07090e'
+                      padding: '16px',
+                      fontSize: '0.9rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8
                     }}
                   >
                     {admitting ? (
@@ -847,13 +901,12 @@ export default function GateScannerPage() {
                     ) : (
                       <CheckCircle2 size={18} />
                     )}
-                    Confirm Entry for {admitCount} & Issue {admitCount} Wristband{admitCount > 1 ? 's' : ''}
+                    CONFIRM ENTRY FOR {admitCount} & ISSUE {admitCount} WRISTBAND{admitCount > 1 ? 'S' : ''} ↗
                   </button>
 
-                  {/* Remaining notice if partial */}
                   {admitCount < scanPreview.remaining && (
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 8 }}>
-                      Note: {scanPreview.remaining - admitCount} quota will remain active on this QR code for late-arriving members.
+                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)', textAlign: 'center', marginTop: 10 }}>
+                      ℹ️ Note: {scanPreview.remaining - admitCount} quota will remain valid on this QR code for late arrivals.
                     </p>
                   )}
                 </div>
@@ -862,136 +915,124 @@ export default function GateScannerPage() {
               {/* Anti-fraud warning if already exhausted */}
               {scanPreview.status === 'ALREADY_CHECKED_IN' && (
                 <div style={{
-                  background: 'rgba(239, 68, 68, 0.2)',
-                  border: '1px solid rgba(239, 68, 68, 0.5)',
                   padding: '14px',
-                  borderRadius: 'var(--radius-sm)',
-                  marginBottom: 16,
-                  color: '#fca5a5',
-                  fontSize: '0.88rem',
-                  fontWeight: 700
+                  background: '#fee2e2',
+                  border: '1px solid var(--border-black)',
+                  color: '#991b1b',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  marginBottom: 16
                 }}>
-                  DO NOT ADMIT. All {scanPreview.totalQuota} of {scanPreview.totalQuota} registered passes have already been scanned. Wristbands were already issued.
+                  ⛔ DO NOT ADMIT: All {scanPreview.totalQuota} of {scanPreview.totalQuota} registered passes have already been scanned. Wristbands were already issued.
                 </div>
               )}
 
-              {/* Close / Dismiss */}
+              {/* Close Button */}
               <button
+                type="button"
                 onClick={() => setScanPreview(null)}
-                className="btn btn-secondary"
-                style={{ width: '100%', padding: '12px', fontSize: '0.9rem' }}
+                className="btn-neo-outline"
+                style={{ width: '100%', padding: '12px' }}
               >
-                {scanPreview.status === 'READY' ? 'Cancel / Scan Another' : 'Dismiss / Ready for Next'}
+                {scanPreview.status === 'READY' ? 'CANCEL / SCAN ANOTHER' : 'DISMISS / READY FOR NEXT'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL 2: CONFIRMED CHECK-IN RESULT (Wristband Handout Banner) */}
+      {/* =========================================================================
+         MODAL 2: CONFIRMED CHECK-IN RESULT (WRISTBAND ATTACHMENT BANNER)
+         ========================================================================= */}
       {scanResult && (
-        <div className="modal-backdrop">
-          <div className="modal-content" style={{
-            border: `2px solid ${
-              scanResult.code === 'SUCCESS' || scanResult.code === 'PARTIAL_ENTRY'
-                ? '#10b981'
-                : scanResult.code === 'ALREADY_CHECKED_IN'
-                ? '#f59e0b'
-                : '#ef4444'
-            }`,
-            boxShadow: `0 0 50px rgba(16, 185, 129, 0.4)`
-          }}>
-            <div style={{
-              padding: '30px 24px',
-              textAlign: 'center',
-              background: 'linear-gradient(180deg, rgba(16, 185, 129, 0.25) 0%, rgba(14, 18, 30, 0.98) 100%)'
-            }}>
-              {/* Status Icon */}
-              <div style={{
-                width: 72,
-                height: 72,
-                borderRadius: '50%',
-                background: 'var(--status-approved)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 16px',
-                boxShadow: '0 0 30px rgba(16, 185, 129, 0.6)'
-              }}>
-                <CheckCircle2 size={44} color="#fff" />
+        <div className="neo-modal-backdrop">
+          <div className="neo-modal" style={{ maxWidth: 540 }}>
+            <div className="neo-modal-header" style={{ background: '#0e8a5a' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <CheckCircle2 size={18} style={{ color: '#ffffff' }} />
+                <span className="mono-tag" style={{ color: '#ffffff' }}>
+                  ADMISSION GRANTED
+                </span>
               </div>
+              <button
+                type="button"
+                onClick={() => setScanResult(null)}
+                style={{ background: 'transparent', border: 'none', color: '#ffffff', cursor: 'pointer' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
 
-              {/* Status Title */}
-              <h2 style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: '1.8rem',
-                fontWeight: 800,
-                color: 'var(--status-approved)',
-                marginBottom: 6
-              }}>
-                {scanResult.code === 'PARTIAL_ENTRY' ? 'PARTIAL ENTRY CONFIRMED!' : 'ENTRY GRANTED!'}
+            <div style={{ padding: '28px', textAlign: 'center' }}>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', fontWeight: 900, textTransform: 'uppercase', color: '#0e8a5a' }}>
+                {scanResult.code === 'PARTIAL_ENTRY' ? 'PARTIAL ENTRY RECORDED!' : 'ENTRY GRANTED!'}
               </h2>
-
-              <p style={{ fontSize: '1rem', color: '#fff', fontWeight: 600, marginBottom: 20 }}>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.92rem', color: 'var(--text-secondary)', marginTop: 6, marginBottom: 20 }}>
                 {scanResult.message}
               </p>
 
               {/* Big Wristband instruction box */}
               <div style={{
-                background: 'rgba(16, 185, 129, 0.2)',
-                border: '1px solid rgba(16, 185, 129, 0.6)',
-                borderRadius: 'var(--radius-md)',
-                padding: '16px',
+                background: 'var(--card-blue-1)',
+                border: '2px solid var(--border-black)',
+                boxShadow: '4px 4px 0px 0px var(--border-black)',
+                padding: '20px',
                 textAlign: 'center',
                 marginBottom: 20
               }}>
-                <span style={{ fontSize: '0.8rem', color: '#6ee7b7', fontWeight: 700, display: 'block', textTransform: 'uppercase' }}>
+                <span className="mono-label" style={{ display: 'block', color: 'var(--accent-blue)', marginBottom: 4 }}>
                   ACTION FOR GATE VOLUNTEER:
                 </span>
-                <span style={{ fontSize: '1.25rem', color: '#fff', fontWeight: 800, display: 'block', marginTop: 4 }}>
-                  ATTACH {scanResult.admittedNow || 1} × {scanResult.attendee?.wristbandColor || 'NEON CYAN'} WRISTBAND(S) NOW
+                <span style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: '1.25rem',
+                  fontWeight: 900,
+                  color: 'var(--text-main)',
+                  display: 'block'
+                }}>
+                  ATTACH {scanResult.admittedNow || 1} × {scanResult.attendee?.wristbandColor || 'ROYAL BLUE'} WRISTBAND(S) NOW
                 </span>
+
                 {scanResult.remaining !== undefined && scanResult.remaining > 0 ? (
                   <span style={{
                     display: 'inline-block',
-                    marginTop: 8,
-                    padding: '3px 10px',
-                    borderRadius: 999,
-                    background: 'rgba(0, 242, 254, 0.15)',
-                    color: 'var(--accent-cyan)',
-                    fontSize: '0.78rem',
-                    fontWeight: 700
+                    marginTop: 10,
+                    padding: '4px 10px',
+                    background: '#ffffff',
+                    border: '1px solid var(--border-black)',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
+                    color: 'var(--accent-blue)'
                   }}>
-                    ℹ️ {scanResult.remaining} remaining admission(s) left on this pass for members arriving later.
+                    ℹ️ {scanResult.remaining} remaining admission(s) left on this pass for late arrivals.
                   </span>
                 ) : (
                   <span style={{
                     display: 'inline-block',
-                    marginTop: 8,
-                    padding: '3px 10px',
-                    borderRadius: 999,
-                    background: 'rgba(16, 185, 129, 0.15)',
-                    color: '#6ee7b7',
-                    fontSize: '0.78rem',
-                    fontWeight: 700
+                    marginTop: 10,
+                    padding: '4px 10px',
+                    background: '#ffffff',
+                    border: '1px solid var(--border-black)',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
+                    color: '#0e8a5a'
                   }}>
-                    ✓ All registered quotas fulfilled · Pass is now expired.
+                    ✓ Full pass quota fulfilled · Pass marked complete.
                   </span>
                 )}
               </div>
 
-              {/* Dismiss button */}
+              {/* Ready for next button */}
               <button
+                type="button"
                 onClick={() => setScanResult(null)}
-                className="btn btn-primary"
-                style={{
-                  width: '100%',
-                  padding: '14px',
-                  fontSize: '1.05rem',
-                  fontWeight: 700
-                }}
+                className="btn-neo-black"
+                style={{ width: '100%', padding: '14px', fontSize: '0.88rem' }}
               >
-                Ready for Next Attendee
+                READY FOR NEXT ATTENDEE ↗
               </button>
             </div>
           </div>

@@ -1,5 +1,37 @@
 [
   {
+    "fullName": "A RASHMI",
+    "email": "rashmi.a9889@gmail.com",
+    "phone": "9164699489",
+    "rollNumber": "1DB15CS001",
+    "usn": "1DB15CS001",
+    "department": "CSE",
+    "year": "Batch of 2019",
+    "isVerifiedOtp": true,
+    "familyCount": 0,
+    "familyMembers": [],
+    "id": "ATT-1011",
+    "ticketCode": "TKT-CHRONOS-R9EN8004",
+    "status": "APPROVED",
+    "approvedAt": "2026-10-09T00:32:22.427Z",
+    "verificationMethod": "OTP_VERIFIED",
+    "checkedIn": true,
+    "registeredAt": "2026-10-09T00:32:22.427Z",
+    "wristbandColor": "Neon Cyan (General)",
+    "totalQuota": 1,
+    "admittedCount": 1,
+    "checkInLogs": [
+      {
+        "timestamp": "2026-10-09T00:50:28.002Z",
+        "admitted": 1,
+        "gateVolunteer": "Gate 1 - North Entrance",
+        "notes": "Quota completed (1/1)"
+      }
+    ],
+    "checkedInAt": "2026-10-09T00:50:28.002Z",
+    "checkedInBy": "Gate 1 - North Entrance"
+  },
+  {
     "fullName": "ABHISHEK DUTTA GUPT",
     "email": "abhishek.dutta2082@gmail.com",
     "phone": "33351596",

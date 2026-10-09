@@ -26,7 +26,8 @@ import {
   Mail,
   Phone,
   Send,
-  Sparkles
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import { Attendee, AttendeeStatus, EventSettings, AlumniRecord } from '@/lib/types';
 import Link from 'next/link';
@@ -248,26 +249,21 @@ export default function AdminPage() {
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
-        const parts = line.split(',').map(s => s.trim().replace(/^["']|["']$/g, ''));
-        // Ignore header line if present
-        if (i === 0 && (parts[0].toLowerCase().includes('usn') || parts[0].toLowerCase().includes('roll'))) {
-          continue;
-        }
-
-        if (parts.length >= 2) {
+        const cols = line.split(',').map(c => c.trim());
+        if (cols.length >= 2) {
           records.push({
-            usn: parts[0],
-            fullName: parts[1] || 'Graduate',
-            officialEmail: parts[2] || '',
-            phone: parts[3] || '',
-            department: parts[4] || 'Engineering',
-            batchYear: parts[5] || 'Batch of 2024',
+            usn: cols[0].toUpperCase(),
+            fullName: cols[1],
+            officialEmail: cols[2] || '',
+            phone: cols[3] || '',
+            department: cols[4] || 'Engineering',
+            batchYear: cols[5] || 'Batch of 2024',
           });
         }
       }
 
       if (records.length === 0) {
-        alert('No valid records parsed from CSV text.');
+        alert('No valid records found in pasted CSV.');
         return;
       }
 
@@ -279,21 +275,40 @@ export default function AdminPage() {
       const data = await res.json();
 
       if (data.success) {
-        setImportStatus(`Imported ${data.added} new graduates (${data.updated} updated). Total in directory: ${data.total}`);
+        alert(data.message || `Successfully imported ${records.length} records.`);
+        setShowImportModal(false);
+        setCsvText('');
         fetchAlumniMaster();
-        setTimeout(() => {
-          setShowImportModal(false);
-          setImportStatus(null);
-          setCsvText('');
-        }, 1500);
+      } else {
+        alert(data.error || 'Failed to import records.');
       }
-    } catch (e: any) {
-      alert('Import error: ' + e.message);
+    } catch (err: any) {
+      alert('CSV processing error: ' + err.message);
     }
   };
 
-  // Filtered alumni master
+  // Update Settings
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settingsForm),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSettings(data.settings);
+        setShowSettingsModal(false);
+        alert('Event settings updated successfully.');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const filteredAlumni = alumniList.filter(a => {
+    if (!alumniSearch.trim()) return true;
     const q = alumniSearch.toLowerCase();
     return (
       a.usn.toLowerCase().includes(q) ||
@@ -324,316 +339,298 @@ export default function AdminPage() {
     }
   };
 
+  // 1. LOGIN SCREEN
   if (!isAuthenticated) {
     return (
-      <div style={{ maxWidth: 440, margin: '60px auto', padding: '0 20px' }}>
-        <div className="glass-panel" style={{ padding: '36px', textAlign: 'center' }}>
-          <div style={{
-            width: 56,
-            height: 56,
-            borderRadius: '50%',
-            background: 'rgba(157, 78, 221, 0.15)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 16px'
-          }}>
-            <Lock size={28} color="#c084fc" />
+      <div style={{ background: 'var(--bg-page)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <div className="neo-box" style={{ maxWidth: 440, width: '100%', background: '#ffffff', boxShadow: '6px 6px 0px 0px var(--border-black)' }}>
+          {/* Header */}
+          <div style={{ padding: '24px 28px', background: 'var(--bg-black)', color: '#ffffff', borderBottom: '1px solid var(--border-black)' }}>
+            <span className="mono-tag" style={{ color: 'var(--card-blue-2)' }}>COMMAND AUTHORIZATION</span>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 900, marginTop: 4 }}>
+              MILAN 2026 • ADMIN
+            </h2>
           </div>
 
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700, color: '#fff' }}>
-            Event Organizers Portal
-          </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: 4, marginBottom: 20 }}>
-            Enter Master Admin Passcode to review student registrations, inspect changed contact requests, or upload the alumni database.
-          </p>
+          <div style={{ padding: '28px' }}>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: 20 }}>
+              Enter administrator passcode to access review queues, graduate directory, and gate systems.
+            </p>
 
-          {authError && (
-            <div style={{
-              background: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              borderRadius: 'var(--radius-sm)',
-              padding: '10px',
-              color: '#fca5a5',
-              fontSize: '0.85rem',
-              marginBottom: 16
-            }}>
-              {authError}
-            </div>
-          )}
+            {authError && (
+              <div style={{ padding: '10px 14px', background: '#fee2e2', border: '1px solid var(--border-black)', color: '#991b1b', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', fontWeight: 700, marginBottom: 16 }}>
+                {authError}
+              </div>
+            )}
 
-          <form onSubmit={handleAuth}>
-            <div className="form-group" style={{ textAlign: 'left' }}>
-              <label className="form-label">Admin Passcode</label>
-              <input
-                type="password"
-                placeholder="Enter Administrator Passcode"
-                className="form-input"
-                value={adminPasscode}
-                onChange={e => setAdminPasscode(e.target.value)}
-                autoFocus
-                required
-              />
-            </div>
+            <form onSubmit={handleAuth}>
+              <div style={{ marginBottom: 16 }}>
+                <label className="mono-label" style={{ display: 'block', marginBottom: 6 }}>
+                  ADMIN PASSCODE
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Enter Passcode (e.g. admin123)"
+                  className="neo-input"
+                  value={adminPasscode}
+                  onChange={e => setAdminPasscode(e.target.value)}
+                  autoFocus
+                />
+              </div>
 
-            <button
-              type="submit"
-              className="btn btn-primary"
-              style={{ width: '100%', marginTop: 16, padding: '12px' }}
-            >
-              Sign In to Command Center
-            </button>
-          </form>
+              <button
+                type="submit"
+                className="btn-neo-black"
+                style={{ width: '100%', padding: '14px' }}
+              >
+                SIGN IN TO COMMAND CENTER ↗
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     );
   }
 
+  // 2. AUTHENTICATED COMMAND CENTER DASHBOARD
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '24px 20px 80px' }}>
-      {/* 3-PORTAL QUICK ACCESS NAVIGATOR (ADMIN MASTER ACCESS) */}
+    <div style={{ background: 'var(--bg-page)', minHeight: '100vh', padding: '0 0 60px' }}>
+      {/* HUB NAVIGATOR STRIP */}
       <div style={{
-        background: 'rgba(14, 18, 30, 0.9)',
-        border: '1px solid rgba(0, 242, 254, 0.25)',
-        borderRadius: 'var(--radius-md)',
-        padding: '12px 18px',
-        marginBottom: 20,
+        background: '#ffffff',
+        borderBottom: '1px solid var(--border-black)',
+        padding: '12px 32px',
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
         justifyContent: 'space-between',
         gap: 12
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-sub)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            ORGANIZER PORTAL HUB:
-          </span>
-          <span style={{ fontSize: '0.78rem', color: '#fff' }}>
-            Switch between the 3 event applications
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span className="mono-tag" style={{ color: 'var(--accent-blue)' }}>HUB:</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)' }}>
+            MILAN 2026 ORGANIZER APPLICATIONS
           </span>
         </div>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           <Link
             href="/"
             target="_blank"
-            className="btn btn-secondary"
-            style={{ fontSize: '0.82rem', padding: '6px 14px' }}
+            className="btn-neo-outline"
+            style={{ padding: '8px 14px', fontSize: '0.75rem' }}
           >
-            <Users size={14} color="var(--accent-cyan)" />
-            1. Alumni Registration Page
-            <ExternalLink size={12} />
+            1. ALUMNI PASS PORTAL ↗
           </Link>
-
           <Link
             href="/scanner"
             target="_blank"
-            className="btn btn-secondary"
-            style={{ fontSize: '0.82rem', padding: '6px 14px', border: '1px solid rgba(0, 242, 254, 0.4)' }}
+            className="btn-neo-outline"
+            style={{ padding: '8px 14px', fontSize: '0.75rem' }}
           >
-            <QrCode size={14} color="var(--accent-cyan)" />
-            2. Gate Security Scanner
-            <ExternalLink size={12} />
+            2. GATE SCANNER ↗
           </Link>
-
           <span
-            className="btn btn-primary"
-            style={{ fontSize: '0.82rem', padding: '6px 14px', cursor: 'default' }}
+            className="btn-neo-black"
+            style={{ padding: '8px 14px', fontSize: '0.75rem', cursor: 'default' }}
           >
-            <ShieldCheck size={14} />
-            3. Admin Portal (Active)
+            3. ADMIN CENTER (ACTIVE)
           </span>
         </div>
       </div>
 
-      {/* Top Header */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+      {/* TOP COMMAND HEADER */}
+      <div style={{
+        padding: '32px 32px 24px',
+        borderBottom: '1px solid var(--border-black)',
+        background: 'var(--bg-blue-tint)',
+        display: 'flex',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+        gap: 20
+      }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.8rem', fontWeight: 800, color: '#fff' }}>
-              Organizer Command Center
-            </h1>
-            <span className="brand-badge">ADMIN</span>
-          </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            {settings?.eventName} · {alumniList.length} Registered Master Alumni in Directory
+          <div className="mono-tag">MILAN 2026 • DBIT ALUMNI NETWORK</div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', fontWeight: 900, textTransform: 'uppercase', marginTop: 4 }}>
+            Organizer Command Center
+          </h1>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: 4 }}>
+            {settings?.eventName || "MILAN 2026"} · {alumniList.length} Verified Master Alumni Records on File
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: 10 }}>
-          {/* Main Section Selector */}
-          <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 'var(--radius-sm)', padding: 3, display: 'flex' }}>
-            <button
-              onClick={() => setActiveSection('ATTENDEES')}
-              className={`btn ${activeSection === 'ATTENDEES' ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ padding: '6px 14px', fontSize: '0.82rem', border: 'none' }}
-            >
-              <ShieldCheck size={14} />
-              Review Queue & Passes
-            </button>
-            <button
-              onClick={() => setActiveSection('MASTER_DIRECTORY')}
-              className={`btn ${activeSection === 'MASTER_DIRECTORY' ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ padding: '6px 14px', fontSize: '0.82rem', border: 'none' }}
-            >
-              <FileSpreadsheet size={14} />
-              Alumni Master Database
-            </button>
-            <button
-              onClick={() => setActiveSection('GATEWAYS')}
-              className={`btn ${activeSection === 'GATEWAYS' ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ padding: '6px 14px', fontSize: '0.82rem', border: 'none' }}
-            >
-              <Mail size={14} />
-              Real OTP & Gateways
-            </button>
-          </div>
-
-          <a href="/api/export" download className="btn btn-secondary" style={{ fontSize: '0.85rem' }}>
-            <Download size={16} />
-            Export CSV
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+          <button
+            onClick={() => setShowSettingsModal(true)}
+            className="btn-neo-outline"
+            style={{ padding: '10px 18px', fontSize: '0.78rem' }}
+          >
+            <Settings size={14} />
+            EVENT SETTINGS ↗
+          </button>
+          <a
+            href="/api/export"
+            download
+            className="btn-neo-outline"
+            style={{ padding: '10px 18px', fontSize: '0.78rem' }}
+          >
+            <Download size={14} />
+            EXPORT CSV ↗
           </a>
-          <button onClick={fetchAttendees} className="btn btn-secondary" style={{ fontSize: '0.85rem' }}>
-            <RefreshCw size={16} />
-            Refresh
+          <button
+            onClick={fetchAttendees}
+            className="btn-neo-black"
+            style={{ padding: '10px 18px', fontSize: '0.78rem' }}
+          >
+            <RefreshCw size={14} />
+            SYNC ↗
           </button>
         </div>
       </div>
 
-      {/* METRIC COUNTER CARDS */}
+      {/* STAT COUNTERS GRID */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
-        gap: '16px',
-        marginBottom: 28
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        borderBottom: '1px solid var(--border-black)',
+        background: '#ffffff'
       }}>
-        {/* Total Registrations */}
-        <div className="glass-panel" style={{ padding: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-sub)', fontWeight: 600 }}>TOTAL PASSES CLAIMED</span>
-            <Users size={18} color="var(--accent-cyan)" />
+        <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
+          <span className="mono-label">TOTAL PASSES CLAIMED</span>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, margin: '8px 0 2px' }}>
+            {stats.total} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/ {stats.capacity}</span>
           </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fff', marginTop: 8 }}>
-            {stats.total} <span style={{ fontSize: '0.9rem', color: 'var(--text-sub)' }}>/ {stats.capacity}</span>
-          </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>
-            {Math.round((stats.total / (stats.capacity || 1000)) * 100)}% of venue capacity filled
-          </div>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+            {Math.round((stats.total / (stats.capacity || 1000)) * 100)}% capacity
+          </span>
         </div>
 
-        {/* Pending Review Queue (Highlight) */}
-        <div className="glass-panel" style={{
-          padding: '20px',
-          border: stats.pending > 0 ? '1px solid rgba(245, 158, 11, 0.4)' : undefined,
-          background: stats.pending > 0 ? 'rgba(245, 158, 11, 0.08)' : undefined
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--status-pending)', fontWeight: 700 }}>NEEDS MANUAL REVIEW</span>
-            <Clock size={18} color="var(--status-pending)" />
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--status-pending)', marginTop: 8 }}>
+        <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none', background: stats.pending > 0 ? '#fef3c7' : '#ffffff' }}>
+          <span className="mono-label" style={{ color: stats.pending > 0 ? '#78350f' : undefined }}>NEEDS MANUAL REVIEW</span>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, margin: '8px 0 2px', color: stats.pending > 0 ? '#b45309' : undefined }}>
             {stats.pending}
           </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>
-            Alumni requesting contact updates
-          </div>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+            Contact change requests
+          </span>
         </div>
 
-        {/* Approved Passes */}
-        <div className="glass-panel" style={{ padding: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--status-approved)', fontWeight: 600 }}>OTP VERIFIED PASSES</span>
-            <CheckCircle2 size={18} color="var(--status-approved)" />
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--status-approved)', marginTop: 8 }}>
+        <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
+          <span className="mono-label">OTP VERIFIED PASSES</span>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, margin: '8px 0 2px', color: 'var(--accent-blue)' }}>
             {stats.approved}
           </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>
-            Active QR codes issued
-          </div>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+            Active QR passes issued
+          </span>
         </div>
 
-        {/* Checked In / Wristband Given */}
-        <div className="glass-panel" style={{ padding: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--accent-cyan)', fontWeight: 600 }}>WRISTBANDS ISSUED</span>
-            <QrCode size={18} color="var(--accent-cyan)" />
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--accent-cyan)', marginTop: 8 }}>
+        <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
+          <span className="mono-label">ADMITTED AT GATE</span>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, margin: '8px 0 2px', color: '#0e8a5a' }}>
             {stats.checkedIn}
           </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>
-            {stats.remainingAtGate} approved yet to scan at gate
-          </div>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+            {stats.remainingAtGate} yet to arrive
+          </span>
         </div>
 
-        {/* Rejected / Denied */}
-        <div className="glass-panel" style={{ padding: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--status-rejected)', fontWeight: 600 }}>DENIED</span>
-            <XCircle size={18} color="var(--status-rejected)" />
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--status-rejected)', marginTop: 8 }}>
+        <div className="neo-stat-card" style={{ borderBottom: 'none' }}>
+          <span className="mono-label">DENIED / REJECTED</span>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, margin: '8px 0 2px', color: '#dc2626' }}>
             {stats.rejected}
           </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>
-            Flagged unverified entries
-          </div>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+            Flagged unverified
+          </span>
         </div>
       </div>
 
-      {/* SECTION 1: ATTENDEES & MANUAL REVIEW QUEUE */}
-      {activeSection === 'ATTENDEES' && (
-        <>
-          {/* FILTER TABS & SEARCH BAR */}
-          <div className="glass-panel" style={{ padding: '16px 20px', marginBottom: 20 }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 14 }}>
-              {/* Tabs */}
+      {/* MAIN SECTIONS TAB STRIP */}
+      <div style={{ padding: '24px 32px 0' }}>
+        <div className="neo-tabs-header" style={{ border: '1px solid var(--border-black)', borderBottom: 'none' }}>
+          <button
+            onClick={() => setActiveSection('ATTENDEES')}
+            className={`neo-tab-btn ${activeSection === 'ATTENDEES' ? 'active' : ''}`}
+          >
+            01 • ATTENDEES QUEUE & PASSES
+          </button>
+          <button
+            onClick={() => setActiveSection('MASTER_DIRECTORY')}
+            className={`neo-tab-btn ${activeSection === 'MASTER_DIRECTORY' ? 'active' : ''}`}
+          >
+            02 • ALUMNI MASTER DIRECTORY ({alumniList.length})
+          </button>
+          <button
+            onClick={() => setActiveSection('GATEWAYS')}
+            className={`neo-tab-btn ${activeSection === 'GATEWAYS' ? 'active' : ''}`}
+          >
+            03 • NOTIFICATION & OTP GATEWAYS
+          </button>
+        </div>
+      </div>
+
+      <div style={{ padding: '0 32px' }}>
+        {/* SECTION 1: ATTENDEES & MANUAL REVIEW */}
+        {activeSection === 'ATTENDEES' && (
+          <div className="neo-box" style={{ borderTop: 'none', background: '#ffffff', padding: '24px' }}>
+            {/* Filter controls strip */}
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: 14,
+              marginBottom: 20,
+              paddingBottom: 20,
+              borderBottom: '1px solid var(--border-black)'
+            }}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 <button
                   onClick={() => setStatusFilter('PENDING')}
-                  className={`btn ${statusFilter === 'PENDING' ? 'btn-primary' : 'btn-secondary'}`}
-                  style={{ fontSize: '0.82rem', padding: '8px 14px' }}
+                  className={statusFilter === 'PENDING' ? 'btn-neo-black' : 'btn-neo-outline'}
+                  style={{ padding: '8px 14px', fontSize: '0.76rem' }}
                 >
-                  Needs Review ({stats.pending})
+                  NEEDS REVIEW ({stats.pending})
                 </button>
                 <button
                   onClick={() => setStatusFilter('ALL')}
-                  className={`btn ${statusFilter === 'ALL' ? 'btn-primary' : 'btn-secondary'}`}
-                  style={{ fontSize: '0.82rem', padding: '8px 14px' }}
+                  className={statusFilter === 'ALL' ? 'btn-neo-black' : 'btn-neo-outline'}
+                  style={{ padding: '8px 14px', fontSize: '0.76rem' }}
                 >
-                  All Passes ({stats.total})
+                  ALL ({stats.total})
                 </button>
                 <button
                   onClick={() => setStatusFilter('APPROVED')}
-                  className={`btn ${statusFilter === 'APPROVED' ? 'btn-primary' : 'btn-secondary'}`}
-                  style={{ fontSize: '0.82rem', padding: '8px 14px' }}
+                  className={statusFilter === 'APPROVED' ? 'btn-neo-black' : 'btn-neo-outline'}
+                  style={{ padding: '8px 14px', fontSize: '0.76rem' }}
                 >
-                  Approved ({stats.approved})
+                  APPROVED ({stats.approved})
                 </button>
                 <button
                   onClick={() => setStatusFilter('CHECKED_IN')}
-                  className={`btn ${statusFilter === 'CHECKED_IN' ? 'btn-primary' : 'btn-secondary'}`}
-                  style={{ fontSize: '0.82rem', padding: '8px 14px' }}
+                  className={statusFilter === 'CHECKED_IN' ? 'btn-neo-black' : 'btn-neo-outline'}
+                  style={{ padding: '8px 14px', fontSize: '0.76rem' }}
                 >
-                  Checked In ({stats.checkedIn})
+                  CHECKED IN ({stats.checkedIn})
                 </button>
                 <button
                   onClick={() => setStatusFilter('REJECTED')}
-                  className={`btn ${statusFilter === 'REJECTED' ? 'btn-primary' : 'btn-secondary'}`}
-                  style={{ fontSize: '0.82rem', padding: '8px 14px' }}
+                  className={statusFilter === 'REJECTED' ? 'btn-neo-black' : 'btn-neo-outline'}
+                  style={{ padding: '8px 14px', fontSize: '0.76rem' }}
                 >
-                  Rejected ({stats.rejected})
+                  DENIED ({stats.rejected})
                 </button>
               </div>
 
-              {/* Search Input */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 260 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 280 }}>
                 <input
                   type="text"
-                  placeholder="Search USN, Name, Dept..."
-                  className="form-input"
-                  style={{ padding: '8px 12px', fontSize: '0.85rem' }}
+                  placeholder="SEARCH USN, NAME, EMAIL..."
+                  className="neo-input"
+                  style={{ padding: '10px 14px', fontSize: '0.82rem' }}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                 />
@@ -641,37 +638,35 @@ export default function AdminPage() {
                   <button
                     onClick={handleBulkApprove}
                     disabled={actionLoading === 'bulk'}
-                    className="btn btn-success"
-                    style={{ fontSize: '0.82rem', padding: '8px 14px', whiteSpace: 'nowrap' }}
+                    className="btn-neo-black"
+                    style={{ whiteSpace: 'nowrap', padding: '10px 16px', fontSize: '0.76rem', background: '#0e8a5a' }}
                   >
-                    <Check size={14} />
-                    Approve All Pending ({stats.pending})
+                    APPROVE ALL PENDING ({stats.pending}) ↗
                   </button>
                 )}
               </div>
             </div>
-          </div>
 
-          {/* ATTENDEE TABLE */}
-          <div className="glass-panel" style={{ overflow: 'hidden' }}>
-            <div className="data-table-wrapper">
-              <table className="data-table">
+            {/* Attendees Data Table */}
+            <div style={{ overflowX: 'auto' }}>
+              <table className="neo-table">
                 <thead>
                   <tr>
-                    <th>Graduate Name & Pass ID</th>
+                    <th>GRADUATE NAME & PASS ID</th>
                     <th>USN</th>
-                    <th>Dept & Batch</th>
-                    <th>Contact & Verification</th>
-                    <th>Status</th>
-                    <th>Review Reason / Proof</th>
-                    <th style={{ textAlign: 'right' }}>Actions</th>
+                    <th>DEPT & BATCH</th>
+                    <th>CONTACT & VERIFICATION</th>
+                    <th>QUOTA</th>
+                    <th>STATUS</th>
+                    <th>REVIEW NOTE / PROOF</th>
+                    <th style={{ textAlign: 'right' }}>ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody>
                   {attendees.length === 0 ? (
                     <tr>
-                      <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-                        No passes match the selected filter.
+                      <td colSpan={8} style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                        NO PASSES MATCH THE SELECTED FILTER CRITERIA.
                       </td>
                     </tr>
                   ) : (
@@ -679,98 +674,78 @@ export default function AdminPage() {
                       <tr key={attendee.id}>
                         <td>
                           <div>
-                            <strong style={{ color: '#fff', fontSize: '0.95rem' }}>{attendee.fullName}</strong>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-sub)', fontFamily: 'monospace' }}>
+                            <strong style={{ fontSize: '0.95rem' }}>{attendee.fullName}</strong>
+                            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: 2 }}>
                               {attendee.id} · {attendee.ticketCode}
                             </div>
-                            {attendee.totalQuota && attendee.totalQuota > 1 && (
-                              <div style={{ marginTop: 4 }}>
-                                <span style={{
-                                  fontSize: '0.7rem',
-                                  fontWeight: 700,
-                                  color: 'var(--accent-cyan)',
-                                  background: 'rgba(0, 242, 254, 0.1)',
-                                  padding: '2px 6px',
-                                  borderRadius: 4,
-                                  border: '1px solid rgba(0, 242, 254, 0.25)'
-                                }}>
-                                  👨‍👩‍👧 Group Pass ({attendee.totalQuota} Total)
-                                </span>
-                              </div>
-                            )}
                           </div>
                         </td>
 
                         <td>
-                          <span style={{
-                            fontFamily: 'monospace',
-                            fontWeight: 700,
-                            color: 'var(--accent-cyan)',
-                            background: 'rgba(0, 242, 254, 0.08)',
-                            padding: '3px 8px',
-                            borderRadius: 4
-                          }}>
+                          <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '0.88rem', background: 'var(--card-blue-1)', padding: '2px 8px', border: '1px solid var(--border-black)' }}>
                             {attendee.usn || attendee.rollNumber}
                           </span>
                         </td>
 
                         <td>
-                          <div style={{ fontSize: '0.85rem', color: '#fff' }}>{attendee.department}</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-sub)' }}>{attendee.year}</div>
+                          <div style={{ fontWeight: 600 }}>{attendee.department}</div>
+                          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{attendee.year}</div>
                         </td>
 
                         <td>
-                          <div>
-                            <div style={{ fontSize: '0.8rem', color: '#e2e8f0' }}>{attendee.email}</div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-sub)' }}>{attendee.phone}</div>
-                            {attendee.verificationMethod === 'OTP_VERIFIED' ? (
-                              <span style={{ fontSize: '0.7rem', color: 'var(--status-approved)', display: 'inline-flex', alignItems: 'center', gap: 3, marginTop: 2 }}>
-                                <KeyRound size={11} />
-                                OTP Verified
-                              </span>
-                            ) : attendee.isContactUpdated ? (
-                              <span style={{ fontSize: '0.7rem', color: 'var(--status-pending)', display: 'inline-flex', alignItems: 'center', gap: 3, marginTop: 2 }}>
-                                <AlertTriangle size={11} />
-                                Contact Changed
-                              </span>
-                            ) : null}
-                          </div>
+                          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem' }}>{attendee.email}</div>
+                          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{attendee.phone}</div>
+                          {attendee.verificationMethod === 'OTP_VERIFIED' ? (
+                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: '#0e8a5a', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3, marginTop: 2 }}>
+                              ✓ OTP VERIFIED
+                            </span>
+                          ) : attendee.isContactUpdated ? (
+                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: '#b45309', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3, marginTop: 2 }}>
+                              ⚠️ CONTACT UPDATED
+                            </span>
+                          ) : null}
                         </td>
 
                         <td>
-                          <div>
-                            {attendee.status === 'APPROVED' && !attendee.checkedIn && (!attendee.admittedCount || attendee.admittedCount === 0) && (
-                              <span className="badge badge-approved">Approved</span>
-                            )}
-                            {attendee.status === 'APPROVED' && !attendee.checkedIn && attendee.admittedCount && attendee.admittedCount > 0 && (
-                              <span className="badge badge-approved" style={{ background: 'rgba(0, 242, 254, 0.15)', color: 'var(--accent-cyan)' }}>
-                                Partial ({attendee.admittedCount}/{attendee.totalQuota || 1})
-                              </span>
-                            )}
-                            {attendee.status === 'APPROVED' && attendee.checkedIn && (
-                              <span className="badge badge-checkedin">
-                                {attendee.totalQuota && attendee.totalQuota > 1 ? `All ${attendee.totalQuota} Admitted` : 'Wristband Given'}
-                              </span>
-                            )}
-                            {attendee.status === 'PENDING' && (
-                              <span className="badge badge-pending">Needs Review</span>
-                            )}
-                            {attendee.status === 'REJECTED' && (
-                              <span className="badge badge-rejected">Rejected</span>
-                            )}
-                            {attendee.checkedInAt && (
-                              <div style={{ fontSize: '0.7rem', color: 'var(--text-sub)', marginTop: 3 }}>
-                                Scanned {new Date(attendee.checkedInAt).toLocaleTimeString()}
-                              </div>
-                            )}
-                          </div>
+                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', fontWeight: 800 }}>
+                            {attendee.totalQuota || 1} {attendee.totalQuota && attendee.totalQuota > 1 ? 'PERSONS' : 'PERSON'}
+                          </span>
+                          {attendee.familyMembers && attendee.familyMembers.length > 0 && (
+                            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-secondary)' }}>
+                              +{attendee.familyMembers.length} guests
+                            </div>
+                          )}
                         </td>
 
-                        {/* Review Reason & Proof */}
+                        <td>
+                          {attendee.status === 'APPROVED' && !attendee.checkedIn && (!attendee.admittedCount || attendee.admittedCount === 0) && (
+                            <span className="neo-badge neo-badge-approved">APPROVED</span>
+                          )}
+                          {attendee.status === 'APPROVED' && !attendee.checkedIn && attendee.admittedCount && attendee.admittedCount > 0 && (
+                            <span className="neo-badge" style={{ background: 'var(--card-blue-2)', color: '#0f2b5c' }}>
+                              PARTIAL ({attendee.admittedCount}/{attendee.totalQuota || 1})
+                            </span>
+                          )}
+                          {attendee.status === 'APPROVED' && attendee.checkedIn && (
+                            <span className="neo-badge neo-badge-checkedin">ADMITTED</span>
+                          )}
+                          {attendee.status === 'PENDING' && (
+                            <span className="neo-badge neo-badge-pending">NEEDS REVIEW</span>
+                          )}
+                          {attendee.status === 'REJECTED' && (
+                            <span className="neo-badge neo-badge-rejected">DENIED</span>
+                          )}
+                          {attendee.checkedInAt && (
+                            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-secondary)', marginTop: 2 }}>
+                              At {new Date(attendee.checkedInAt).toLocaleTimeString()}
+                            </div>
+                          )}
+                        </td>
+
                         <td>
                           {attendee.reviewReason ? (
-                            <div style={{ maxWidth: 220 }}>
-                              <p style={{ fontSize: '0.75rem', color: '#fef3c7', lineHeight: 1.3 }}>
+                            <div style={{ maxWidth: 200 }}>
+                              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.78rem', color: '#b45309' }}>
                                 {attendee.reviewReason}
                               </p>
                               {attendee.degreeProofUrl && (
@@ -781,30 +756,30 @@ export default function AdminPage() {
                                     roll: attendee.usn || attendee.rollNumber,
                                     reason: attendee.reviewReason
                                   })}
-                                  className="btn btn-secondary"
-                                  style={{ padding: '3px 8px', fontSize: '0.72rem', marginTop: 4 }}
+                                  className="btn-neo-outline"
+                                  style={{ padding: '3px 8px', fontSize: '0.7rem', marginTop: 4 }}
                                 >
-                                  <Eye size={11} />
-                                  View Proof
+                                  VIEW PROOF ↗
                                 </button>
                               )}
                             </div>
                           ) : (
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-sub)' }}>Verified via DB</span>
+                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+                              DIRECTORY MATCH
+                            </span>
                           )}
                         </td>
 
-                        {/* Actions column */}
                         <td style={{ textAlign: 'right' }}>
                           <div style={{ display: 'inline-flex', gap: 6 }}>
                             <Link
                               href={`/ticket/${attendee.id}`}
                               target="_blank"
-                              className="btn btn-secondary"
+                              className="btn-neo-outline"
                               style={{ padding: '6px 10px', fontSize: '0.75rem' }}
-                              title="View Digital Pass"
+                              title="View Boarding Pass"
                             >
-                              <ExternalLink size={13} />
+                              PASS ↗
                             </Link>
 
                             {attendee.status === 'PENDING' && (
@@ -812,20 +787,18 @@ export default function AdminPage() {
                                 <button
                                   onClick={() => handleUpdateStatus(attendee.id, 'APPROVED')}
                                   disabled={actionLoading === attendee.id}
-                                  className="btn btn-success"
-                                  style={{ padding: '6px 12px', fontSize: '0.75rem' }}
+                                  className="btn-neo-black"
+                                  style={{ padding: '6px 12px', fontSize: '0.75rem', background: '#0e8a5a' }}
                                 >
-                                  <Check size={14} />
-                                  Approve Pass
+                                  APPROVE ↗
                                 </button>
                                 <button
                                   onClick={() => setRejectingId(attendee.id)}
                                   disabled={actionLoading === attendee.id}
-                                  className="btn btn-outline-danger"
-                                  style={{ padding: '6px 12px', fontSize: '0.75rem' }}
+                                  className="btn-neo-outline"
+                                  style={{ padding: '6px 12px', fontSize: '0.75rem', color: '#dc2626' }}
                                 >
-                                  <X size={14} />
-                                  Reject
+                                  DENY ↗
                                 </button>
                               </>
                             )}
@@ -833,22 +806,22 @@ export default function AdminPage() {
                             {attendee.status === 'APPROVED' && (
                               <button
                                 onClick={() => setRejectingId(attendee.id)}
-                                className="btn btn-outline-danger"
-                                style={{ padding: '6px 8px', fontSize: '0.75rem' }}
-                                title="Revoke Approval"
+                                className="btn-neo-outline"
+                                style={{ padding: '6px 10px', fontSize: '0.75rem', color: '#dc2626' }}
+                                title="Revoke Pass"
                               >
-                                <X size={13} />
+                                REVOKE ↗
                               </button>
                             )}
 
                             {attendee.checkedIn && (
                               <button
                                 onClick={() => handleResetCheckIn(attendee.id)}
-                                className="btn btn-secondary"
-                                style={{ padding: '6px 8px', fontSize: '0.75rem' }}
+                                className="btn-neo-outline"
+                                style={{ padding: '6px 10px', fontSize: '0.75rem' }}
                                 title="Reset Check-in (Gate Mistake)"
                               >
-                                <RotateCcw size={13} />
+                                RESET ↗
                               </button>
                             )}
                           </div>
@@ -860,346 +833,389 @@ export default function AdminPage() {
               </table>
             </div>
           </div>
-        </>
-      )}
+        )}
 
-      {/* SECTION 2: ALUMNI MASTER DIRECTORY & CSV IMPORT */}
-      {activeSection === 'MASTER_DIRECTORY' && (
-        <div className="glass-panel" style={{ padding: '24px' }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 14, marginBottom: 20 }}>
-            <div>
-              <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <GraduationCap size={20} color="var(--accent-cyan)" />
-                College Alumni Master Directory ({alumniList.length} Graduates)
-              </h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: 2 }}>
-                This is your college's pre-approved student database. Only USNs listed here can request an OTP or claim a pass.
-              </p>
+        {/* SECTION 2: ALUMNI MASTER DIRECTORY */}
+        {activeSection === 'MASTER_DIRECTORY' && (
+          <div className="neo-box" style={{ borderTop: 'none', background: '#ffffff', padding: '24px' }}>
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: 14,
+              marginBottom: 20,
+              paddingBottom: 20,
+              borderBottom: '1px solid var(--border-black)'
+            }}>
+              <div>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 900 }}>
+                  COLLEGE ALUMNI MASTER DIRECTORY ({alumniList.length} RECORDS)
+                </h3>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: 2 }}>
+                  Pre-approved graduate database. Only USNs listed here can claim a digital pass or request OTP.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: 10 }}>
+                <input
+                  type="text"
+                  placeholder="SEARCH MASTER USN OR NAME..."
+                  className="neo-input"
+                  style={{ width: 260, padding: '10px 14px', fontSize: '0.82rem' }}
+                  value={alumniSearch}
+                  onChange={e => setAlumniSearch(e.target.value)}
+                />
+                <button
+                  onClick={() => setShowImportModal(true)}
+                  className="btn-neo-black"
+                  style={{ fontSize: '0.78rem', padding: '10px 18px', whiteSpace: 'nowrap' }}
+                >
+                  IMPORT EXCEL / CSV ↗
+                </button>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', gap: 10 }}>
-              <input
-                type="text"
-                placeholder="Search Master USN or Name..."
-                className="form-input"
-                style={{ width: 240, padding: '8px 12px', fontSize: '0.85rem' }}
-                value={alumniSearch}
-                onChange={e => setAlumniSearch(e.target.value)}
-              />
-              <button onClick={() => setShowImportModal(true)} className="btn btn-primary" style={{ fontSize: '0.85rem' }}>
-                <Upload size={16} />
-                Import Alumni CSV
-              </button>
+            <div style={{ overflowX: 'auto' }}>
+              <table className="neo-table">
+                <thead>
+                  <tr>
+                    <th>USN</th>
+                    <th>GRADUATE FULL NAME</th>
+                    <th>DEPARTMENT</th>
+                    <th>BATCH</th>
+                    <th>OFFICIAL EMAIL</th>
+                    <th>MOBILE NUMBER</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredAlumni.map((alumnus, idx) => (
+                    <tr key={idx}>
+                      <td>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '0.88rem', background: 'var(--card-blue-1)', padding: '2px 8px', border: '1px solid var(--border-black)' }}>
+                          {alumnus.usn}
+                        </span>
+                      </td>
+                      <td><strong>{alumnus.fullName}</strong></td>
+                      <td>{alumnus.department}</td>
+                      <td><span className="neo-badge neo-badge-approved">{alumnus.batchYear}</span></td>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>{alumnus.officialEmail}</td>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>{alumnus.phone}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
+        )}
 
-          <div className="data-table-wrapper">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>USN</th>
-                  <th>Graduate Full Name</th>
-                  <th>Department</th>
-                  <th>Batch</th>
-                  <th>Registered Email</th>
-                  <th>Registered Phone</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAlumni.map((alumnus, idx) => (
-                  <tr key={idx}>
-                    <td>
-                      <span style={{
-                        fontFamily: 'monospace',
-                        fontWeight: 700,
-                        color: 'var(--accent-cyan)',
-                        background: 'rgba(0, 242, 254, 0.08)',
-                        padding: '3px 8px',
-                        borderRadius: 4
-                      }}>
-                        {alumnus.usn}
-                      </span>
-                    </td>
-                    <td><strong style={{ color: '#fff' }}>{alumnus.fullName}</strong></td>
-                    <td style={{ color: 'var(--text-muted)' }}>{alumnus.department}</td>
-                    <td><span className="badge badge-approved" style={{ fontSize: '0.7rem' }}>{alumnus.batchYear}</span></td>
-                    <td style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: '#cbd5e1' }}>{alumnus.officialEmail}</td>
-                    <td style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: '#cbd5e1' }}>{alumnus.phone}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* SECTION 3: REAL OTP & GATEWAYS LIVE TESTING */}
+        {activeSection === 'GATEWAYS' && (
+          <div className="neo-box" style={{ borderTop: 'none', background: '#ffffff', padding: '28px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 24 }}>
+              {/* Card 1: Dispatch Tester */}
+              <div className="neo-box" style={{ padding: 24, background: 'var(--bg-blue-tint)' }}>
+                <span className="mono-tag" style={{ color: 'var(--accent-blue)' }}>TEST DISPATCH</span>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.3rem', fontWeight: 900, margin: '6px 0 2px' }}>
+                  Live OTP Dispatch Tester
+                </h3>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 20 }}>
+                  Send a live test verification code to verify your configured SMTP email or SMS gateways.
+                </p>
+
+                <form onSubmit={handleTestNotification}>
+                  <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+                    <button
+                      type="button"
+                      onClick={() => setTestType('EMAIL')}
+                      className={testType === 'EMAIL' ? 'btn-neo-black' : 'btn-neo-outline'}
+                      style={{ flex: 1, padding: '10px' }}
+                    >
+                      TEST EMAIL OTP ↗
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTestType('PHONE')}
+                      className={testType === 'PHONE' ? 'btn-neo-black' : 'btn-neo-outline'}
+                      style={{ flex: 1, padding: '10px' }}
+                    >
+                      TEST SMS OTP ↗
+                    </button>
+                  </div>
+
+                  <div style={{ marginBottom: 16 }}>
+                    <label className="mono-label" style={{ display: 'block', marginBottom: 6 }}>
+                      {testType === 'EMAIL' ? 'TEST RECIPIENT EMAIL' : '10-DIGIT MOBILE NUMBER (+91)'}
+                    </label>
+                    <input
+                      type={testType === 'EMAIL' ? 'email' : 'tel'}
+                      required
+                      placeholder={testType === 'EMAIL' ? 'e.g. name@gmail.com' : 'e.g. 9876543210'}
+                      className="neo-input"
+                      value={testTarget}
+                      onChange={e => setTestTarget(e.target.value)}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={testingGate}
+                    className="btn-neo-black"
+                    style={{ width: '100%', padding: '14px' }}
+                  >
+                    {testingGate ? 'DISPATCHING...' : `DISPATCH TEST ${testType === 'EMAIL' ? 'EMAIL' : 'SMS'} NOW ↗`}
+                  </button>
+                </form>
+
+                {testResult && (
+                  <div style={{
+                    marginTop: 18,
+                    padding: '16px',
+                    border: '1px solid var(--border-black)',
+                    background: testResult.isReal ? 'var(--card-blue-1)' : '#ffffff',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.8rem'
+                  }}>
+                    <div style={{ fontWeight: 800, marginBottom: 4, color: testResult.isReal ? '#0f2b5c' : 'var(--text-main)' }}>
+                      {testResult.isReal ? '✓ REAL DELIVERY SUCCESS' : 'ℹ️ SIMULATION OUTPUT'}
+                    </div>
+                    <div>{testResult.message}</div>
+                    {testResult.testOtp && (
+                      <div style={{ marginTop: 6 }}>Code: <strong>{testResult.testOtp}</strong> · Provider: {testResult.provider || testResult.deliveryProvider}</div>
+                    )}
+                    {testResult.error && (
+                      <div style={{ color: '#dc2626', marginTop: 6 }}>{testResult.error}</div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Card 2: Configuration Instructions */}
+              <div className="neo-box" style={{ padding: 24, background: '#ffffff' }}>
+                <span className="mono-tag" style={{ color: 'var(--accent-blue)' }}>CREDENTIALS GUIDE</span>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.3rem', fontWeight: 900, margin: '6px 0 2px' }}>
+                  Gmail SMTP Configuration
+                </h3>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 16 }}>
+                  How to link free real Gmail delivery in <code>.env.local</code>:
+                </p>
+
+                <ol style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', lineHeight: 1.8, paddingLeft: 18, color: 'var(--text-main)' }}>
+                  <li>Open Google Account: <strong>Security Settings</strong></li>
+                  <li>Ensure <strong>2-Step Verification</strong> is ON.</li>
+                  <li>Go to <strong>App Passwords</strong> and create one for <strong>MilanFest</strong>.</li>
+                  <li>Copy the 16-character generated password.</li>
+                  <li>Save in <code>.env.local</code>:</li>
+                </ol>
+
+                <div style={{ background: 'var(--bg-black)', color: '#ffffff', padding: '12px 14px', fontFamily: 'var(--font-mono)', fontSize: '0.78rem', marginTop: 12, border: '1px solid var(--border-black)' }}>
+                  GMAIL_USER=yourfest@gmail.com<br />
+                  GMAIL_APP_PASSWORD=abcdefghijklmnop
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* MODAL 1: IMPORT CSV / EXCEL */}
+      {showImportModal && (
+        <div className="neo-modal-backdrop" onClick={() => setShowImportModal(false)}>
+          <div className="neo-modal" onClick={e => e.stopPropagation()}>
+            <div className="neo-modal-header">
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 700 }}>IMPORT ALUMNI DATABASE</span>
+              <button onClick={() => setShowImportModal(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ padding: '24px' }}>
+              <div style={{
+                border: '2px dashed var(--border-black)',
+                padding: '24px',
+                textAlign: 'center',
+                background: 'var(--bg-blue-tint)',
+                marginBottom: 16,
+                cursor: 'pointer'
+              }}>
+                <input
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleFileUpload}
+                  style={{ display: 'none' }}
+                  id="excel-file-input"
+                />
+                <label htmlFor="excel-file-input" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                  <Upload size={28} color="var(--accent-blue)" />
+                  <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.05rem', fontWeight: 800 }}>
+                    Click to Upload Excel / CSV (.xlsx, .xls, .csv)
+                  </span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                    Auto-maps USN, Name, Email, Phone, Department & Batch
+                  </span>
+                </label>
+              </div>
+
+              <div style={{ textAlign: 'center', margin: '14px 0', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                — OR PASTE RAW CSV ROWS BELOW —
+              </div>
+
+              <textarea
+                rows={6}
+                className="neo-input"
+                style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', resize: 'vertical' }}
+                placeholder={`1MS20CS099, John Doe, john.doe@gmail.com, +91 98765 11223, Computer Science, Batch of 2024`}
+                value={csvText}
+                onChange={e => setCsvText(e.target.value)}
+              />
+
+              {importStatus && (
+                <div style={{ color: '#0e8a5a', fontFamily: 'var(--font-mono)', fontSize: '0.82rem', marginTop: 10, fontWeight: 700 }}>
+                  {importStatus}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+                <button onClick={() => setShowImportModal(false)} className="btn-neo-outline" style={{ flex: 1 }}>
+                  CANCEL
+                </button>
+                <button onClick={handleImportCsv} className="btn-neo-black" style={{ flex: 1 }}>
+                  PROCESS & SAVE ↗
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* SECTION 3: REAL OTP & GATEWAY LIVE TESTING */}
-      {activeSection === 'GATEWAYS' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 20 }}>
-          {/* Card 1: Live Dispatch Tester */}
-          <div className="glass-panel" style={{ padding: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(0, 242, 254, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Send size={20} color="var(--accent-cyan)" />
-              </div>
+      {/* MODAL 2: VIEW PROOF DOCUMENT */}
+      {viewingProof && (
+        <div className="neo-modal-backdrop" onClick={() => setViewingProof(null)}>
+          <div className="neo-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 540 }}>
+            <div className="neo-modal-header">
               <div>
-                <h3 style={{ fontSize: '1.15rem', color: '#fff', fontWeight: 700 }}>Live OTP Dispatch Tester</h3>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Send a real test email or SMS to verify your keys immediately</p>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', fontWeight: 700 }}>DEGREE / ID PROOF</div>
+                <div style={{ fontSize: '0.72rem', color: '#cbd5e1' }}>{viewingProof.name} ({viewingProof.roll})</div>
               </div>
+              <button onClick={() => setViewingProof(null)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
+                <X size={18} />
+              </button>
             </div>
 
-            <form onSubmit={handleTestNotification}>
-              <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
-                <button
-                  type="button"
-                  onClick={() => setTestType('EMAIL')}
-                  className={`btn ${testType === 'EMAIL' ? 'btn-primary' : 'btn-secondary'}`}
-                  style={{ flex: 1, fontSize: '0.82rem' }}
-                >
-                  <Mail size={15} />
-                  Test Email OTP
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTestType('PHONE')}
-                  className={`btn ${testType === 'PHONE' ? 'btn-primary' : 'btn-secondary'}`}
-                  style={{ flex: 1, fontSize: '0.82rem' }}
-                >
-                  <Phone size={15} />
-                  Test SMS OTP
-                </button>
-              </div>
+            <div style={{ padding: '20px' }}>
+              {viewingProof.reason && (
+                <div style={{ padding: '10px 14px', background: 'var(--bg-blue-tint)', border: '1px solid var(--border-black)', marginBottom: 14, fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>
+                  Note: {viewingProof.reason}
+                </div>
+              )}
 
-              <div className="form-group">
-                <label className="form-label">
-                  {testType === 'EMAIL' ? 'Enter Test Recipient Email' : 'Enter 10-Digit Mobile Number (+91)'}
-                </label>
-                <input
-                  type={testType === 'EMAIL' ? 'email' : 'tel'}
-                  required
-                  placeholder={testType === 'EMAIL' ? 'e.g. yourname@gmail.com' : 'e.g. 9876543210'}
-                  className="form-input"
-                  value={testTarget}
-                  onChange={e => setTestTarget(e.target.value)}
+              <div style={{ border: '1px solid var(--border-black)', background: '#000', textAlign: 'center' }}>
+                <img
+                  src={viewingProof.url}
+                  alt="Proof Document"
+                  style={{ width: '100%', maxHeight: 440, objectFit: 'contain', display: 'block' }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: REJECT PASS */}
+      {rejectingId && (
+        <div className="neo-modal-backdrop" onClick={() => setRejectingId(null)}>
+          <div className="neo-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 460 }}>
+            <div className="neo-modal-header">
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', fontWeight: 700 }}>REJECT REGISTRATION</span>
+              <button onClick={() => setRejectingId(null)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ padding: '20px' }}>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: 14 }}>
+                Provide a reason for rejection. The graduate will see this reason when checking their pass status.
+              </p>
+
+              <div style={{ marginBottom: 16 }}>
+                <label className="mono-label" style={{ display: 'block', marginBottom: 6 }}>REJECTION REASON</label>
+                <textarea
+                  rows={3}
+                  className="neo-input"
+                  value={rejectionReason}
+                  onChange={e => setRejectionReason(e.target.value)}
                 />
               </div>
 
-              <button
-                type="submit"
-                disabled={testingGate}
-                className="btn btn-primary"
-                style={{ width: '100%', padding: '12px', marginTop: 8 }}
-              >
-                {testingGate ? 'Delivering...' : `Send Test ${testType === 'EMAIL' ? 'Email' : 'SMS'} Now`}
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={() => setRejectingId(null)} className="btn-neo-outline" style={{ flex: 1 }}>
+                  CANCEL
+                </button>
+                <button
+                  onClick={() => handleUpdateStatus(rejectingId, 'REJECTED', rejectionReason)}
+                  className="btn-neo-black"
+                  style={{ flex: 1, background: '#dc2626' }}
+                >
+                  CONFIRM REJECT ↗
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: EVENT SETTINGS */}
+      {showSettingsModal && (
+        <div className="neo-modal-backdrop" onClick={() => setShowSettingsModal(false)}>
+          <div className="neo-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 500 }}>
+            <div className="neo-modal-header">
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', fontWeight: 700 }}>EVENT SETTINGS</span>
+              <button onClick={() => setShowSettingsModal(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
+                <X size={18} />
               </button>
+            </div>
+
+            <form onSubmit={handleSaveSettings} style={{ padding: '20px' }}>
+              <div style={{ marginBottom: 12 }}>
+                <label className="mono-label" style={{ display: 'block', marginBottom: 4 }}>EVENT NAME</label>
+                <input
+                  type="text"
+                  required
+                  className="neo-input"
+                  value={settingsForm.eventName || ''}
+                  onChange={e => setSettingsForm({ ...settingsForm, eventName: e.target.value })}
+                />
+              </div>
+
+              <div style={{ marginBottom: 12 }}>
+                <label className="mono-label" style={{ display: 'block', marginBottom: 4 }}>VENUE</label>
+                <input
+                  type="text"
+                  className="neo-input"
+                  value={settingsForm.eventVenue || ''}
+                  onChange={e => setSettingsForm({ ...settingsForm, eventVenue: e.target.value })}
+                />
+              </div>
+
+              <div style={{ marginBottom: 12 }}>
+                <label className="mono-label" style={{ display: 'block', marginBottom: 4 }}>TOTAL VENUE CAPACITY</label>
+                <input
+                  type="number"
+                  className="neo-input"
+                  value={settingsForm.totalCapacity || 1000}
+                  onChange={e => setSettingsForm({ ...settingsForm, totalCapacity: parseInt(e.target.value, 10) })}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+                <button type="button" onClick={() => setShowSettingsModal(false)} className="btn-neo-outline" style={{ flex: 1 }}>
+                  CANCEL
+                </button>
+                <button type="submit" className="btn-neo-black" style={{ flex: 1 }}>
+                  SAVE SETTINGS ↗
+                </button>
+              </div>
             </form>
-
-            {/* Test Output */}
-            {testResult && (
-              <div style={{
-                marginTop: 16,
-                padding: '14px',
-                borderRadius: 'var(--radius-sm)',
-                background: testResult.isReal ? 'rgba(16, 185, 129, 0.12)' : 'rgba(0, 242, 254, 0.08)',
-                border: `1px solid ${testResult.isReal ? 'rgba(16, 185, 129, 0.35)' : 'rgba(0, 242, 254, 0.25)'}`,
-                fontSize: '0.82rem'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, color: testResult.isReal ? 'var(--status-approved)' : 'var(--accent-cyan)', marginBottom: 4 }}>
-                  <Sparkles size={16} />
-                  <span>{testResult.isReal ? 'REAL DELIVERY SUCCESS!' : 'SIMULATION MODE OUTPUT'}</span>
-                </div>
-                <div style={{ color: '#fff', marginBottom: 4 }}>{testResult.message}</div>
-                {testResult.testOtp && (
-                  <div style={{ color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-                    Generated Code: <strong>{testResult.testOtp}</strong> · Provider: {testResult.provider || testResult.deliveryProvider}
-                  </div>
-                )}
-                {testResult.error && (
-                  <div style={{ color: '#fca5a5', marginTop: 4 }}>{testResult.error}</div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Card 2: 60-Second Setup Guide */}
-          <div className="glass-panel" style={{ padding: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(157, 78, 221, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <KeyRound size={20} color="#c084fc" />
-              </div>
-              <div>
-                <h3 style={{ fontSize: '1.15rem', color: '#fff', fontWeight: 700 }}>60-Second Gmail Setup</h3>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>How to activate 100% free real email sending</p>
-              </div>
-            </div>
-
-            <div style={{ fontSize: '0.83rem', color: '#cbd5e1', lineHeight: 1.6 }}>
-              <ol style={{ paddingLeft: 18, margin: 0 }}>
-                <li style={{ marginBottom: 8 }}>
-                  Open your Google Account: <a href="https://myaccount.google.com/security" target="_blank" rel="noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline' }}>Security Settings <ExternalLink size={12} style={{ display: 'inline' }} /></a>
-                </li>
-                <li style={{ marginBottom: 8 }}>
-                  Make sure <strong>2-Step Verification</strong> is ON.
-                </li>
-                <li style={{ marginBottom: 8 }}>
-                  Go to <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noreferrer" style={{ color: 'var(--accent-cyan)', textDecoration: 'underline' }}>App Passwords <ExternalLink size={12} style={{ display: 'inline' }} /></a>.
-                </li>
-                <li style={{ marginBottom: 8 }}>
-                  Name it <strong>CollegeFest</strong> and click <strong>Create</strong>.
-                </li>
-                <li style={{ marginBottom: 8 }}>
-                  Google gives you a 16-character code (e.g. <code>abcd efgh ijkl mnop</code>).
-                </li>
-                <li>
-                  Save it in your <code>.env.local</code> file:
-                  <div style={{ background: '#000', padding: '8px 12px', borderRadius: 6, marginTop: 6, fontFamily: 'monospace', fontSize: '0.78rem', color: 'var(--accent-cyan)' }}>
-                    GMAIL_USER=yourfest@gmail.com<br />
-                    GMAIL_APP_PASSWORD=abcdefghijklmnop
-                  </div>
-                </li>
-              </ol>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* IMPORT ALUMNI CSV MODAL */}
-      {showImportModal && (
-        <div className="modal-backdrop" onClick={() => setShowImportModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 600, padding: 24 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-              <h3 style={{ fontSize: '1.2rem', color: '#fff' }}>Import Alumni Database (CSV / Text)</h3>
-              <button onClick={() => setShowImportModal(false)} className="btn btn-secondary" style={{ padding: 6 }}>
-                <X size={18} />
-              </button>
-            </div>
-
-            <div style={{
-              border: '2px dashed var(--border-focus)',
-              borderRadius: 'var(--radius-md)',
-              padding: '20px',
-              textAlign: 'center',
-              background: 'rgba(0, 242, 254, 0.05)',
-              marginBottom: 16,
-              cursor: 'pointer'
-            }}>
-              <input
-                type="file"
-                accept=".xlsx,.xls,.csv"
-                onChange={handleFileUpload}
-                style={{ display: 'none' }}
-                id="excel-file-input"
-              />
-              <label htmlFor="excel-file-input" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                <Upload size={28} color="var(--accent-cyan)" />
-                <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff' }}>
-                  Click to Upload Excel Sheet (.xlsx / .xls / .csv)
-                </span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-sub)' }}>
-                  Auto-detects USN, Student Name, Email, Phone, Branch & Batch
-                </span>
-              </label>
-            </div>
-
-            <div style={{ textAlign: 'center', margin: '10px 0', color: 'var(--text-sub)', fontSize: '0.8rem' }}>
-              — OR PASTE CSV ROWS BELOW —
-            </div>
-
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 8 }}>
-              Format: <code style={{ color: 'var(--accent-cyan)' }}>USN, Full Name, Email, Phone, Department, Batch</code>
-            </p>
-
-            <textarea
-              rows={8}
-              className="form-textarea"
-              style={{ fontFamily: 'monospace', fontSize: '0.82rem' }}
-              placeholder={`1MS20CS099, John Doe, john.doe@alumni.college.edu, +91 98765 11223, Computer Science, Batch of 2024\n1MS20EC045, Jane Smith, jane.smith@gmail.com, +91 98222 33445, Electronics, Batch of 2024`}
-              value={csvText}
-              onChange={e => setCsvText(e.target.value)}
-            />
-
-            {importStatus && (
-              <div style={{ color: 'var(--status-approved)', fontSize: '0.85rem', marginTop: 10, fontWeight: 600 }}>
-                {importStatus}
-              </div>
-            )}
-
-            <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-              <button onClick={() => setShowImportModal(false)} className="btn btn-secondary" style={{ flex: 1 }}>
-                Cancel
-              </button>
-              <button onClick={handleImportCsv} className="btn btn-primary" style={{ flex: 1 }}>
-                Process & Save to Directory
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* VIEW PROOF PHOTO MODAL */}
-      {viewingProof && (
-        <div className="modal-backdrop" onClick={() => setViewingProof(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 520, padding: 24 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-              <div>
-                <h3 style={{ fontSize: '1.1rem', color: '#fff' }}>Proof of Graduation / ID</h3>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  {viewingProof.name} ({viewingProof.roll})
-                </p>
-              </div>
-              <button onClick={() => setViewingProof(null)} className="btn btn-secondary" style={{ padding: 6 }}>
-                <X size={18} />
-              </button>
-            </div>
-
-            {viewingProof.reason && (
-              <div style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: 6, marginBottom: 12, fontSize: '0.82rem', color: '#fef3c7' }}>
-                Note: {viewingProof.reason}
-              </div>
-            )}
-
-            <div style={{ background: '#000', borderRadius: 'var(--radius-sm)', overflow: 'hidden', textAlign: 'center' }}>
-              <img
-                src={viewingProof.url}
-                alt="Proof Document"
-                style={{ width: '100%', maxHeight: 420, objectFit: 'contain' }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* REJECT MODAL */}
-      {rejectingId && (
-        <div className="modal-backdrop" onClick={() => setRejectingId(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 440, padding: 24 }}>
-            <h3 style={{ fontSize: '1.2rem', color: '#fff', marginBottom: 6 }}>Reject Registration</h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 16 }}>
-              Provide a reason. The student will see this when looking up their pass.
-            </p>
-
-            <div className="form-group">
-              <label className="form-label">Rejection Reason</label>
-              <textarea
-                rows={3}
-                className="form-textarea"
-                value={rejectionReason}
-                onChange={e => setRejectionReason(e.target.value)}
-              />
-            </div>
-
-            <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-              <button onClick={() => setRejectingId(null)} className="btn btn-secondary" style={{ flex: 1 }}>
-                Cancel
-              </button>
-              <button
-                onClick={() => handleUpdateStatus(rejectingId, 'REJECTED', rejectionReason)}
-                className="btn btn-danger"
-                style={{ flex: 1 }}
-              >
-                Confirm Reject
-              </button>
-            </div>
           </div>
         </div>
       )}
