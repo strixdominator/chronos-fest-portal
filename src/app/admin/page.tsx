@@ -496,22 +496,45 @@ export default function AdminPage() {
   if (!isAuthenticated) {
     return (
       <div style={{ background: 'var(--bg-page)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-        <div className="neo-box" style={{ maxWidth: 440, width: '100%', background: '#ffffff', boxShadow: '6px 6px 0px 0px var(--border-black)' }}>
+        <div className="dbit-auth-card">
           {/* Header */}
-          <div style={{ padding: '24px 28px', background: 'var(--bg-black)', color: '#ffffff', borderBottom: '1px solid var(--border-black)' }}>
-            <span className="mono-tag" style={{ color: 'var(--card-blue-2)' }}>COMMAND AUTHORIZATION</span>
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 900, marginTop: 4 }}>
-              MILAN 2026 • ADMIN
+          <div className="dbit-auth-header">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
+              <img 
+                src="/assets/66eff0e624600df79e9f69030275731c.png" 
+                alt="Don Bosco Institute of Technology emblem" 
+                style={{ width: 48, height: 'auto', display: 'block' }} 
+              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.5px', lineHeight: 1 }}>
+                  MILAN<span style={{ color: '#93c5fd' }}>2026</span>
+                </span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: 1.4, color: '#A9B8D8' }}>
+                  DBIT ALUMNI ASSOCIATION
+                </span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+              <span className="mono-tag" style={{ color: '#93c5fd', fontSize: 11, letterSpacing: 1.5 }}>
+                COMMAND AUTHORIZATION
+              </span>
+              <span style={{ width: 24, height: 2, background: 'var(--color-gold)', borderRadius: 2 }} />
+            </div>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, margin: '2px 0 4px' }}>
+              Admin Command Center
             </h2>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#A9B8D8', letterSpacing: 1 }}>
+              7 NOVEMBER 2026 · DBIT CRICKET GROUND
+            </div>
           </div>
 
-          <div style={{ padding: '28px' }}>
-            <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: 20 }}>
+          <div className="dbit-auth-body">
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--text-body)', marginBottom: 20 }}>
               Enter administrator passcode to access review queues, graduate directory, and gate systems.
             </p>
 
             {authError && (
-              <div style={{ padding: '10px 14px', background: '#fee2e2', border: '1px solid var(--border-black)', color: '#991b1b', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', fontWeight: 700, marginBottom: 16 }}>
+              <div style={{ padding: '10px 14px', background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 8, color: '#991b1b', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', fontWeight: 700, marginBottom: 16 }}>
                 {authError}
               </div>
             )}
@@ -535,7 +558,7 @@ export default function AdminPage() {
               <button
                 type="submit"
                 className="btn-neo-black"
-                style={{ width: '100%', padding: '14px' }}
+                style={{ width: '100%', padding: '14px', borderRadius: 8 }}
               >
                 SIGN IN TO COMMAND CENTER ↗
               </button>
@@ -550,20 +573,24 @@ export default function AdminPage() {
   return (
     <div style={{ background: 'var(--bg-page)', minHeight: '100vh', padding: '0 0 60px' }}>
       {/* HUB NAVIGATOR STRIP */}
-      <div style={{
-        background: '#ffffff',
-        borderBottom: '1px solid var(--border-black)',
-        padding: '12px 32px',
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 12
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span className="mono-tag" style={{ color: 'var(--accent-blue)' }}>HUB:</span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)' }}>
-            MILAN 2026 ORGANIZER APPLICATIONS
+      <div className="dbit-top-hub">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <img 
+            src="/assets/66eff0e624600df79e9f69030275731c.png" 
+            alt="Don Bosco Institute of Technology emblem" 
+            style={{ width: 38, height: 'auto', display: 'block' }} 
+          />
+          <div>
+            <div style={{ fontSize: 17, fontWeight: 700, lineHeight: 1 }}>
+              MILAN<span style={{ color: 'var(--color-blue)' }}>2026</span>
+            </div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9.5, letterSpacing: 1.2, color: 'var(--text-muted)' }}>
+              DBIT ALUMNI ASSOCIATION
+            </div>
+          </div>
+          <span style={{ height: 20, width: 1, background: 'var(--border-color)', margin: '0 4px' }} />
+          <span className="mono-tag" style={{ color: 'var(--color-blue)', fontSize: 11 }}>
+            COMMAND CENTER
           </span>
         </div>
 
@@ -572,7 +599,7 @@ export default function AdminPage() {
             href="/"
             target="_blank"
             className="btn-neo-outline"
-            style={{ padding: '8px 14px', fontSize: '0.75rem' }}
+            style={{ padding: '8px 14px', fontSize: '0.75rem', borderRadius: 8 }}
           >
             1. ALUMNI PASS PORTAL ↗
           </Link>
@@ -580,13 +607,13 @@ export default function AdminPage() {
             href="/scanner"
             target="_blank"
             className="btn-neo-outline"
-            style={{ padding: '8px 14px', fontSize: '0.75rem' }}
+            style={{ padding: '8px 14px', fontSize: '0.75rem', borderRadius: 8 }}
           >
             2. GATE SCANNER ↗
           </Link>
           <span
             className="btn-neo-black"
-            style={{ padding: '8px 14px', fontSize: '0.75rem', cursor: 'default' }}
+            style={{ padding: '8px 14px', fontSize: '0.75rem', cursor: 'default', borderRadius: 8 }}
           >
             3. ADMIN CENTER (ACTIVE)
           </span>
@@ -594,22 +621,19 @@ export default function AdminPage() {
       </div>
 
       {/* TOP COMMAND HEADER */}
-      <div style={{
-        padding: '32px 32px 24px',
-        borderBottom: '1px solid var(--border-black)',
-        background: 'var(--bg-blue-tint)',
-        display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        alignItems: 'flex-end',
-        gap: 20
-      }}>
+      <div className="dbit-dashboard-header">
         <div>
-          <div className="mono-tag">MILAN 2026 • DBIT ALUMNI NETWORK</div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', fontWeight: 900, textTransform: 'uppercase', marginTop: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
+            <span className="mono-tag" style={{ fontSize: 13, letterSpacing: 1.8 }}>ALUMNI MEET · MILAN 2026</span>
+            <span style={{ display: 'block', width: 36, height: 3, background: 'var(--color-gold)', borderRadius: 2 }} />
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-muted)', fontWeight: 700 }}>
+              7 NOVEMBER 2026 · DBIT CRICKET GROUND, BANGALORE
+            </span>
+          </div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', fontWeight: 700, color: 'var(--color-navy)' }}>
             Organizer Command Center
           </h1>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: 4 }}>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--text-body)', marginTop: 4 }}>
             {settings?.eventName || "MILAN 2026"} · {alumniList.length} Verified Master Alumni Records on File
           </p>
         </div>
@@ -621,8 +645,9 @@ export default function AdminPage() {
             gap: 8,
             padding: '8px 14px',
             background: '#ffffff',
-            border: '1px solid var(--border-black)',
-            boxShadow: '2px 2px 0px 0px var(--border-black)'
+            border: '1px solid var(--border-color)',
+            borderRadius: 8,
+            boxShadow: '0 2px 6px rgba(14, 31, 69, 0.05)'
           }}>
             <span style={{
               display: 'inline-block',
@@ -646,7 +671,7 @@ export default function AdminPage() {
           <button
             onClick={() => setShowSettingsModal(true)}
             className="btn-neo-outline"
-            style={{ padding: '10px 18px', fontSize: '0.78rem' }}
+            style={{ padding: '10px 18px', fontSize: '0.78rem', borderRadius: 8 }}
           >
             <Settings size={14} />
             EVENT SETTINGS ↗
@@ -654,28 +679,27 @@ export default function AdminPage() {
           <a
             href="/api/export"
             download="milan2026_registration_responses.csv"
-            className="btn-neo-yellow"
+            className="btn-neo-outline"
             style={{
               padding: '10px 18px',
-              fontSize: '0.8rem',
-              fontWeight: 800,
-              background: '#fde047',
-              color: '#000',
+              fontSize: '0.78rem',
+              borderRadius: 8,
+              background: '#fef9c3',
+              borderColor: '#fde047',
+              color: '#854d0e',
               display: 'inline-flex',
               alignItems: 'center',
               gap: 8,
-              border: '2px solid #000',
-              boxShadow: '3px 3px 0 #000',
               textDecoration: 'none'
             }}
           >
             <Download size={15} />
-            DOWNLOAD RESPONSES (CSV) ↗
+            DOWNLOAD CSV ↗
           </a>
           <button
             onClick={() => fetchAttendees(false)}
             className="btn-neo-black"
-            style={{ padding: '10px 18px', fontSize: '0.78rem' }}
+            style={{ padding: '10px 18px', fontSize: '0.78rem', borderRadius: 8 }}
             title="Force immediate reload from database"
           >
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
@@ -685,66 +709,61 @@ export default function AdminPage() {
       </div>
 
       {/* STAT COUNTERS GRID - REAL-TIME DB METRICS */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        borderBottom: '1px solid var(--border-black)',
-        background: '#ffffff'
-      }}>
-        <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
+      <div className="dbit-stat-grid">
+        <div className="neo-stat-card">
           <span className="mono-label">TOTAL REGISTRATIONS</span>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, margin: '8px 0 2px' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 700, margin: '8px 0 2px', color: 'var(--color-navy)' }}>
             {stats.total} <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>/ {stats.capacity} max</span>
           </div>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>
             {stats.approved} approved passes · {stats.pending} pending
           </span>
         </div>
 
-        <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
+        <div className="neo-stat-card">
           <span className="mono-label">ACTIVE PASSES ISSUED</span>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, margin: '8px 0 2px', color: 'var(--accent-blue)' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 700, margin: '8px 0 2px', color: 'var(--color-blue)' }}>
             {stats.approved}
           </div>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
             Official registered alumni
           </span>
         </div>
 
-        <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
+        <div className="neo-stat-card">
           <span className="mono-label">GATE ADMITTED</span>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, margin: '8px 0 2px', color: '#0e8a5a' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 700, margin: '8px 0 2px', color: '#0e8a5a' }}>
             {stats.checkedIn}
           </div>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
             {Math.max(0, stats.approved - stats.checkedIn)} passes yet to arrive
           </span>
         </div>
 
-        <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none', background: stats.pending > 0 ? '#fef3c7' : '#ffffff' }}>
+        <div className="neo-stat-card" style={{ background: stats.pending > 0 ? '#fef3c7' : '#ffffff', borderColor: stats.pending > 0 ? '#fcd34d' : 'var(--border-color)' }}>
           <span className="mono-label" style={{ color: stats.pending > 0 ? '#78350f' : undefined }}>NEEDS MANUAL REVIEW</span>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, margin: '8px 0 2px', color: stats.pending > 0 ? '#b45309' : undefined }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 700, margin: '8px 0 2px', color: stats.pending > 0 ? '#b45309' : undefined }}>
             {stats.pending}
           </div>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: stats.pending > 0 ? '#92400e' : 'var(--text-muted)' }}>
             Awaiting committee verification
           </span>
         </div>
 
-        <div className="neo-stat-card" style={{ borderBottom: 'none' }}>
+        <div className="neo-stat-card">
           <span className="mono-label">DENIED / REJECTED</span>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, margin: '8px 0 2px', color: '#dc2626' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 700, margin: '8px 0 2px', color: '#dc2626' }}>
             {stats.rejected}
           </div>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
             Denied verification requests
           </span>
         </div>
       </div>
 
       {/* MAIN SECTIONS TAB STRIP */}
-      <div style={{ padding: '24px 32px 0' }}>
-        <div className="neo-tabs-header" style={{ border: '1px solid var(--border-black)', borderBottom: 'none' }}>
+      <div style={{ padding: '0 32px 0' }}>
+        <div className="neo-tabs-header">
           <button
             onClick={() => setActiveSection('ATTENDEES')}
             className={`neo-tab-btn ${activeSection === 'ATTENDEES' ? 'active' : ''}`}
@@ -779,7 +798,7 @@ export default function AdminPage() {
               gap: 14,
               marginBottom: 20,
               paddingBottom: 20,
-              borderBottom: '1px solid var(--border-black)'
+              borderBottom: '1px solid var(--border-color)'
             }}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 <button
@@ -911,7 +930,7 @@ export default function AdminPage() {
                         </td>
 
                         <td>
-                          <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '0.88rem', background: 'var(--card-blue-1)', padding: '2px 8px', border: '1px solid var(--border-black)' }}>
+                          <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.88rem', background: '#EAF0FB', color: 'var(--color-blue)', padding: '3px 8px', border: '1px solid #C4D5F6', borderRadius: 4 }}>
                             {attendee.usn || attendee.rollNumber}
                           </span>
                         </td>
@@ -1086,13 +1105,13 @@ export default function AdminPage() {
               gap: 14,
               marginBottom: 16,
               paddingBottom: 16,
-              borderBottom: '1px solid var(--border-black)'
+              borderBottom: '1px solid var(--border-color)'
             }}>
               <div>
-                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 900 }}>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--color-navy)' }}>
                   COLLEGE ALUMNI MASTER DIRECTORY ({alumniList.length} TOTAL RECORDS)
                 </h3>
-                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: 2 }}>
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>
                   Pre-approved graduate database across all college departments. Only USNs listed here can claim a pass or request OTP.
                 </p>
               </div>
@@ -1110,7 +1129,7 @@ export default function AdminPage() {
                   onClick={handleSyncDataFolder}
                   disabled={syncingDataFolder}
                   className="btn-neo-outline"
-                  style={{ fontSize: '0.78rem', padding: '10px 16px', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                  style={{ fontSize: '0.78rem', padding: '10px 16px', borderRadius: 8, whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 6 }}
                   title="Scan all .xlsx and .csv files in data/ directory and sync into database"
                 >
                   <RefreshCw size={13} className={syncingDataFolder ? 'animate-spin' : ''} />
@@ -1119,7 +1138,7 @@ export default function AdminPage() {
                 <button
                   onClick={() => setShowImportModal(true)}
                   className="btn-neo-black"
-                  style={{ fontSize: '0.78rem', padding: '10px 18px', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                  style={{ fontSize: '0.78rem', padding: '10px 18px', borderRadius: 8, whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 6 }}
                 >
                   <Upload size={13} />
                   IMPORT FILES ↗
@@ -1134,7 +1153,7 @@ export default function AdminPage() {
               gap: 6,
               marginBottom: 20,
               paddingBottom: 16,
-              borderBottom: '1px dashed var(--border-black)'
+              borderBottom: '1px dashed var(--border-color)'
             }}>
               {[
                 { id: 'ALL', label: 'ALL DEPARTMENTS' },
@@ -1178,7 +1197,8 @@ export default function AdminPage() {
                     style={{
                       padding: '5px 10px',
                       fontSize: '0.72rem',
-                      fontWeight: 800,
+                      fontWeight: 700,
+                      borderRadius: 6,
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: 6
@@ -1187,9 +1207,10 @@ export default function AdminPage() {
                     <span>{dept.label}</span>
                     <span style={{
                       fontSize: '0.64rem',
-                      background: isActive ? '#fff' : 'var(--bg-black)',
-                      color: isActive ? '#000' : '#fff',
+                      background: isActive ? '#fff' : 'var(--color-navy)',
+                      color: isActive ? 'var(--color-navy)' : '#fff',
                       padding: '1px 5px',
+                      borderRadius: 4
                     }}>
                       {count}
                     </span>
@@ -1221,7 +1242,7 @@ export default function AdminPage() {
                     filteredAlumni.map((alumnus, idx) => (
                       <tr key={idx}>
                         <td>
-                          <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '0.88rem', background: 'var(--card-blue-1)', padding: '2px 8px', border: '1px solid var(--border-black)' }}>
+                          <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.88rem', background: '#EAF0FB', color: 'var(--color-blue)', padding: '3px 8px', border: '1px solid #C4D5F6', borderRadius: 4 }}>
                             {alumnus.usn}
                           </span>
                         </td>
@@ -1305,12 +1326,13 @@ export default function AdminPage() {
                   <div style={{
                     marginTop: 18,
                     padding: '16px',
-                    border: '1px solid var(--border-black)',
-                    background: testResult.isReal ? 'var(--card-blue-1)' : '#ffffff',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 8,
+                    background: testResult.isReal ? '#EAF0FB' : '#ffffff',
                     fontFamily: 'var(--font-mono)',
                     fontSize: '0.8rem'
                   }}>
-                    <div style={{ fontWeight: 800, marginBottom: 4, color: testResult.isReal ? '#0f2b5c' : 'var(--text-main)' }}>
+                    <div style={{ fontWeight: 700, marginBottom: 4, color: testResult.isReal ? 'var(--color-navy)' : 'var(--text-main)' }}>
                       {testResult.isReal ? '✓ REAL DELIVERY SUCCESS' : 'ℹ️ SIMULATION OUTPUT'}
                     </div>
                     <div>{testResult.message}</div>
@@ -1326,11 +1348,11 @@ export default function AdminPage() {
 
               {/* Card 2: Configuration Instructions */}
               <div className="neo-box" style={{ padding: 24, background: '#ffffff' }}>
-                <span className="mono-tag" style={{ color: 'var(--accent-blue)' }}>CREDENTIALS GUIDE</span>
-                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.3rem', fontWeight: 900, margin: '6px 0 2px' }}>
+                <span className="mono-tag" style={{ color: 'var(--color-blue)' }}>CREDENTIALS GUIDE</span>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.3rem', fontWeight: 700, color: 'var(--color-navy)', margin: '6px 0 2px' }}>
                   Gmail SMTP Configuration
                 </h3>
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 16 }}>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', color: 'var(--text-body)', marginBottom: 16 }}>
                   How to link free real Gmail delivery in <code>.env.local</code>:
                 </p>
 
@@ -1342,7 +1364,7 @@ export default function AdminPage() {
                   <li>Save in <code>.env.local</code>:</li>
                 </ol>
 
-                <div style={{ background: 'var(--bg-black)', color: '#ffffff', padding: '12px 14px', fontFamily: 'var(--font-mono)', fontSize: '0.78rem', marginTop: 12, border: '1px solid var(--border-black)' }}>
+                <div style={{ background: 'var(--color-navy)', color: '#ffffff', padding: '14px 16px', fontFamily: 'var(--font-mono)', fontSize: '0.78rem', marginTop: 12, border: '1px solid var(--border-color)', borderRadius: 8 }}>
                   GMAIL_USER=yourfest@gmail.com<br />
                   GMAIL_APP_PASSWORD=abcdefghijklmnop
                 </div>
@@ -1365,10 +1387,11 @@ export default function AdminPage() {
 
             <div style={{ padding: '24px' }}>
               <div style={{
-                border: '2px dashed var(--border-black)',
-                padding: '24px',
+                border: '2px dashed var(--border-color)',
+                borderRadius: 8,
+                padding: '28px',
                 textAlign: 'center',
-                background: 'var(--bg-blue-tint)',
+                background: '#F8FAFC',
                 marginBottom: 16,
                 cursor: 'pointer'
               }}>
@@ -1381,27 +1404,27 @@ export default function AdminPage() {
                   id="excel-file-input"
                 />
                 <label htmlFor="excel-file-input" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                  <Upload size={32} color="var(--accent-blue)" />
-                  <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 800 }}>
+                  <Upload size={32} color="var(--color-blue)" />
+                  <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--color-navy)' }}>
                     Click to Select Files (.xlsx, .xls, .csv)
                   </span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: 'var(--text-secondary)', lineHeight: 1.4, maxWidth: 440 }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: 'var(--text-muted)', lineHeight: 1.4, maxWidth: 440 }}>
                     Select single or multiple department spreadsheets (e.g. <strong>ISE.xlsx</strong>, <strong>AIDS.xlsx</strong>, <strong>AIML.xlsx</strong>, <strong>ECE.xlsx</strong>, <strong>Mechanical.xlsx</strong>, <strong>Civil.xlsx</strong>, <strong>EEE.xlsx</strong>, <strong>TCE.xlsx</strong>, <strong>MBA.xlsx</strong>, <strong>MTech.xlsx</strong>).
                   </span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--accent-blue)', fontWeight: 700, marginTop: 4 }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--color-blue)', fontWeight: 700, marginTop: 4 }}>
                     ✓ Multi-sheet workbooks & batches are automatically parsed
                   </span>
                 </label>
               </div>
 
-              <div style={{ padding: '12px 14px', background: 'var(--card-blue-1)', border: '1px solid var(--border-black)', marginBottom: 14 }}>
-                <div className="mono-label" style={{ fontSize: '0.65rem', marginBottom: 2 }}>PRO-TIP: LOCAL FOLDER SYNC</div>
+              <div style={{ padding: '12px 14px', background: '#EAF0FB', border: '1px solid var(--border-color)', borderRadius: 8, marginBottom: 14 }}>
+                <div className="mono-label" style={{ fontSize: '0.65rem', marginBottom: 2, color: 'var(--color-blue)' }}>PRO-TIP: LOCAL FOLDER SYNC</div>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: 'var(--text-main)', lineHeight: 1.4 }}>
                   You can also directly copy/paste your department files into the project&apos;s <code>data/</code> folder and click <strong>&quot;SYNC DATA/ FOLDER&quot;</strong> in the directory header!
                 </div>
               </div>
 
-              <div style={{ textAlign: 'center', margin: '14px 0', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+              <div style={{ textAlign: 'center', margin: '14px 0', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                 — OR PASTE RAW CSV ROWS BELOW —
               </div>
 
@@ -1415,16 +1438,16 @@ export default function AdminPage() {
               />
 
               {importStatus && (
-                <div style={{ color: '#0e8a5a', fontFamily: 'var(--font-mono)', fontSize: '0.82rem', marginTop: 12, fontWeight: 700, padding: '8px 12px', background: '#ecfdf5', border: '1px solid #059669' }}>
+                <div style={{ color: '#0e8a5a', fontFamily: 'var(--font-mono)', fontSize: '0.82rem', marginTop: 12, fontWeight: 700, padding: '8px 12px', background: '#ecfdf5', border: '1px solid #059669', borderRadius: 6 }}>
                   {importStatus}
                 </div>
               )}
 
               <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-                <button onClick={() => setShowImportModal(false)} className="btn-neo-outline" style={{ flex: 1 }}>
+                <button onClick={() => setShowImportModal(false)} className="btn-neo-outline" style={{ flex: 1, borderRadius: 8 }}>
                   CANCEL
                 </button>
-                <button onClick={handleImportCsv} className="btn-neo-black" style={{ flex: 1 }}>
+                <button onClick={handleImportCsv} className="btn-neo-black" style={{ flex: 1, borderRadius: 8 }}>
                   PROCESS & SAVE ↗
                 </button>
               </div>
@@ -1449,23 +1472,23 @@ export default function AdminPage() {
 
             <div style={{ padding: '20px' }}>
               {viewingProof.reason && (
-                <div style={{ padding: '10px 14px', background: 'var(--bg-blue-tint)', border: '1px solid var(--border-black)', marginBottom: 14, fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>
+                <div style={{ padding: '10px 14px', background: '#F8FAFC', border: '1px solid var(--border-color)', borderRadius: 8, marginBottom: 14, fontFamily: 'var(--font-mono)', fontSize: '0.8rem' }}>
                   Note: {viewingProof.reason}
                 </div>
               )}
 
               {viewingProof.organization && (
-                <div style={{ padding: '12px 14px', background: 'var(--card-blue-1)', border: '1px solid var(--border-black)', marginBottom: 14 }}>
-                  <div className="mono-label" style={{ fontSize: '0.68rem', marginBottom: 4 }}>
+                <div style={{ padding: '12px 14px', background: '#EAF0FB', border: '1px solid var(--border-color)', borderRadius: 8, marginBottom: 14 }}>
+                  <div className="mono-label" style={{ fontSize: '0.68rem', marginBottom: 4, color: 'var(--color-blue)' }}>
                     PROFESSIONAL AFFILIATION
                   </div>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', fontWeight: 800 }}>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-navy)' }}>
                     {viewingProof.organization} · {viewingProof.designation || 'Alumnus'}
                   </div>
                 </div>
               )}
 
-              <div style={{ border: '1px solid var(--border-black)', background: '#000', textAlign: 'center' }}>
+              <div style={{ border: '1px solid var(--border-color)', borderRadius: 8, overflow: 'hidden', background: '#0E1F45', textAlign: 'center' }}>
                 <img
                   src={viewingProof.url}
                   alt="Proof Document"
@@ -1584,14 +1607,14 @@ export default function AdminPage() {
               <span className="mono-tag" style={{ color: '#fee2e2' }}>
                 DELETE PASS & ALLOW RE-REGISTRATION
               </span>
-              <button onClick={() => setDeletingAttendee(null)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
+              <button onClick={() => setDeletingAttendee(null)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: 4 }}>
                 <X size={18} />
               </button>
             </div>
 
             <div style={{ padding: '24px' }}>
-              <div style={{ background: '#fee2e2', border: '1px solid #dc2626', padding: '16px', marginBottom: 20 }}>
-                <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', fontWeight: 900, color: '#991b1b' }}>
+              <div style={{ background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 8, padding: '16px', marginBottom: 20 }}>
+                <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', fontWeight: 700, color: '#991b1b' }}>
                   DELETE PASS FOR {deletingAttendee.fullName.toUpperCase()}?
                 </h4>
                 <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: '#7f1d1d', marginTop: 4 }}>
@@ -1599,8 +1622,8 @@ export default function AdminPage() {
                 </p>
               </div>
 
-              <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: 20, lineHeight: 1.6 }}>
-                <p style={{ fontWeight: 600, color: 'var(--text-main)', marginBottom: 6 }}>This action will immediately:</p>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.88rem', color: 'var(--text-body)', marginBottom: 20, lineHeight: 1.6 }}>
+                <p style={{ fontWeight: 600, color: 'var(--color-navy)', marginBottom: 6 }}>This action will immediately:</p>
                 <ul style={{ paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <li><strong>Invalidate QR code and pass</strong>: Any attempt to scan this pass at gates will be blocked.</li>
                   <li><strong>Unlock re-registration</strong>: The alumnus can go back to the portal, enter this USN, and claim a pass again fresh.</li>
@@ -1613,7 +1636,7 @@ export default function AdminPage() {
                   type="button"
                   onClick={() => setDeletingAttendee(null)}
                   className="btn-neo-outline"
-                  style={{ flex: 1, padding: '12px' }}
+                  style={{ flex: 1, padding: '12px', borderRadius: 8 }}
                 >
                   CANCEL
                 </button>
@@ -1622,7 +1645,7 @@ export default function AdminPage() {
                   onClick={() => handleDeleteAttendee(deletingAttendee.id)}
                   disabled={actionLoading === deletingAttendee.id}
                   className="btn-neo-black"
-                  style={{ flex: 2, background: '#dc2626', borderColor: '#991b1b', padding: '12px', fontSize: '0.8rem' }}
+                  style={{ flex: 2, background: '#dc2626', borderColor: '#991b1b', padding: '12px', fontSize: '0.8rem', borderRadius: 8 }}
                 >
                   {actionLoading === deletingAttendee.id ? 'DELETING...' : 'YES, DELETE & UNLOCK RE-REGISTER ↗'}
                 </button>
@@ -1640,14 +1663,14 @@ export default function AdminPage() {
               <span className="mono-tag" style={{ color: '#fee2e2' }}>
                 DANGER ZONE · PURGE ALL REGISTERED PASSES
               </span>
-              <button onClick={() => setShowResetAllModal(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
+              <button onClick={() => setShowResetAllModal(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: 4 }}>
                 <X size={18} />
               </button>
             </div>
 
             <div style={{ padding: '24px' }}>
-              <div style={{ background: '#fee2e2', border: '2px solid #dc2626', padding: '16px', marginBottom: 20 }}>
-                <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', fontWeight: 900, color: '#991b1b' }}>
+              <div style={{ background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 8, padding: '16px', marginBottom: 20 }}>
+                <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', fontWeight: 700, color: '#991b1b' }}>
                   PURGE ALL {stats.total} REGISTERED PASSES?
                 </h4>
                 <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: '#7f1d1d', marginTop: 6 }}>
@@ -1655,7 +1678,7 @@ export default function AdminPage() {
                 </p>
               </div>
 
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: 20, lineHeight: 1.6 }}>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.88rem', color: 'var(--text-body)', marginBottom: 20, lineHeight: 1.6 }}>
                 After this purge is executed, <strong>all alumni listed in the university master directory will be unlocked and permitted to register again</strong> from scratch.
               </p>
 
@@ -1664,7 +1687,7 @@ export default function AdminPage() {
                   type="button"
                   onClick={() => setShowResetAllModal(false)}
                   className="btn-neo-outline"
-                  style={{ flex: 1, padding: '12px' }}
+                  style={{ flex: 1, padding: '12px', borderRadius: 8 }}
                 >
                   CANCEL
                 </button>
@@ -1673,7 +1696,7 @@ export default function AdminPage() {
                   onClick={handleResetAllAttendees}
                   disabled={actionLoading === 'resetAll'}
                   className="btn-neo-black"
-                  style={{ flex: 2, background: '#dc2626', borderColor: '#7f1d1d', padding: '12px', fontSize: '0.8rem' }}
+                  style={{ flex: 2, background: '#dc2626', borderColor: '#7f1d1d', padding: '12px', fontSize: '0.8rem', borderRadius: 8 }}
                 >
                   {actionLoading === 'resetAll' ? 'PURGING...' : 'YES, PURGE ALL & RESET RE-REGISTRATION ↗'}
                 </button>

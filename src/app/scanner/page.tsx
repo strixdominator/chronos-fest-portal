@@ -349,22 +349,45 @@ export default function GateScannerPage() {
   if (!isAuthenticated) {
     return (
       <div style={{ background: 'var(--bg-page)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-        <div className="neo-box" style={{ maxWidth: 440, width: '100%', background: '#ffffff', boxShadow: '6px 6px 0px 0px var(--border-black)' }}>
+        <div className="dbit-auth-card">
           {/* Header */}
-          <div style={{ padding: '24px 28px', background: 'var(--bg-black)', color: '#ffffff', borderBottom: '1px solid var(--border-black)' }}>
-            <span className="mono-tag" style={{ color: 'var(--card-blue-2)' }}>VOLUNTEER STATION GATEWAY</span>
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 900, marginTop: 4 }}>
-              MILAN 2026 • GATE SCANNER
+          <div className="dbit-auth-header">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
+              <img 
+                src="/assets/66eff0e624600df79e9f69030275731c.png" 
+                alt="Don Bosco Institute of Technology emblem" 
+                style={{ width: 48, height: 'auto', display: 'block' }} 
+              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.5px', lineHeight: 1 }}>
+                  MILAN<span style={{ color: '#93c5fd' }}>2026</span>
+                </span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: 1.4, color: '#A9B8D8' }}>
+                  DBIT ALUMNI ASSOCIATION
+                </span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+              <span className="mono-tag" style={{ color: '#93c5fd', fontSize: 11, letterSpacing: 1.5 }}>
+                VOLUNTEER STATION GATEWAY
+              </span>
+              <span style={{ width: 24, height: 2, background: 'var(--color-gold)', borderRadius: 2 }} />
+            </div>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, margin: '2px 0 4px' }}>
+              Gate Scanner Terminal
             </h2>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#A9B8D8', letterSpacing: 1 }}>
+              7 NOVEMBER 2026 · DBIT CRICKET GROUND
+            </div>
           </div>
 
-          <div style={{ padding: '28px' }}>
-            <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: 20 }}>
-              Select your gate checkpoint station and enter the authorization PIN to unlock the live optical QR validator.
+          <div className="dbit-auth-body">
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--text-body)', marginBottom: 20 }}>
+              Select your gate checkpoint station and enter the volunteer PIN to unlock optical pass verification.
             </p>
 
             {pinError && (
-              <div style={{ padding: '10px 14px', background: '#fee2e2', border: '1px solid var(--border-black)', color: '#991b1b', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', fontWeight: 700, marginBottom: 16 }}>
+              <div style={{ padding: '10px 14px', background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 8, color: '#991b1b', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', fontWeight: 700, marginBottom: 16 }}>
                 {pinError}
               </div>
             )}
@@ -393,7 +416,7 @@ export default function GateScannerPage() {
                 </label>
                 <input
                   type="password"
-                  placeholder="Enter PIN"
+                  placeholder="Enter PIN (gate2026)"
                   className="neo-input"
                   value={pin}
                   onChange={e => setPin(e.target.value)}
@@ -405,7 +428,7 @@ export default function GateScannerPage() {
               <button
                 type="submit"
                 className="btn-neo-black"
-                style={{ width: '100%', padding: '14px' }}
+                style={{ width: '100%', padding: '14px', borderRadius: 8 }}
               >
                 UNLOCK GATE SCANNER ↗
               </button>
@@ -420,20 +443,24 @@ export default function GateScannerPage() {
   return (
     <div style={{ background: 'var(--bg-page)', minHeight: '100vh', padding: '0 0 60px' }}>
       {/* HUB NAVIGATOR STRIP */}
-      <div style={{
-        background: '#ffffff',
-        borderBottom: '1px solid var(--border-black)',
-        padding: '12px 32px',
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 12
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span className="mono-tag" style={{ color: 'var(--accent-blue)' }}>HUB:</span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-main)' }}>
-            MILAN 2026 ADMISSION PROTOCOL
+      <div className="dbit-top-hub">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <img 
+            src="/assets/66eff0e624600df79e9f69030275731c.png" 
+            alt="Don Bosco Institute of Technology emblem" 
+            style={{ width: 38, height: 'auto', display: 'block' }} 
+          />
+          <div>
+            <div style={{ fontSize: 17, fontWeight: 700, lineHeight: 1 }}>
+              MILAN<span style={{ color: 'var(--color-blue)' }}>2026</span>
+            </div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9.5, letterSpacing: 1.2, color: 'var(--text-muted)' }}>
+              DBIT ALUMNI ASSOCIATION
+            </div>
+          </div>
+          <span style={{ height: 20, width: 1, background: 'var(--border-color)', margin: '0 4px' }} />
+          <span className="mono-tag" style={{ color: 'var(--color-blue)', fontSize: 11 }}>
+            GATE SCANNER
           </span>
         </div>
 
@@ -442,39 +469,42 @@ export default function GateScannerPage() {
             href="/"
             target="_blank"
             className="btn-neo-outline"
-            style={{ padding: '8px 14px', fontSize: '0.75rem' }}
+            style={{ padding: '8px 14px', fontSize: '0.75rem', borderRadius: 8 }}
           >
-            ALUMNI PASS PORTAL ↗
+            1. ALUMNI PASS PORTAL ↗
           </Link>
           <span
             className="btn-neo-black"
-            style={{ padding: '8px 14px', fontSize: '0.75rem', cursor: 'default' }}
+            style={{ padding: '8px 14px', fontSize: '0.75rem', cursor: 'default', borderRadius: 8 }}
           >
-            GATE SCANNER (ACTIVE)
+            2. GATE SCANNER (ACTIVE)
           </span>
+          <Link
+            href="/admin"
+            target="_blank"
+            className="btn-neo-outline"
+            style={{ padding: '8px 14px', fontSize: '0.75rem', borderRadius: 8 }}
+          >
+            3. ADMIN CENTER ↗
+          </Link>
         </div>
       </div>
 
       {/* TOP SCANNER HEADER */}
-      <div style={{
-        padding: '28px 32px 20px',
-        borderBottom: '1px solid var(--border-black)',
-        background: 'var(--bg-blue-tint)',
-        display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        alignItems: 'flex-end',
-        gap: 20
-      }}>
+      <div className="dbit-dashboard-header">
         <div>
-          <div className="mono-tag" style={{ color: 'var(--accent-blue)' }}>
-            STATION: {volunteerName.toUpperCase()}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
+            <span className="mono-tag" style={{ fontSize: 13, letterSpacing: 1.8 }}>ALUMNI MEET · MILAN 2026</span>
+            <span style={{ display: 'block', width: 36, height: 3, background: 'var(--color-gold)', borderRadius: 2 }} />
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-muted)', fontWeight: 700 }}>
+              7 NOVEMBER 2026 · DBIT CRICKET GROUND, BANGALORE
+            </span>
           </div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.8rem, 3.2vw, 2.5rem)', fontWeight: 900, textTransform: 'uppercase', marginTop: 4 }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.8rem, 3.2vw, 2.5rem)', fontWeight: 700, color: 'var(--color-navy)' }}>
             Gate Entry & Wristband Terminal
           </h1>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: 4 }}>
-            Optical validation with automated family split-quota admission tracking.
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: 'var(--text-body)', marginTop: 4 }}>
+            Station: <strong style={{ color: 'var(--color-navy)' }}>{volunteerName.toUpperCase()}</strong> · Optical pass validation with automatic family split-quota tracking.
           </p>
         </div>
 
@@ -482,7 +512,7 @@ export default function GateScannerPage() {
           <button
             onClick={refreshStats}
             className="btn-neo-black"
-            style={{ padding: '10px 18px', fontSize: '0.78rem' }}
+            style={{ padding: '10px 18px', fontSize: '0.78rem', borderRadius: 8 }}
           >
             <RefreshCw size={14} />
             SYNC DATA ↗
@@ -491,69 +521,64 @@ export default function GateScannerPage() {
       </div>
 
       {/* STAT COUNTERS GRID */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        borderBottom: '1px solid var(--border-black)',
-        background: '#ffffff'
-      }}>
-        <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
+      <div className="dbit-stat-grid">
+        <div className="neo-stat-card">
           <span className="mono-label">GATE ADMITTED</span>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.2rem', fontWeight: 900, margin: '6px 0 2px', color: '#0e8a5a' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 700, margin: '6px 0 2px', color: '#0e8a5a' }}>
             {stats.admittedPeople ?? stats.checkedIn}
           </div>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
             Persons admitted ({stats.checkedIn} primary passes)
           </span>
         </div>
 
-        <div className="neo-stat-card" style={{ borderRight: '1px solid var(--border-black)', borderBottom: 'none' }}>
+        <div className="neo-stat-card">
           <span className="mono-label">ACTIVE ISSUED PASSES</span>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.2rem', fontWeight: 900, margin: '6px 0 2px', color: 'var(--accent-blue)' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 700, margin: '6px 0 2px', color: 'var(--color-blue)' }}>
             {stats.approved}
           </div>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
             {stats.approvedPeople ?? stats.approved} persons authorized
           </span>
         </div>
 
-        <div className="neo-stat-card" style={{ borderBottom: 'none' }}>
+        <div className="neo-stat-card">
           <span className="mono-label">PENDING ARRIVAL</span>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.2rem', fontWeight: 900, margin: '6px 0 2px', color: 'var(--text-main)' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 700, margin: '6px 0 2px', color: 'var(--color-navy)' }}>
             {stats.remainingAtGate ?? Math.max(0, stats.approved - stats.checkedIn)}
           </div>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
             Persons expected at gates
           </span>
         </div>
       </div>
 
       {/* SCANNER BODY CONTAINER */}
-      <div style={{ maxWidth: 1000, margin: '32px auto 0', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div style={{ maxWidth: 1000, margin: '16px auto 0', padding: '0 24px', display: 'flex', flexDirection: 'column', gap: 24 }}>
         
         {/* CARD 1: CAMERA SCANNER */}
-        <div className="neo-box" style={{ background: '#ffffff', boxShadow: '4px 4px 0px 0px var(--border-black)' }}>
+        <div className="neo-box" style={{ boxShadow: '0 4px 16px rgba(14, 31, 69, 0.06)' }}>
           <div style={{
             padding: '16px 24px',
-            borderBottom: '1px solid var(--border-black)',
-            background: 'var(--bg-black)',
+            borderBottom: '1px solid var(--border-color)',
+            background: 'var(--color-navy)',
             color: '#ffffff',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Camera size={18} style={{ color: 'var(--card-blue-2)' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Camera size={18} style={{ color: '#93c5fd' }} />
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.06em' }}>
                 01 • OPTICAL QR CAMERA VIEW
               </span>
             </div>
-            <span className="neo-badge" style={{ background: scanning ? '#d1fae5' : '#e2e8f0', color: scanning ? '#065f46' : '#475569' }}>
+            <span className="neo-badge" style={{ background: scanning ? '#d1fae5' : 'rgba(255, 255, 255, 0.15)', color: scanning ? '#065f46' : '#ffffff' }}>
               {scanning ? '● LIVE SCANNING' : '○ SENSOR OFF'}
             </span>
           </div>
 
-          <div style={{ padding: '24px', textAlign: 'center' }}>
+          <div style={{ padding: '28px 24px', textAlign: 'center' }}>
             <div className="scanner-camera-frame">
               <div id="qr-reader" style={{ width: '100%', height: '100%' }} />
               {scanning && <div className="scanner-laser-line" />}
@@ -569,9 +594,9 @@ export default function GateScannerPage() {
                   gap: 12,
                   padding: 20
                 }}>
-                  <Camera size={48} style={{ color: 'var(--card-blue-2)' }} />
-                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: '#e2e8f0', maxWidth: 280 }}>
-                    Optical sensor is in standby mode. Click below to activate front or back camera.
+                  <Camera size={44} style={{ color: '#93c5fd' }} />
+                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: '#cbd5e1', maxWidth: 300, lineHeight: 1.5 }}>
+                    Optical sensor is in standby mode. Click below to activate front or rear camera.
                   </p>
                 </div>
               )}
@@ -583,7 +608,7 @@ export default function GateScannerPage() {
                   type="button"
                   onClick={startScanner}
                   className="btn-neo-black"
-                  style={{ padding: '14px 28px', fontSize: '0.82rem' }}
+                  style={{ padding: '14px 28px', fontSize: '0.82rem', borderRadius: 8 }}
                 >
                   <Camera size={16} />
                   ACTIVATE CAMERA SCANNER ↗
@@ -593,7 +618,7 @@ export default function GateScannerPage() {
                   type="button"
                   onClick={stopScanner}
                   className="btn-neo-outline"
-                  style={{ padding: '14px 28px', fontSize: '0.82rem' }}
+                  style={{ padding: '14px 28px', fontSize: '0.82rem', borderRadius: 8 }}
                 >
                   <CameraOff size={16} />
                   DEACTIVATE CAMERA
@@ -604,22 +629,22 @@ export default function GateScannerPage() {
         </div>
 
         {/* CARD 2: MANUAL ROLL CODE LOOKUP */}
-        <div className="neo-box" style={{ background: '#ffffff', boxShadow: '4px 4px 0px 0px var(--border-black)' }}>
+        <div className="neo-box" style={{ boxShadow: '0 4px 16px rgba(14, 31, 69, 0.06)' }}>
           <div style={{
             padding: '16px 24px',
-            borderBottom: '1px solid var(--border-black)',
-            background: 'var(--bg-blue-tint)',
+            borderBottom: '1px solid var(--border-color)',
+            background: 'linear-gradient(180deg, #EAF0FB 0%, #F5F8FD 100%)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Search size={18} style={{ color: 'var(--accent-blue)' }} />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.06em' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Search size={18} style={{ color: 'var(--color-blue)' }} />
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.06em', color: 'var(--color-navy)' }}>
                 02 • MANUAL USN / TICKET CODE LOOKUP (FALLBACK)
               </span>
             </div>
-            <span className="mono-tag" style={{ color: 'var(--text-secondary)' }}>
+            <span className="mono-tag" style={{ color: 'var(--text-muted)' }}>
               KEYPAD INPUT
             </span>
           </div>
@@ -629,7 +654,7 @@ export default function GateScannerPage() {
               <div className="neo-input-group">
                 <input
                   type="text"
-                  placeholder="Enter USN (e.g. 1DB20CS001 or 2023CS104)"
+                  placeholder="Enter USN (e.g. 1DB20CS001 or 1DBSCCS103)"
                   value={manualCode}
                   onChange={e => setManualCode(e.target.value)}
                   style={{ width: '100%', textTransform: 'uppercase' }}
@@ -638,7 +663,7 @@ export default function GateScannerPage() {
                   type="submit"
                   disabled={verifying || !manualCode.trim()}
                   className="btn-neo-black"
-                  style={{ padding: '0 24px' }}
+                  style={{ padding: '0 24px', borderRadius: 8 }}
                 >
                   {verifying ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
                   VERIFY CODE ↗
@@ -683,19 +708,19 @@ export default function GateScannerPage() {
 
         {/* CARD 3: RECENT GATE ACTIVITY */}
         {recentScans.length > 0 && (
-          <div className="neo-box" style={{ background: '#ffffff', boxShadow: '4px 4px 0px 0px var(--border-black)' }}>
+          <div className="neo-box" style={{ boxShadow: '0 4px 16px rgba(14, 31, 69, 0.06)' }}>
             <div style={{
               padding: '16px 24px',
-              borderBottom: '1px solid var(--border-black)',
-              background: '#ffffff',
+              borderBottom: '1px solid var(--border-color)',
+              background: 'linear-gradient(180deg, #EAF0FB 0%, #F5F8FD 100%)',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center'
             }}>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.06em' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.06em', color: 'var(--color-navy)' }}>
                 03 • RECENT GATE ACTIVITY AT THIS STATION ({recentScans.length})
               </span>
-              <span className="mono-tag" style={{ color: 'var(--accent-blue)' }}>LIVE AUDIT</span>
+              <span className="mono-tag" style={{ color: 'var(--color-blue)' }}>LIVE AUDIT</span>
             </div>
 
             <div style={{ overflowX: 'auto' }}>
@@ -711,8 +736,8 @@ export default function GateScannerPage() {
                 <tbody>
                   {recentScans.map((scan, i) => (
                     <tr key={i}>
-                      <td style={{ fontWeight: 700, color: 'var(--text-main)' }}>{scan.name}</td>
-                      <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--accent-blue)' }}>
+                      <td style={{ fontWeight: 700, color: 'var(--color-navy)' }}>{scan.name}</td>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--color-blue)' }}>
                         {scan.rollNumber}
                       </td>
                       <td>
@@ -720,7 +745,7 @@ export default function GateScannerPage() {
                           {scan.status}
                         </span>
                       </td>
-                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                         {scan.time}
                       </td>
                     </tr>
@@ -739,15 +764,15 @@ export default function GateScannerPage() {
         <div className="neo-modal-backdrop">
           <div className="neo-modal" style={{ maxWidth: 580 }}>
             <div className="neo-modal-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span className="mono-tag" style={{ color: 'var(--card-blue-2)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span className="mono-tag" style={{ color: '#93c5fd', fontSize: 11 }}>
                   GATE DISPATCH PROTOCOL
                 </span>
               </div>
               <button
                 type="button"
                 onClick={handleDismissModal}
-                style={{ background: 'transparent', border: 'none', color: '#ffffff', cursor: 'pointer' }}
+                style={{ background: 'transparent', border: 'none', color: '#ffffff', cursor: 'pointer', padding: 4 }}
               >
                 <X size={20} />
               </button>
@@ -757,29 +782,30 @@ export default function GateScannerPage() {
               {/* Header Status Card */}
               <div style={{
                 padding: '16px 20px',
-                border: '1px solid var(--border-black)',
+                border: '1px solid var(--border-color)',
+                borderRadius: 8,
                 background: scanPreview.status === 'READY'
-                  ? (scanPreview.admittedCount > 0 ? 'var(--card-blue-1)' : '#d1fae5')
+                  ? (scanPreview.admittedCount > 0 ? '#EAF0FB' : '#d1fae5')
                   : scanPreview.status === 'ALREADY_CHECKED_IN'
                   ? '#fef3c7'
                   : '#fee2e2',
                 marginBottom: 20
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   {scanPreview.status === 'READY' ? (
                     scanPreview.admittedCount > 0 ? (
-                      <UserCheck size={24} style={{ color: '#0f2b5c' }} />
+                      <UserCheck size={26} style={{ color: 'var(--color-blue)' }} />
                     ) : (
-                      <CheckCircle2 size={24} style={{ color: '#065f46' }} />
+                      <CheckCircle2 size={26} style={{ color: '#065f46' }} />
                     )
                   ) : scanPreview.status === 'ALREADY_CHECKED_IN' ? (
-                    <AlertOctagon size={24} style={{ color: '#92400e' }} />
+                    <AlertOctagon size={26} style={{ color: '#92400e' }} />
                   ) : (
-                    <AlertTriangle size={24} style={{ color: '#991b1b' }} />
+                    <AlertTriangle size={26} style={{ color: '#991b1b' }} />
                   )}
 
                   <div>
-                    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', fontWeight: 900, textTransform: 'uppercase' }}>
+                    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-navy)' }}>
                       {scanPreview.status === 'READY' && (
                         scanPreview.admittedCount > 0
                           ? `PARTIAL ENTRY (${scanPreview.remaining} REMAINING)`
@@ -790,7 +816,7 @@ export default function GateScannerPage() {
                       {scanPreview.status === 'REJECTED' && 'PASS REJECTED'}
                       {scanPreview.status === 'NOT_FOUND' && 'INVALID / NOT FOUND'}
                     </h3>
-                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', marginTop: 2, color: 'var(--text-secondary)' }}>
+                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', marginTop: 2, color: 'var(--text-body)' }}>
                       {scanPreview.message}
                     </p>
                   </div>
@@ -799,21 +825,21 @@ export default function GateScannerPage() {
 
               {/* Attendee Details Card */}
               {scanPreview.attendee && (
-                <div style={{ border: '1px solid var(--border-black)', padding: '16px', background: 'var(--bg-card-alt)', marginBottom: 20 }}>
+                <div style={{ border: '1px solid var(--border-color)', borderRadius: 8, padding: '18px', background: '#F8FAFC', marginBottom: 20 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
                       <span className="mono-label">GRADUATE ALUMNUS</span>
-                      <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', fontWeight: 800, marginTop: 2 }}>
+                      <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-navy)', marginTop: 2 }}>
                         {scanPreview.attendee.fullName}
                       </h4>
-                      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                      <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                         {scanPreview.attendee.department} · {scanPreview.attendee.batchYear || 'Alumnus'}
                       </p>
                     </div>
 
                     <div style={{ textAlign: 'right' }}>
                       <span className="mono-label">USN / ROLL NO</span>
-                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.05rem', fontWeight: 800, color: 'var(--accent-blue)', marginTop: 2 }}>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--color-blue)', marginTop: 2 }}>
                         {scanPreview.attendee.rollNumber}
                       </div>
                     </div>
@@ -821,7 +847,7 @@ export default function GateScannerPage() {
 
                   {/* Registered Family Members breakdown */}
                   {scanPreview.attendee.familyMembers && scanPreview.attendee.familyMembers.length > 0 && (
-                    <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--border-subtle)' }}>
+                    <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--border-color)' }}>
                       <span className="mono-label" style={{ display: 'block', marginBottom: 8 }}>
                         REGISTERED MEMBERS ({scanPreview.totalQuota} TOTAL):
                       </span>
@@ -830,7 +856,7 @@ export default function GateScannerPage() {
                           ★ {scanPreview.attendee.fullName} (Alumnus)
                         </span>
                         {scanPreview.attendee.familyMembers.map((fam, idx) => (
-                          <span key={idx} className="neo-badge" style={{ background: '#ffffff' }}>
+                          <span key={idx} className="neo-badge" style={{ background: '#ffffff', borderColor: 'var(--border-color)', color: 'var(--color-navy)' }}>
                             {fam.name} ({fam.relation})
                           </span>
                         ))}
@@ -842,25 +868,25 @@ export default function GateScannerPage() {
                   <div style={{
                     marginTop: 14,
                     paddingTop: 12,
-                    borderTop: '1px solid var(--border-subtle)',
+                    borderTop: '1px solid var(--border-color)',
                     display: 'grid',
                     gridTemplateColumns: '1fr 1fr 1fr',
                     gap: 8,
                     textAlign: 'center'
                   }}>
-                    <div style={{ background: '#ffffff', border: '1px solid var(--border-black)', padding: '8px' }}>
+                    <div style={{ background: '#ffffff', border: '1px solid var(--border-color)', borderRadius: 8, padding: '10px' }}>
                       <span className="mono-label" style={{ display: 'block', fontSize: '0.68rem' }}>Total Quota</span>
-                      <strong style={{ fontFamily: 'var(--font-mono)', fontSize: '1.1rem' }}>{scanPreview.totalQuota}</strong>
+                      <strong style={{ fontFamily: 'var(--font-mono)', fontSize: '1.2rem', color: 'var(--color-navy)' }}>{scanPreview.totalQuota}</strong>
                     </div>
-                    <div style={{ background: '#ffffff', border: '1px solid var(--border-black)', padding: '8px' }}>
+                    <div style={{ background: '#ffffff', border: '1px solid var(--border-color)', borderRadius: 8, padding: '10px' }}>
                       <span className="mono-label" style={{ display: 'block', fontSize: '0.68rem' }}>Already In</span>
-                      <strong style={{ fontFamily: 'var(--font-mono)', fontSize: '1.1rem', color: scanPreview.admittedCount > 0 ? '#b45309' : 'var(--text-secondary)' }}>
+                      <strong style={{ fontFamily: 'var(--font-mono)', fontSize: '1.2rem', color: scanPreview.admittedCount > 0 ? '#b45309' : 'var(--text-muted)' }}>
                         {scanPreview.admittedCount}
                       </strong>
                     </div>
-                    <div style={{ background: '#ffffff', border: '1px solid var(--border-black)', padding: '8px' }}>
+                    <div style={{ background: '#ffffff', border: '1px solid var(--border-color)', borderRadius: 8, padding: '10px' }}>
                       <span className="mono-label" style={{ display: 'block', fontSize: '0.68rem' }}>Available Now</span>
-                      <strong style={{ fontFamily: 'var(--font-mono)', fontSize: '1.1rem', color: scanPreview.remaining > 0 ? '#0e8a5a' : '#dc2626' }}>
+                      <strong style={{ fontFamily: 'var(--font-mono)', fontSize: '1.2rem', color: scanPreview.remaining > 0 ? '#0e8a5a' : '#dc2626' }}>
                         {scanPreview.remaining}
                       </strong>
                     </div>
@@ -868,8 +894,8 @@ export default function GateScannerPage() {
 
                   {/* Previous Check-in logs if already partially admitted */}
                   {scanPreview.attendee.checkInLogs && scanPreview.attendee.checkInLogs.length > 0 && (
-                    <div style={{ marginTop: 12, fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>
-                      <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>Previous Check-in Log:</span>
+                    <div style={{ marginTop: 12, fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                      <span style={{ fontWeight: 700, color: 'var(--color-navy)' }}>Previous Check-in Log:</span>
                       {scanPreview.attendee.checkInLogs.map((log, idx) => (
                         <div key={idx} style={{ marginTop: 2 }}>
                           • {log.admitted} member(s) admitted at {new Date(log.timestamp).toLocaleTimeString()} by {log.gateVolunteer}
@@ -882,8 +908,8 @@ export default function GateScannerPage() {
 
               {/* ACTION SECTION FOR VOLUNTEER */}
               {scanPreview.status === 'READY' && (
-                <div style={{ border: '1px solid var(--border-black)', padding: '18px', background: 'var(--bg-blue-tint)', marginBottom: 20 }}>
-                  <label className="mono-label" style={{ display: 'block', marginBottom: 12, textAlign: 'center' }}>
+                <div style={{ border: '1px solid var(--border-color)', borderRadius: 8, padding: '20px', background: 'linear-gradient(180deg, #EAF0FB 0%, #F5F8FD 100%)', marginBottom: 20 }}>
+                  <label className="mono-label" style={{ display: 'block', marginBottom: 12, textAlign: 'center', color: 'var(--color-navy)' }}>
                     MEMBERS PRESENT AT GATE RIGHT NOW:
                   </label>
 
@@ -941,7 +967,8 @@ export default function GateScannerPage() {
                     style={{
                       width: '100%',
                       padding: '16px',
-                      fontSize: '0.9rem',
+                      fontSize: '0.88rem',
+                      borderRadius: 8,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -957,7 +984,7 @@ export default function GateScannerPage() {
                   </button>
 
                   {admitCount < scanPreview.remaining && (
-                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)', textAlign: 'center', marginTop: 10 }}>
+                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: 10 }}>
                       ℹ️ Note: {scanPreview.remaining - admitCount} quota will remain valid on this QR code for late arrivals.
                     </p>
                   )}
@@ -969,7 +996,8 @@ export default function GateScannerPage() {
                 <div style={{
                   padding: '14px',
                   background: '#fee2e2',
-                  border: '1px solid var(--border-black)',
+                  border: '1px solid #fca5a5',
+                  borderRadius: 8,
                   color: '#991b1b',
                   fontFamily: 'var(--font-mono)',
                   fontSize: '0.82rem',
@@ -985,7 +1013,7 @@ export default function GateScannerPage() {
                 type="button"
                 onClick={handleDismissModal}
                 className="btn-neo-outline"
-                style={{ width: '100%', padding: '12px' }}
+                style={{ width: '100%', padding: '12px', borderRadius: 8 }}
               >
                 {scanPreview.status === 'READY' ? 'CANCEL / SCAN ANOTHER' : 'DISMISS / READY FOR NEXT'}
               </button>
@@ -1010,37 +1038,38 @@ export default function GateScannerPage() {
               <button
                 type="button"
                 onClick={handleDismissModal}
-                style={{ background: 'transparent', border: 'none', color: '#ffffff', cursor: 'pointer' }}
+                style={{ background: 'transparent', border: 'none', color: '#ffffff', cursor: 'pointer', padding: 4 }}
               >
                 <X size={20} />
               </button>
             </div>
 
             <div style={{ padding: '28px', textAlign: 'center' }}>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', fontWeight: 900, textTransform: 'uppercase', color: '#0e8a5a' }}>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', fontWeight: 700, textTransform: 'uppercase', color: '#0e8a5a' }}>
                 {scanResult.code === 'PARTIAL_ENTRY' ? 'PARTIAL ENTRY RECORDED!' : 'ENTRY GRANTED!'}
               </h2>
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.92rem', color: 'var(--text-secondary)', marginTop: 6, marginBottom: 20 }}>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.92rem', color: 'var(--text-body)', marginTop: 6, marginBottom: 20 }}>
                 {scanResult.message}
               </p>
 
               {/* Big Wristband instruction box */}
               <div style={{
-                background: 'var(--card-blue-1)',
-                border: '2px solid var(--border-black)',
-                boxShadow: '4px 4px 0px 0px var(--border-black)',
-                padding: '20px',
+                background: '#EAF0FB',
+                border: '1px solid #93c5fd',
+                borderRadius: 12,
+                boxShadow: '0 8px 24px -8px rgba(30, 63, 184, 0.2)',
+                padding: '22px',
                 textAlign: 'center',
                 marginBottom: 20
               }}>
-                <span className="mono-label" style={{ display: 'block', color: 'var(--accent-blue)', marginBottom: 4 }}>
+                <span className="mono-label" style={{ display: 'block', color: 'var(--color-blue)', marginBottom: 6 }}>
                   ACTION FOR GATE VOLUNTEER:
                 </span>
                 <span style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: '1.25rem',
-                  fontWeight: 900,
-                  color: 'var(--text-main)',
+                  fontSize: '1.35rem',
+                  fontWeight: 700,
+                  color: 'var(--color-navy)',
                   display: 'block'
                 }}>
                   ATTACH {scanResult.admittedNow || 1} × {scanResult.attendee?.wristbandColor || 'ROYAL BLUE'} WRISTBAND(S) NOW
@@ -1049,24 +1078,26 @@ export default function GateScannerPage() {
                 {scanResult.remaining !== undefined && scanResult.remaining > 0 ? (
                   <span style={{
                     display: 'inline-block',
-                    marginTop: 10,
-                    padding: '4px 10px',
+                    marginTop: 12,
+                    padding: '6px 14px',
                     background: '#ffffff',
-                    border: '1px solid var(--border-black)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 6,
                     fontFamily: 'var(--font-mono)',
                     fontSize: '0.74rem',
                     fontWeight: 700,
-                    color: 'var(--accent-blue)'
+                    color: 'var(--color-blue)'
                   }}>
                     ℹ️ {scanResult.remaining} remaining admission(s) left on this pass for late arrivals.
                   </span>
                 ) : (
                   <span style={{
                     display: 'inline-block',
-                    marginTop: 10,
-                    padding: '4px 10px',
+                    marginTop: 12,
+                    padding: '6px 14px',
                     background: '#ffffff',
-                    border: '1px solid var(--border-black)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 6,
                     fontFamily: 'var(--font-mono)',
                     fontSize: '0.74rem',
                     fontWeight: 700,
@@ -1082,7 +1113,7 @@ export default function GateScannerPage() {
                 type="button"
                 onClick={handleDismissModal}
                 className="btn-neo-black"
-                style={{ width: '100%', padding: '14px', fontSize: '0.88rem' }}
+                style={{ width: '100%', padding: '14px', fontSize: '0.88rem', borderRadius: 8 }}
               >
                 READY FOR NEXT ATTENDEE ↗
               </button>
