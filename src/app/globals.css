@@ -753,6 +753,102 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ==========================================================================
+   FAQ SECTION (FROM MAIN.DC.HTML)
+   ========================================================================== */
+.dbit-faq-section {
+  background: linear-gradient(180deg, #FFFFFF 0%, #EAF1FD 100%);
+  border-top: 1px solid var(--border-color);
+  padding: 64px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 48px;
+}
+
+.dbit-faq-left {
+  flex: 1 1 280px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dbit-faq-title {
+  margin: 0;
+  font-size: 44px;
+  letter-spacing: -1.5px;
+  line-height: 1.05;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.dbit-faq-desc {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--text-body);
+  max-width: 340px;
+}
+
+.dbit-faq-right {
+  flex: 2 1 520px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dbit-faq-item {
+  border-top: 1px solid var(--border-color);
+}
+
+.dbit-faq-btn {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  color: var(--color-navy);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.dbit-faq-btn:hover {
+  color: var(--color-blue);
+}
+
+.dbit-faq-toggle-icon {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #EAF0FB;
+  color: var(--color-blue);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.3, 1), background 0.2s;
+}
+
+.dbit-faq-btn:hover .dbit-faq-toggle-icon {
+  background: #DCE7FC;
+}
+
+.dbit-faq-answer {
+  margin: 0 0 24px;
+  max-width: 620px;
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: var(--text-body);
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+/* ==========================================================================
    FOOTER (DBIT SPEC)
    ========================================================================== */
 .dbit-footer {
@@ -1224,6 +1320,10 @@ input:focus, select:focus, textarea:focus {
     padding: 48px 32px;
   }
 
+  .dbit-faq-section {
+    padding: 48px 32px;
+  }
+
   .dbit-footer {
     padding: 36px 32px;
   }
@@ -1277,6 +1377,20 @@ input:focus, select:focus, textarea:focus {
 
   .dbit-how-section {
     padding: 36px 20px;
+  }
+
+  .dbit-faq-section {
+    padding: 36px 20px;
+    gap: 32px;
+  }
+
+  .dbit-faq-title {
+    font-size: 32px;
+  }
+
+  .dbit-faq-btn {
+    font-size: 17.5px;
+    padding: 18px 0;
   }
 
   .dbit-footer {

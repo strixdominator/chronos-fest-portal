@@ -27,7 +27,10 @@ export default function Navbar() {
           EVENT
         </a>
         <a href="#how" className="dbit-nav-link">
-          PASS PORTAL
+          HOW IT WORKS
+        </a>
+        <a href="#faq" className="dbit-nav-link">
+          FAQ
         </a>
         <a href="#claim" className="dbit-nav-cta">
           CLAIM PASS ↗

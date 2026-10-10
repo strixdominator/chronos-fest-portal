@@ -6,8 +6,28 @@ import RegistrationForm from '@/components/RegistrationForm';
 import PassLogin from '@/components/PassLogin';
 import { EventSettings } from '@/lib/types';
 
+const FAQS = [
+  {
+    q: 'Can I transfer my pass to someone else?',
+    a: 'No. Each pass is tied to one verified alumni record, so it cannot be shared or transferred.'
+  },
+  {
+    q: 'What if I cannot find my record?',
+    a: 'Check your USN for typos first. If it still does not match, write to the alumni association at alumni@dbit.co.in and we will look into it.'
+  },
+  {
+    q: 'What do I need to bring on the day?',
+    a: 'Your QR pass on your phone or a printout. Each QR code works for a single entry, and you will receive a wristband at the gate.'
+  },
+  {
+    q: 'Can I claim a pass more than once?',
+    a: 'No. One alumni identity gets one pass. If you have lost yours, use the Find My Pass tab to retrieve it.'
+  }
+];
+
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<'register' | 'lookup'>('register');
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [stats, setStats] = useState<{ total: number; capacity: number; checkedIn: number }>({
     total: 0,
     capacity: 1000,
@@ -236,6 +256,66 @@ export default function HomePage() {
             <span>MILAN 2026 / MAIN CAMPUS STAGE</span>
             <span>ALUMNI ARCHIVE</span>
           </div>
+        </div>
+      </section>
+
+      {/* FAQ SECTION */}
+      <section id="faq" className="dbit-faq-section">
+        <div className="dbit-faq-left">
+          <div className="dbit-hero-meta">
+            <span className="dbit-hero-tag">FAQ</span>
+            <span className="dbit-gold-divider" />
+            <span className="dbit-hero-venue">HELP & GUIDELINES</span>
+          </div>
+          <h2 className="dbit-faq-title">Good to know.</h2>
+          <p className="dbit-faq-desc">
+            Quick answers before you claim your pass. Still stuck? Write to us at{' '}
+            <a href="mailto:alumni@dbit.co.in" style={{ color: 'var(--color-blue)', textDecoration: 'underline' }}>
+              alumni@dbit.co.in
+            </a>
+            .
+          </p>
+        </div>
+
+        <div className="dbit-faq-right">
+          {FAQS.map((faq, index) => {
+            const isOpen = openFaq === index;
+            return (
+              <div key={index} className="dbit-faq-item">
+                <button
+                  type="button"
+                  className="dbit-faq-btn"
+                  onClick={() => setOpenFaq(isOpen ? null : index)}
+                  aria-expanded={isOpen}
+                >
+                  <span>{faq.q}</span>
+                  <span 
+                    className="dbit-faq-toggle-icon" 
+                    style={{ transform: isOpen ? 'rotate(45deg)' : 'none' }}
+                  >
+                    <svg 
+                      width="16" 
+                      height="16" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2.5" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    >
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                  </span>
+                </button>
+                {isOpen && (
+                  <p className="dbit-faq-answer">
+                    {faq.a}
+                  </p>
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
 
