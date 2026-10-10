@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { findAlumnusByUsn, maskEmail, maskPhone } from '@/lib/alumni';
 import { getAttendees } from '@/lib/db';
+import { getClientIp, checkRateLimit } from '@/lib/rateLimit';
 
 export async function GET(request: NextRequest) {
   try {
+    const clientIp = getClientIp(request);
+    // Rate limit: Max 40 lookups per minute per IP to prevent scraping
+    const ipCheck = checkRateLimit(`ip_lookup:${clientIp}`, 40, 60 * 1000);
+    if (!ipCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Too many search requests. Please slow down.' },
+        { status: 429, headers: { 'Retry-After': String(ipCheck.retryAfterSec) } }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const usn = searchParams.get('usn');
 

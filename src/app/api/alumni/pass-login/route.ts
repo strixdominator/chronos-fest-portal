@@ -2,18 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createOtp, verifyOtp, findAlumnusByUsn, maskEmail, maskPhone } from '@/lib/alumni';
 import { getAttendees } from '@/lib/db';
 import { sendEmailOtp, sendSmsOtp } from '@/lib/notifications';
+import { getClientIp, checkOtpDispatchLimits, checkOtpVerifyAttempts, recordFailedOtpAttempt, resetFailedOtpAttempts } from '@/lib/rateLimit';
 
 // POST: Handles both 'SEND_OTP' and 'VERIFY_OTP' for logging into already claimed passes
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action, usn, channel = 'EMAIL', otp } = body;
+    const cookieToken = request.cookies.get('milan_otp_token')?.value;
+    const { action, usn, channel = 'EMAIL', otp, otpToken, website } = body;
+
+    if (website) {
+      return NextResponse.json({ success: false, error: 'Suspicious bot activity detected.' }, { status: 400 });
+    }
 
     if (!usn || typeof usn !== 'string') {
       return NextResponse.json({ success: false, error: 'USN is required' }, { status: 400 });
     }
 
     const cleanedUsn = usn.trim().toUpperCase();
+    const clientIp = getClientIp(request);
     const attendees = getAttendees();
     const attendee = attendees.find(
       a => (a.usn || a.rollNumber).trim().toUpperCase() === cleanedUsn
@@ -28,6 +35,16 @@ export async function POST(request: NextRequest) {
 
     // ACTION 1: SEND LOGIN OTP
     if (action === 'SEND_OTP') {
+      const lockCheck = checkOtpVerifyAttempts(cleanedUsn);
+      if (!lockCheck.allowed) {
+        return NextResponse.json({ success: false, error: lockCheck.error }, { status: 429 });
+      }
+
+      const rateCheck = checkOtpDispatchLimits(cleanedUsn, clientIp);
+      if (!rateCheck.allowed) {
+        return NextResponse.json({ success: false, error: rateCheck.error }, { status: 429 });
+      }
+
       // Find master or attendee contact
       const master = findAlumnusByUsn(cleanedUsn);
       const email = attendee.email || master?.officialEmail || '';
@@ -75,7 +92,7 @@ export async function POST(request: NextRequest) {
         }, { status: 502 });
       }
 
-      return NextResponse.json({
+      const response = NextResponse.json({
         success: true,
         message: dispatchResult?.isReal
           ? `Real unlock code delivered to ${channel === 'PHONE' ? maskPhone(phone) : maskEmail(email)}!`
@@ -86,19 +103,43 @@ export async function POST(request: NextRequest) {
         simulationCode: !dispatchResult?.isReal ? otpResult.otp : undefined,
         dispatchError: dispatchResult?.error,
         simulationNotice: dispatchResult?.provider === 'SIMULATION' ? dispatchResult.message : undefined,
+        otpToken: otpResult.statelessToken,
       });
+
+      if (otpResult.statelessToken) {
+        response.cookies.set('milan_otp_token', otpResult.statelessToken, {
+          path: '/',
+          httpOnly: true,
+          sameSite: 'lax',
+          maxAge: 600,
+        });
+      }
+
+      return response;
     }
 
     // ACTION 2: VERIFY OTP AND UNLOCK PASS
     if (action === 'VERIFY_OTP') {
+      const lockCheck = checkOtpVerifyAttempts(cleanedUsn);
+      if (!lockCheck.allowed) {
+        return NextResponse.json({ success: false, error: lockCheck.error }, { status: 429 });
+      }
+
       if (!otp || typeof otp !== 'string') {
         return NextResponse.json({ success: false, error: '6-digit OTP code is required' }, { status: 400 });
       }
 
-      const verification = verifyOtp(cleanedUsn, otp.trim());
+      const effectiveToken = otpToken || cookieToken;
+      const verification = verifyOtp(cleanedUsn, otp.trim(), effectiveToken);
       if (!verification.valid) {
-        return NextResponse.json({ success: false, error: verification.error }, { status: 400 });
+        const attemptResult = recordFailedOtpAttempt(cleanedUsn);
+        const finalError = attemptResult.locked 
+          ? attemptResult.error 
+          : (attemptResult.error || verification.error);
+        return NextResponse.json({ success: false, error: finalError }, { status: attemptResult.locked ? 429 : 400 });
       }
+
+      resetFailedOtpAttempts(cleanedUsn);
 
       // Security check passed! Return the full unlocked attendee pass
       return NextResponse.json({

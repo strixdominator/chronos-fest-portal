@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyOtp, findAlumnusByUsn, createVerifiedSession, verifySessionToken, getSessionData } from '@/lib/alumni';
 import { createAttendee } from '@/lib/db';
+import { getClientIp, checkRateLimit, checkOtpVerifyAttempts, recordFailedOtpAttempt, resetFailedOtpAttempts } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -18,7 +19,14 @@ export async function POST(request: NextRequest) {
       otpToken,
       organization,
       designation,
+      website,
     } = body;
+
+    // Bot honeypot check
+    if (website) {
+      return NextResponse.json({ success: false, error: 'Suspicious bot activity detected.' }, { status: 400 });
+    }
+
     const effectiveOtpToken = otpToken || cookieToken;
 
     if (!usn || typeof usn !== 'string') {
@@ -29,6 +37,23 @@ export async function POST(request: NextRequest) {
     }
 
     const cleanedUsn = usn.trim().toUpperCase();
+    const clientIp = getClientIp(request);
+
+    // Global IP rate limit on verification attempts: max 30 attempts per minute per IP
+    const ipCheck = checkRateLimit(`ip_otp_verify:${clientIp}`, 30, 60 * 1000);
+    if (!ipCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Too many verification attempts from your IP. Please slow down.' },
+        { status: 429, headers: { 'Retry-After': String(ipCheck.retryAfterSec) } }
+      );
+    }
+
+    // Check if USN has been locked due to 5 failed attempts
+    const lockCheck = checkOtpVerifyAttempts(cleanedUsn);
+    if (!lockCheck.allowed) {
+      return NextResponse.json({ success: false, error: lockCheck.error }, { status: 429 });
+    }
+
     const alumnus = findAlumnusByUsn(cleanedUsn);
     if (!alumnus) {
       return NextResponse.json({ success: false, error: 'Graduate record not found.' }, { status: 404 });
@@ -45,8 +70,15 @@ export async function POST(request: NextRequest) {
 
       const verification = verifyOtp(cleanedUsn, otp.trim(), effectiveOtpToken);
       if (!verification.valid) {
-        return NextResponse.json({ success: false, error: verification.error }, { status: 400 });
+        const attemptResult = recordFailedOtpAttempt(cleanedUsn);
+        const finalError = attemptResult.locked 
+          ? attemptResult.error 
+          : (attemptResult.error || verification.error);
+        return NextResponse.json({ success: false, error: finalError }, { status: attemptResult.locked ? 429 : 400 });
       }
+
+      // Successful verification: clear failed attempts
+      resetFailedOtpAttempts(cleanedUsn);
 
       const token = createVerifiedSession(cleanedUsn, {
         email: verification.channel === 'EMAIL' ? verification.target : (alumnus.officialEmail || undefined),

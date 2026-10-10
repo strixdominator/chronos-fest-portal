@@ -2,17 +2,42 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createOtp, findAlumnusByUsn, maskEmail, maskPhone } from '@/lib/alumni';
 import { getAttendees } from '@/lib/db';
 import { sendEmailOtp, sendSmsOtp } from '@/lib/notifications';
+import { getClientIp, checkOtpDispatchLimits, checkOtpVerifyAttempts } from '@/lib/rateLimit';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { usn, channel = 'EMAIL', customTarget } = body;
+    const { usn, channel = 'EMAIL', customTarget, website } = body;
+
+    // Bot Honeypot: Automated spam bots autofill hidden fields like 'website'
+    if (website) {
+      return NextResponse.json({ success: false, error: 'Suspicious bot activity detected.' }, { status: 400 });
+    }
 
     if (!usn || typeof usn !== 'string') {
       return NextResponse.json({ success: false, error: 'USN is required' }, { status: 400 });
     }
 
     const cleanedUsn = usn.trim().toUpperCase();
+    const clientIp = getClientIp(request);
+
+    // Check if USN is temporarily locked due to brute-force attempts
+    const lockCheck = checkOtpVerifyAttempts(cleanedUsn);
+    if (!lockCheck.allowed) {
+      return NextResponse.json({ success: false, error: lockCheck.error }, { status: 429 });
+    }
+
+    // Rate Limiting: 60s cooldown, max 5/hr per USN, max 10/10min per IP
+    const rateCheck = checkOtpDispatchLimits(cleanedUsn, clientIp);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: rateCheck.error, retryAfter: rateCheck.retryAfterSec },
+        { 
+          status: 429,
+          headers: { 'Retry-After': String(rateCheck.retryAfterSec || 60) }
+        }
+      );
+    }
     const alumnus = findAlumnusByUsn(cleanedUsn);
     if (!alumnus) {
       return NextResponse.json({ success: false, error: 'Graduate record not found.' }, { status: 404 });

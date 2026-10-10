@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAttendee, getSettings } from '@/lib/db';
+import { getClientIp, checkRateLimit } from '@/lib/rateLimit';
 
 export async function POST(request: NextRequest) {
   try {
+    const clientIp = getClientIp(request);
+    // Rate limit: max 5 registrations per 10 minutes per IP
+    const ipCheck = checkRateLimit(`ip_register:${clientIp}`, 5, 10 * 60 * 1000);
+    if (!ipCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Too many registration requests. Please wait a few minutes before trying again.' },
+        { status: 429, headers: { 'Retry-After': String(ipCheck.retryAfterSec) } }
+      );
+    }
+
     const settings = getSettings();
     if (!settings.isRegistrationOpen) {
       return NextResponse.json(
@@ -12,7 +23,12 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { fullName, email, phone, rollNumber, department, year, idCardUrl } = body;
+    const { fullName, email, phone, rollNumber, department, year, idCardUrl, website } = body;
+
+    // Bot honeypot check
+    if (website) {
+      return NextResponse.json({ success: false, error: 'Suspicious bot submission detected.' }, { status: 400 });
+    }
 
     if (!fullName || !email || !phone || !rollNumber || !department || !year) {
       return NextResponse.json(
