@@ -58,7 +58,7 @@ export default function HomePage() {
               </span>
               <span className="dbit-gold-divider" />
               <span className="dbit-hero-venue">
-                APRIL 2026 · DBIT CAMPUS, BANGALORE
+                7 NOVEMBER 2026 · DBIT CRICKET GROUND, BANGALORE
               </span>
             </div>
           </div>

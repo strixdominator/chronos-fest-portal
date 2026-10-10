@@ -217,31 +217,33 @@ input:focus, select:focus, textarea:focus {
 .dbit-hero-meta {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .dbit-hero-tag {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 15px;
   letter-spacing: 2px;
   font-weight: 700;
   color: var(--color-blue);
+  line-height: 1.2;
 }
 
 .dbit-gold-divider {
   display: block;
-  width: 48px;
-  height: 3px;
+  width: 56px;
+  height: 3.5px;
   background: var(--color-gold);
   border-radius: 2px;
 }
 
 .dbit-hero-venue {
   font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 1px;
+  font-size: 14.5px;
+  letter-spacing: 1.2px;
   color: var(--text-muted);
-  font-weight: 600;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
 .dbit-hero-title {
@@ -880,6 +882,14 @@ input:focus, select:focus, textarea:focus {
 
   .dbit-hero-assoc-logo {
     width: 96px;
+  }
+
+  .dbit-hero-tag {
+    font-size: 13.5px;
+  }
+
+  .dbit-hero-venue {
+    font-size: 13px;
   }
 
   .dbit-hero-title {
