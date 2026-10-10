@@ -9,15 +9,15 @@ declare global {
 }
 
 const DEFAULT_SETTINGS: EventSettings = {
-  eventName: "CHRONOS FEST 2026",
-  tagline: "The Future of Beats & Innovation | University Grand Finale",
-  eventDate: "Saturday, October 24, 2026",
-  eventTime: "04:30 PM Onwards (Gates Close at 07:00 PM)",
-  eventVenue: "University Grand Arena & Central Amphitheatre",
-  organizer: "Student Council & Security Affairs Committee",
+  eventName: "MILAN 2026",
+  tagline: "DBIT Alumni Association | Reconnecting Relations",
+  eventDate: "Saturday, November 7, 2026",
+  eventTime: "03:00 PM",
+  eventVenue: "DBIT Cricket Ground, Bangalore",
+  organizer: "DBIT Alumni Association",
   totalCapacity: 1000,
   isRegistrationOpen: true,
-  wristbandColors: ["Neon Cyan (General)", "Electric Violet (VIP/Performer)", "Amber Gold (Council Staff)"],
+  wristbandColors: ["Royal Blue (Alumni)", "Gold (VIP/Staff)", "Navy Blue (General)"],
 };
 
 const INITIAL_ATTENDEES: Attendee[] = [];

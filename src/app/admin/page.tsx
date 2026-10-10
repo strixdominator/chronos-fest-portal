@@ -524,7 +524,7 @@ export default function AdminPage() {
               Admin Command Center
             </h2>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#A9B8D8', letterSpacing: 1 }}>
-              7 NOVEMBER 2026 · DBIT CRICKET GROUND
+              7 NOVEMBER 2026 · 3:00 PM · DBIT CRICKET GROUND
             </div>
           </div>
 
@@ -627,7 +627,7 @@ export default function AdminPage() {
             <span className="mono-tag" style={{ fontSize: 13, letterSpacing: 1.8 }}>ALUMNI MEET · MILAN 2026</span>
             <span style={{ display: 'block', width: 36, height: 3, background: 'var(--color-gold)', borderRadius: 2 }} />
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-muted)', fontWeight: 700 }}>
-              7 NOVEMBER 2026 · DBIT CRICKET GROUND, BANGALORE
+              7 NOVEMBER 2026 · 3:00 PM · DBIT CRICKET GROUND, BANGALORE
             </span>
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', fontWeight: 700, color: 'var(--color-navy)' }}>
@@ -1574,6 +1574,27 @@ export default function AdminPage() {
                   value={settingsForm.eventVenue || ''}
                   onChange={e => setSettingsForm({ ...settingsForm, eventVenue: e.target.value })}
                 />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                <div>
+                  <label className="mono-label" style={{ display: 'block', marginBottom: 4 }}>EVENT DATE</label>
+                  <input
+                    type="text"
+                    className="neo-input"
+                    value={settingsForm.eventDate || 'Saturday, November 7, 2026'}
+                    onChange={e => setSettingsForm({ ...settingsForm, eventDate: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="mono-label" style={{ display: 'block', marginBottom: 4 }}>EVENT TIME</label>
+                  <input
+                    type="text"
+                    className="neo-input"
+                    value={settingsForm.eventTime || '03:00 PM'}
+                    onChange={e => setSettingsForm({ ...settingsForm, eventTime: e.target.value })}
+                  />
+                </div>
               </div>
 
               <div style={{ marginBottom: 12 }}>

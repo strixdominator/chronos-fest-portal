@@ -160,7 +160,7 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, paddingBottom: 16, borderBottom: '1px solid var(--border-subtle)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, paddingBottom: 14, borderBottom: '1px solid var(--border-color)' }}>
             <div>
               <div className="mono-label" style={{ fontSize: '0.68rem', marginBottom: 2 }}>DEPARTMENT & BATCH</div>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 700 }}>
@@ -175,11 +175,27 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
             </div>
           </div>
 
+          {/* Event Venue, Date & Time Row */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 16, marginTop: 14, paddingBottom: 14, borderBottom: '1px solid var(--border-color)' }}>
+            <div>
+              <div className="mono-label" style={{ fontSize: '0.68rem', marginBottom: 2 }}>EVENT VENUE</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-navy)' }}>
+                DBIT CRICKET GROUND, BANGALORE
+              </div>
+            </div>
+            <div>
+              <div className="mono-label" style={{ fontSize: '0.68rem', marginBottom: 2 }}>DATE & GATES OPEN</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-blue)' }}>
+                7 NOV 2026 · 3:00 PM
+              </div>
+            </div>
+          </div>
+
           {/* Professional Affiliation */}
           {(attendee.organization || attendee.designation) && (
-            <div style={{ marginTop: 14, padding: '10px 14px', background: 'var(--bg-card-alt)', border: '1px solid var(--border-black)' }}>
-              <div className="mono-label" style={{ fontSize: '0.64rem', marginBottom: 2 }}>PROFESSIONAL AFFILIATION</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 800 }}>
+            <div style={{ marginTop: 14, padding: '10px 14px', background: '#F8FAFC', border: '1px solid var(--border-color)', borderRadius: 6 }}>
+              <div className="mono-label" style={{ fontSize: '0.64rem', marginBottom: 2, color: 'var(--color-blue)' }}>PROFESSIONAL AFFILIATION</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 700, color: 'var(--color-navy)' }}>
                 {attendee.organization || ''}{attendee.organization && attendee.designation ? ' · ' : ''}{attendee.designation || ''}
               </div>
             </div>

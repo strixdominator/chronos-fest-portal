@@ -510,6 +510,73 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ==========================================================================
+   EVENT AT A GLANCE BANNER (DATE, VENUE, TIME)
+   ========================================================================== */
+.dbit-glance-section {
+  background: linear-gradient(90deg, #FFF4DC 0%, #FFFBF2 35%, #F1F7FF 100%);
+  border-top: 1px solid #E8DDBF;
+  border-bottom: 1px solid var(--border-color);
+  padding: 36px 64px;
+}
+
+.dbit-glance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+.dbit-glance-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.dbit-glance-icon-box {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+}
+
+.dbit-glance-icon-box.gold {
+  background: #FBE9BE;
+  color: #9A7210;
+}
+
+.dbit-glance-icon-box.blue {
+  background: #DCE7FC;
+  color: var(--color-blue);
+}
+
+.dbit-glance-icon-box.cyan {
+  background: #D4EEF3;
+  color: #16788E;
+}
+
+.dbit-glance-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dbit-glance-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.dbit-glance-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+/* ==========================================================================
    HOW IT WORKS SECTION
    ========================================================================== */
 .dbit-how-section {
