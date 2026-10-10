@@ -2,8 +2,11 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
+  const pathname = usePathname();
+  const hideNav = pathname?.startsWith('/admin') || pathname?.startsWith('/scanner');
   return (
     <header className="dbit-header no-print">
       <Link href="/" className="dbit-header-brand">
@@ -22,20 +25,22 @@ export default function Navbar() {
         </div>
       </Link>
 
-      <nav className="dbit-header-nav">
-        <a href="#about" className="dbit-nav-link">
-          EVENT
-        </a>
-        <a href="#how" className="dbit-nav-link">
-          HOW IT WORKS
-        </a>
-        <a href="#faq" className="dbit-nav-link">
-          FAQ
-        </a>
-        <a href="#claim" className="dbit-nav-cta">
-          CLAIM PASS ↗
-        </a>
-      </nav>
+      {!hideNav && (
+        <nav className="dbit-header-nav">
+          <a href="#about" className="dbit-nav-link">
+            EVENT
+          </a>
+          <a href="#how" className="dbit-nav-link">
+            HOW IT WORKS
+          </a>
+          <a href="#faq" className="dbit-nav-link">
+            FAQ
+          </a>
+          <a href="#claim" className="dbit-nav-cta">
+            CLAIM PASS ↗
+          </a>
+        </nav>
+      )}
     </header>
   );
 }
