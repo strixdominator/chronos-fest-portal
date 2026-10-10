@@ -40,57 +40,76 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div style={{ background: 'var(--bg-page)', minHeight: '100vh' }}>
-      {/* SECTION 1: HERO SPLIT GRID (FIGMA MAKE SPEC) */}
-      <section id="portal" className="neo-hero-grid">
+    <div className="dbit-page-wrapper">
+      {/* HERO SECTION */}
+      <section id="about" className="dbit-hero-section">
         {/* Hero Left Column */}
-        <div className="neo-hero-left">
-          <div className="neo-hero-left-content">
-            <div className="mono-tag">01 / ACCESS</div>
-            <h1 className="neo-hero-title">
-              RECONNECTING<br />
-              RELATIONS.
-            </h1>
-            <p className="neo-hero-desc">
-              Every pass is matched against official alumni records. One identity, one verified pass — no screenshots, no transfers.
-            </p>
+        <div className="dbit-hero-left">
+          {/* Logo & Meta Badge */}
+          <div className="dbit-hero-badge-wrap">
+            <img 
+              src="/assets/1662177580bae749e245f3973661f37f.png" 
+              alt="DBIT Alumni Association logo" 
+              className="dbit-hero-assoc-logo"
+            />
+            <div className="dbit-hero-meta">
+              <span className="dbit-hero-tag">
+                ALUMNI MEET · MILAN 2026
+              </span>
+              <span className="dbit-gold-divider" />
+              <span className="dbit-hero-venue">
+                APRIL 2026 · DBIT CAMPUS, BANGALORE
+              </span>
+            </div>
           </div>
 
-          <div className="neo-hero-stats">
-            <div className="neo-hero-stat-cell">
-              <div className="neo-hero-stat-value">{stats.total}</div>
-              <div className="neo-hero-stat-label">PASSES CLAIMED</div>
+          {/* Main Headline */}
+          <h1 className="dbit-hero-title">
+            Reconnecting<br />
+            <span className="dbit-hero-title-accent">Relations.</span>
+          </h1>
+
+          {/* Description */}
+          <p className="dbit-hero-description">
+            Every pass is matched against official alumni records. One identity, one verified pass — no screenshots, no transfers.
+          </p>
+
+          {/* Live Stats Cards */}
+          <div className="dbit-hero-stats">
+            <div className="dbit-stat-card">
+              <div className="dbit-stat-number">{stats.total}</div>
+              <div className="dbit-stat-label">PASSES CLAIMED</div>
             </div>
-            <div className="neo-hero-stat-cell">
-              <div className="neo-hero-stat-value">100%</div>
-              <div className="neo-hero-stat-label">VERIFIED ALUMNI</div>
+            <div className="dbit-stat-card">
+              <div className="dbit-stat-number">100%</div>
+              <div className="dbit-stat-label">VERIFIED ALUMNI</div>
             </div>
           </div>
         </div>
 
-        {/* Hero Right Column (Tabs + Registration / Pass Login Card) */}
-        <div className="neo-hero-right">
-          <div className="neo-hero-portal-card">
-            {/* Top Tabs Strip */}
-            <div className="neo-tabs-header">
+        {/* Hero Right Column (Claim & Find Portal Card) */}
+        <div id="claim" className="dbit-hero-right">
+          <div className="dbit-portal-card">
+            {/* Top Switcher Tabs */}
+            <div className="dbit-portal-tabs">
               <button
                 type="button"
                 onClick={() => setActiveTab('register')}
-                className={`neo-tab-btn ${activeTab === 'register' ? 'active' : ''}`}
+                className={`dbit-tab-button ${activeTab === 'register' ? 'active' : ''}`}
               >
-                01 • CLAIM A PASS
+                01 · CLAIM A PASS
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('lookup')}
-                className={`neo-tab-btn ${activeTab === 'lookup' ? 'active' : ''}`}
+                className={`dbit-tab-button ${activeTab === 'lookup' ? 'active' : ''}`}
               >
-                02 • FIND MY PASS
+                02 · FIND MY PASS
               </button>
             </div>
 
-            {/* Portal Card Content */}
-            <div className="neo-portal-body">
+            {/* Portal Body (Registration / Verification / Pass Lookup) */}
+            <div className="dbit-portal-content">
               {activeTab === 'register' ? (
                 <RegistrationForm onSwitchToLookup={() => setActiveTab('lookup')} />
               ) : (
@@ -101,117 +120,113 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SECTION 2: "BEFORE YOU ARRIVE." 3-CARD GRID (FIGMA MAKE SPEC) */}
-      <section id="about" className="before-arrive-section">
-        <div className="before-arrive-header">
-          <h2 className="before-arrive-title">
-            BEFORE YOU ARRIVE.
-          </h2>
-          <p className="before-arrive-desc">
-            Bring a government-issued photo ID. Your digital pass activates your entry quota at the security gate.
-          </p>
+      {/* HOW IT WORKS SECTION */}
+      <section id="how" className="dbit-how-section">
+        <div className="dbit-section-tag-wrap">
+          <span className="dbit-gold-divider-small" />
+          <span className="dbit-section-tag">HOW IT WORKS</span>
         </div>
 
-        <div className="before-arrive-cards">
-          {/* Card 1: Sage */}
-          <div className="before-arrive-card card-sage">
-            <span className="before-arrive-card-num">01</span>
-            <div>
-              <h3 className="before-arrive-card-heading">VERIFIED ENTRY</h3>
-              <p className="before-arrive-card-body">
-                Passes are tied to your alumni record and cannot be transferred.
-              </p>
-            </div>
+        <div className="dbit-how-grid">
+          {/* Step 1 */}
+          <div className="dbit-how-card">
+            <span className="dbit-how-step-num">01</span>
+            <h3 className="dbit-how-title">Enter your USN</h3>
+            <p className="dbit-how-desc">
+              Look yourself up using the university seat number from your college days.
+            </p>
           </div>
 
-          {/* Card 2: Lilac */}
-          <div className="before-arrive-card card-lilac">
-            <span className="before-arrive-card-num">02</span>
-            <div>
-              <h3 className="before-arrive-card-heading">INSTANT PASS</h3>
-              <p className="before-arrive-card-body">
-                Receive your digital pass with high-security QR code instantly upon verification.
-              </p>
-            </div>
+          {/* Step 2 */}
+          <div className="dbit-how-card">
+            <span className="dbit-how-step-num">02</span>
+            <h3 className="dbit-how-title">Confirm your record</h3>
+            <p className="dbit-how-desc">
+              We verify you against the official alumni directory. One identity, one pass.
+            </p>
           </div>
 
-          {/* Card 3: Ochre */}
-          <div className="before-arrive-card card-ochre">
-            <span className="before-arrive-card-num">03</span>
-            <div>
-              <h3 className="before-arrive-card-heading">GATE CHECK-IN</h3>
-              <p className="before-arrive-card-body">
-                Keep your QR pass ready with a matching physical photo ID.
-              </p>
-            </div>
+          {/* Step 3 */}
+          <div className="dbit-how-card">
+            <span className="dbit-how-step-num">03</span>
+            <h3 className="dbit-how-title">Get your QR pass</h3>
+            <p className="dbit-how-desc">
+              Generate your unique pass and show it at the entry gate on the day.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* SECTION 3: "ONE NIGHT. EVERY ERA." MANIFESTO & CONCERT PHOTO (FIGMA MAKE SPEC) */}
-      <section className="manifesto-section">
-        <div className="manifesto-left">
-          <div className="manifesto-top-meta">
-            <span>UNIVERSITY GRAND FINALE</span>
+      {/* EVENT ATMOSPHERE / CONCERT SECTION */}
+      <section className="dbit-event-preview-section">
+        <div className="dbit-event-preview-left">
+          <div className="dbit-event-meta-top">
+            <span>ANNUAL ALUMNI GRAND REUNION</span>
             <span>BENGALURU • INDIA</span>
           </div>
 
           <div>
-            <h2 className="manifesto-title">
+            <h2 className="dbit-event-title">
               ONE DAY.<br />
               ONE VIBE.
             </h2>
-            <p className="manifesto-text">
-              Milan 2026 is the annual return to campus — music, memory and a thousand stories meeting under one roof.
+            <p className="dbit-event-desc">
+              Milan 2026 is the annual return to campus — music, memories and thousands of alumni reconnecting under one roof.
             </p>
           </div>
 
-          <a href="#portal" className="btn-neo-black" style={{ alignSelf: 'flex-start', padding: '16px 32px' }}>
+          <a href="#claim" className="dbit-claim-action-btn">
             CLAIM ALUMNI PASS ↗
           </a>
         </div>
 
-        <div className="manifesto-right">
-          <div className="manifesto-image-wrapper">
+        <div className="dbit-event-preview-right">
+          <div className="dbit-event-image-box">
             <img 
               src="/fest-banner.jpg" 
-              alt="Milan 2026 Concert Grand Finale" 
-              className="manifesto-image"
+              alt="Milan 2026 Grand Celebration" 
+              className="dbit-event-image"
             />
           </div>
-          <div className="manifesto-caption-bar">
-            <span>MILAN ARCHIVE / MAIN STAGE</span>
-            <span>001-026</span>
+          <div className="dbit-event-caption">
+            <span>MILAN 2026 / MAIN CAMPUS STAGE</span>
+            <span>ALUMNI ARCHIVE</span>
           </div>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="neo-footer no-print">
-        <div className="neo-footer-main">
-          <div>
-            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.25rem' }}>
-              MILAN <span style={{ color: 'var(--accent-coral)' }}>2026</span>
-            </span>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 4 }}>
-              DON BOSCO INSTITUTE OF TECHNOLOGY • ANNUAL ALUMNI PASS PORTAL
+      <footer className="dbit-footer no-print">
+        <div className="dbit-footer-content">
+          <div className="dbit-footer-branding">
+            <div className="dbit-footer-logos-box">
+              <img 
+                src="/assets/66eff0e624600df79e9f69030275731c.png" 
+                alt="Don Bosco Institute of Technology emblem" 
+                className="dbit-footer-emblem"
+              />
+              <img 
+                src="/assets/1662177580bae749e245f3973661f37f.png" 
+                alt="DBIT Alumni Association logo" 
+                className="dbit-footer-assoc"
+              />
+            </div>
+            <div className="dbit-footer-text-group">
+              <span className="dbit-footer-college">
+                Don Bosco Institute of Technology, Bangalore
+              </span>
+              <span className="dbit-footer-sub">
+                DBIT ALUMNI ASSOCIATION (R) · RECONNECTING RELATIONS
+              </span>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 24 }}>
-            <a href="#portal" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-main)', textDecoration: 'none' }}>
-              PASS PORTAL
-            </a>
-            <a href="#about" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-main)', textDecoration: 'none' }}>
-              GUIDELINES
-            </a>
-            <Link href="/admin" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-main)', textDecoration: 'none' }}>
-              COMMITTEE LOGIN
+
+          <div className="dbit-footer-right">
+            <span className="dbit-footer-meet-tag">MILAN 2026 · ALUMNI MEET</span>
+            <Link href="/admin" className="dbit-footer-admin-link">
+              COMMITTEE LOGIN ↗
             </Link>
           </div>
-        </div>
-        <div className="neo-footer-bottom">
-          <span>© 2026 MILAN FESTIVAL COMMITTEE. ALL RIGHTS RESERVED.</span>
-          <span>STRICT PHOTO ID VERIFICATION AT GATE</span>
         </div>
       </footer>
     </div>

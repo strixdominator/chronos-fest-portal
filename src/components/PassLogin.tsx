@@ -188,26 +188,29 @@ export default function PassLogin({ initialUsn = '', settings, onUnlocked }: Pas
   return (
     <div className="animate-fade-in">
       {/* Header Strip */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <span className="mono-tag">PASS RETRIEVAL</span>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 700 }}>
-          {matchedAttendee ? '02/02' : '01/02'}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', letterSpacing: '1.8px', fontWeight: 700, color: 'var(--color-blue)' }}>
+          OFFICIAL ALUMNI PORTAL
+        </span>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', color: 'var(--text-muted)' }}>
+          {matchedAttendee ? '02/02' : '02/03'}
         </span>
       </div>
 
-      <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.05, marginBottom: 28 }}>
-        {matchedAttendee ? 'Unlock your pass.' : 'Retrieve your pass.'}
+      <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '38px', letterSpacing: '-1.2px', lineHeight: 1.05, fontWeight: 700, color: 'var(--color-navy)', marginBottom: 20 }}>
+        {matchedAttendee ? 'Unlock your pass.' : 'Find your pass.'}
       </h2>
 
       {/* Step 1: Search Form */}
       {!matchedAttendee && (
         <form onSubmit={handleFindPass}>
-          <div style={{ marginBottom: 12 }}>
-            <label className="mono-label" style={{ display: 'block', marginBottom: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <label htmlFor="pass-usn" style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', letterSpacing: '1.5px', fontWeight: 700, color: 'var(--text-body)' }}>
               UNIVERSITY SEAT NUMBER
             </label>
             <div className="neo-input-group">
               <input
+                id="pass-usn"
                 type="text"
                 required
                 placeholder="E.G. 1DB20CS001"
@@ -227,14 +230,13 @@ export default function PassLogin({ initialUsn = '', settings, onUnlocked }: Pas
                 )}
               </button>
             </div>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', lineHeight: 1.5, color: 'var(--text-muted)' }}>
+              We match your USN against the university alumni directory.
+            </span>
           </div>
 
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-            Enter the USN used during registration to pull up your digital pass.
-          </p>
-
           {error && (
-            <div style={{ marginTop: 18, padding: '12px 16px', background: '#fee2e2', border: '1px solid var(--border-black)', color: '#991b1b', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', fontWeight: 700 }}>
+            <div style={{ marginTop: 18, padding: '12px 16px', background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '8px', color: '#991b1b', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', fontWeight: 700 }}>
               {error}
             </div>
           )}

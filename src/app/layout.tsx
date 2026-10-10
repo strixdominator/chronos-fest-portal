@@ -4,8 +4,8 @@ import Navbar from "@/components/Navbar";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MILAN 2026 | College Event Registration & Digital QR Pass",
-  description: "Official Alumni Entry Portal for Milan 2026. Secure instant verification via University Seat Number (USN) and OTP confirmation.",
+  title: "MILAN 2026 | DBIT Alumni Pass Portal",
+  description: "Official Alumni Entry Portal for Milan 2026. Secure instant verification via University Seat Number (USN) and official record matching.",
 };
 
 export default function RootLayout({
@@ -15,11 +15,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link 
+          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" 
+          rel="stylesheet" 
+        />
+      </head>
       <body>
         <Suspense fallback={null}>
           <Navbar />
         </Suspense>
-        <main style={{ minHeight: 'calc(100vh - 64px)' }}>
+        <main>
           {children}
         </main>
       </body>

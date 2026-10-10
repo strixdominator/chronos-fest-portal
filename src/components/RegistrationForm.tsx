@@ -466,26 +466,29 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
     return (
       <div className="animate-fade-in">
         {/* Header Strip */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <span className="mono-tag">OFFICIAL ALUMNI PORTAL</span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 700 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', letterSpacing: '1.8px', fontWeight: 700, color: 'var(--color-blue)' }}>
+            OFFICIAL ALUMNI PORTAL
+          </span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', color: 'var(--text-muted)' }}>
             01/03
           </span>
         </div>
 
         {/* Big Title */}
-        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.05, marginBottom: 28, textTransform: 'none' }}>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '38px', letterSpacing: '-1.2px', lineHeight: 1.05, fontWeight: 700, color: 'var(--color-navy)', marginBottom: 20 }}>
           Find your record.
         </h2>
 
         {/* Search Form */}
         <form onSubmit={handleLookupUsn}>
-          <div style={{ marginBottom: 12 }}>
-            <label className="mono-label" style={{ display: 'block', marginBottom: 8 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <label htmlFor="usn" style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', letterSpacing: '1.5px', fontWeight: 700, color: 'var(--text-body)' }}>
               UNIVERSITY SEAT NUMBER
             </label>
             <div className="neo-input-group">
               <input
+                id="usn"
                 type="text"
                 required
                 placeholder="E.G. 1DB20CS001"
@@ -505,18 +508,18 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
                 )}
               </button>
             </div>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', lineHeight: 1.5, color: 'var(--text-muted)' }}>
+              We match your USN against the university alumni directory.
+            </span>
           </div>
-
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-            We match your USN against the university alumni directory.
-          </p>
 
           {lookupError && (
             <div style={{
               marginTop: 18,
               padding: '12px 16px',
               background: '#fee2e2',
-              border: '1px solid var(--border-black)',
+              border: '1px solid #fca5a5',
+              borderRadius: '8px',
               color: '#991b1b',
               fontFamily: 'var(--font-mono)',
               fontSize: '0.8rem',

@@ -1,59 +1,47 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
 :root {
-  /* DBIT Blue & White Sharp Architectural System */
-  --bg-page: #f8fafc;
-  --bg-blue-tint: #eaf1fb; /* Half blue shade */
-  --bg-blue-soft: #f1f6fd; /* Soft cool blue tint */
-  --bg-card: #ffffff;
-  --bg-card-alt: #f1f5fa;
-  --bg-black: #0a192f; /* DBIT Deep Navy */
+  /* MILAN 2026 DBIT Design System */
+  --bg-page: #F5F8FD;
+  --bg-hero: linear-gradient(180deg, #EAF0FB 0%, #F5F8FD 100%);
+  --bg-card: #FFFFFF;
+  --bg-card-alt: #F5F8FD;
   
-  --text-main: #0a192f; /* Deep Navy */
-  --text-secondary: #334155; /* Slate */
-  --text-muted: #64748b; /* Muted Slate */
-  --text-light: #ffffff;
+  --color-navy: #0E1F45;
+  --color-blue: #1E3FB8;
+  --color-blue-hover: #152d88;
+  --color-gold: #C9A24B;
   
-  --border-black: #0a192f; /* Sharp 1px Deep Navy border */
-  --border-subtle: rgba(10, 25, 47, 0.15);
+  --text-main: #0E1F45;
+  --text-body: #3C4E73;
+  --text-muted: #5A6B8C;
+  --text-light: #FFFFFF;
   
-  /* DBIT Royal & Ice Blue Accents */
-  --accent-blue: #1d4ed8; /* DBIT Royal Blue */
-  --accent-coral: #1d4ed8; /* DBIT Royal Blue accent */
-  --accent-blue-subtle: rgba(29, 78, 216, 0.12);
-  --accent-navy: #0f2b5c;
+  --border-color: #DCE4F2;
+  --border-input: #BFCBE3;
+  --border-focus: #1E3FB8;
   
-  /* 3-Card Section Blue Shades */
-  --card-blue-1: #e2edfc; /* Ice Blue */
-  --card-blue-2: #d2e3fa; /* Soft Slate/Sky Blue */
-  --card-blue-3: #ffffff; /* Crisp White */
+  --radius-card: 16px;
+  --radius-box: 12px;
+  --radius-sm: 8px;
   
-  /* Status Colors */
-  --status-approved: #0e8a5a;
-  --status-approved-bg: #d8e4dd;
-  --status-pending: #d97706;
-  --status-pending-bg: #fef3c7;
-  --status-rejected: #dc2626;
-  --status-rejected-bg: #fee2e2;
-  
-  /* Fonts */
   --font-display: 'Space Grotesk', system-ui, -apple-system, sans-serif;
-  --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-body: 'Space Grotesk', system-ui, -apple-system, sans-serif;
   --font-mono: 'Space Mono', ui-monospace, 'SF Mono', Menlo, monospace;
-  
-  /* STRICT ZERO RADIUS */
-  --radius-none: 0px;
 }
 
-* {
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  border-radius: 0 !important; /* Strict sharp-edged aesthetic */
   -webkit-font-smoothing: antialiased;
 }
 
-html, body {
+html {
+  scroll-behavior: smooth;
+}
+
+body {
   background-color: var(--bg-page);
   color: var(--text-main);
   font-family: var(--font-body);
@@ -62,129 +50,430 @@ html, body {
   line-height: 1.5;
 }
 
+a {
+  color: var(--color-blue);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+a:hover {
+  color: var(--color-navy);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input, select, textarea {
+  font-family: var(--font-mono);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 0;
+}
+
 /* ==========================================================================
-   NAVIGATION
+   HEADER (DBIT NAV)
    ========================================================================== */
-.neo-nav {
+.dbit-header {
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 48px;
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--bg-page);
-  border-bottom: 1px solid var(--border-black);
-  display: flex;
-  align-items: stretch;
-  justify-content: space-between;
-  height: 64px;
 }
 
-.neo-nav-brand {
+.dbit-header-brand {
   display: flex;
   align-items: center;
-  padding: 0 32px;
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  color: var(--text-main);
+  gap: 14px;
   text-decoration: none;
-  border-right: 1px solid var(--border-black);
+  color: var(--color-navy);
 }
 
-.neo-nav-brand .brand-slash {
-  color: var(--accent-coral);
+.dbit-header-logo {
+  width: 52px;
+  height: auto;
+  display: block;
 }
 
-.neo-nav-links {
+.dbit-header-titles {
   display: flex;
-  align-items: stretch;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.neo-nav-item {
-  display: flex;
-  align-items: center;
-  padding: 0 28px;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
+.dbit-header-name {
+  font-size: 22px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-main);
-  text-decoration: none;
-  border-left: 1px solid var(--border-black);
-  background: transparent;
-  transition: background 0.15s ease, color 0.15s ease;
-  cursor: pointer;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  color: var(--color-navy);
 }
 
-.neo-nav-item:hover, .neo-nav-item.active {
-  background: #eae5d8;
+.dbit-accent-blue {
+  color: var(--color-blue);
 }
 
-.neo-nav-cta {
+.dbit-header-subtitle {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 1.4px;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.dbit-header-nav {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  padding: 0 32px;
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  background: var(--bg-black);
-  color: #fff;
-  text-decoration: none;
-  border-left: 1px solid var(--border-black);
-  transition: opacity 0.15s ease, background 0.15s ease;
-  cursor: pointer;
 }
 
-.neo-nav-cta:hover {
-  background: #262626;
-  color: #fff;
+.dbit-nav-link {
+  padding: 11px 18px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  color: var(--color-navy);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.dbit-nav-link:hover {
+  background: var(--bg-page);
+  color: var(--color-blue);
+}
+
+.dbit-nav-cta {
+  padding: 12px 22px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  color: #FFFFFF !important;
+  background: var(--color-navy);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.dbit-nav-cta:hover {
+  background: var(--color-blue);
+  transform: translateY(-1px);
 }
 
 /* ==========================================================================
-   BUTTONS & CONTROLS
+   HERO SECTION
    ========================================================================== */
-.btn-neo-black {
-  background: var(--bg-black);
-  color: #ffffff;
-  border: 1px solid var(--border-black);
+.dbit-page-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.dbit-hero-section {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0;
+  background: var(--bg-hero);
+  min-height: calc(100vh - 77px);
+}
+
+.dbit-hero-left {
+  flex: 1 1 520px;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 64px 48px 56px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  justify-content: center;
+}
+
+.dbit-hero-badge-wrap {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.dbit-hero-assoc-logo {
+  width: 132px;
+  height: auto;
+  display: block;
+}
+
+.dbit-hero-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dbit-hero-tag {
   font-family: var(--font-mono);
-  font-size: 0.82rem;
+  font-size: 12px;
+  letter-spacing: 2px;
   font-weight: 700;
+  color: var(--color-blue);
+}
+
+.dbit-gold-divider {
+  display: block;
+  width: 48px;
+  height: 3px;
+  background: var(--color-gold);
+  border-radius: 2px;
+}
+
+.dbit-hero-venue {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.dbit-hero-title {
+  margin: 0;
+  font-size: clamp(3.2rem, 5.5vw, 5.2rem);
+  line-height: 0.98;
+  letter-spacing: -3px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.dbit-hero-title-accent {
+  color: var(--color-blue);
+}
+
+.dbit-hero-description {
+  margin: 0;
+  max-width: 520px;
+  font-size: 20px;
+  line-height: 1.55;
+  color: var(--text-body);
+}
+
+.dbit-hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.dbit-stat-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-box);
+  padding: 18px 28px;
+  min-width: 150px;
+}
+
+.dbit-stat-number {
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -1.5px;
+  line-height: 1;
+  color: var(--color-navy);
+}
+
+.dbit-stat-label {
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   HERO RIGHT: CLAIM PORTAL CARD
+   ========================================================================== */
+.dbit-hero-right {
+  flex: 1 1 440px;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 64px 64px 56px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dbit-portal-card {
+  width: 100%;
+  max-width: 560px;
+  background: #FFFFFF;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  box-shadow: 0 24px 60px -24px rgba(14, 31, 69, 0.28);
+  overflow: hidden;
+}
+
+.dbit-portal-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dbit-tab-button {
+  flex: 1;
+  padding: 18px 12px;
+  border: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  background: #FFFFFF;
+  color: var(--color-navy);
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.dbit-tab-button.active {
+  background: var(--color-navy);
+  color: #FFFFFF;
+}
+
+.dbit-tab-button:not(.active):hover {
+  background: var(--bg-page);
+  color: var(--color-blue);
+}
+
+.dbit-portal-content {
+  padding: 32px 36px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ==========================================================================
+   INPUTS & BUTTONS (EXACT SPEC MATCH)
+   ========================================================================== */
+.neo-input-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.neo-input-group input {
+  flex: 1 1 220px;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 52px;
+  padding: 0 16px;
+  font-size: 15px;
+  color: var(--color-navy);
+  background: var(--bg-page);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+}
+
+.neo-input-group input::placeholder {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.neo-input-group button {
+  flex: 0 0 auto;
+  height: 52px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-blue);
+  color: #FFFFFF;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s ease, transform 0.15s ease;
+  cursor: pointer;
+}
+
+.neo-input-group button:hover:not(:disabled) {
+  background: var(--color-navy);
+}
+
+.neo-input-group button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.neo-input {
+  width: 100%;
+  height: 50px;
+  padding: 0 16px;
+  font-size: 14.5px;
+  color: var(--color-navy);
+  background: var(--bg-page);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  outline: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.neo-input:focus {
+  border-color: var(--color-blue);
+  background: #FFFFFF;
+  outline: 2px solid var(--color-blue);
+}
+
+.btn-neo-black {
+  background: var(--color-navy);
+  color: #FFFFFF;
+  border: 0;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: 1.2px;
+  font-weight: 700;
   padding: 14px 24px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease;
   text-decoration: none;
 }
 
 .btn-neo-black:hover:not(:disabled) {
-  background: #262626;
-  color: #ffffff;
+  background: var(--color-blue);
+  color: #FFFFFF;
 }
 
 .btn-neo-black:disabled {
-  opacity: 0.45;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .btn-neo-outline {
-  background: #ffffff;
-  color: var(--text-main);
-  border: 1px solid var(--border-black);
+  background: #FFFFFF;
+  color: var(--color-navy);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
   font-family: var(--font-mono);
-  font-size: 0.82rem;
+  font-size: 12px;
+  letter-spacing: 1.2px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 14px 24px;
+  padding: 12px 20px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -195,530 +484,302 @@ html, body {
 }
 
 .btn-neo-outline:hover:not(:disabled) {
-  background: var(--bg-black);
-  color: #ffffff;
+  background: var(--bg-page);
+  border-color: var(--border-input);
+  color: var(--color-blue);
 }
 
-.btn-neo-outline:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-/* Form Inputs */
-.neo-input {
-  width: 100%;
-  background: var(--bg-card-alt);
-  border: 1px solid var(--border-black);
-  padding: 14px 16px;
-  font-family: var(--font-mono);
-  font-size: 0.95rem;
-  color: var(--text-main);
-  outline: none;
-  transition: border-color 0.15s ease, background 0.15s ease;
-}
-
-.neo-input:focus {
-  background: #ffffff;
-  border-color: var(--accent-coral);
-  box-shadow: 0 0 0 1px var(--accent-coral);
-}
-
-.neo-input::placeholder {
-  color: #a3a3a3;
-  font-family: var(--font-mono);
-}
-
-.neo-select {
-  width: 100%;
-  background: var(--bg-card-alt);
-  border: 1px solid var(--border-black);
-  padding: 14px 16px;
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-main);
-  outline: none;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-  background-repeat: no-repeat;
-  background-position: right 16px center;
-  background-size: 10px;
-}
-
-.neo-select:focus {
-  border-color: var(--accent-coral);
-}
-
-/* Attached Input Group */
-.neo-input-group {
-  display: flex;
-  align-items: stretch;
-  border: 1px solid var(--border-black);
-  background: #ffffff;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.neo-input-group:focus-within {
-  border-color: var(--accent-coral);
-  box-shadow: 0 0 0 1px var(--accent-coral);
-}
-
-.neo-input-group input {
-  flex: 1;
-  min-width: 0;
-  border: none;
-  outline: none;
-  padding: 16px 20px;
-  font-family: var(--font-mono);
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  background: var(--bg-card-alt);
-  color: var(--text-main);
-}
-
-.neo-input-group input::placeholder {
-  color: #a8a29e;
-  font-weight: 500;
-}
-
-.neo-input-group button {
-  border: none;
-  border-left: 1px solid var(--border-black);
-  background: var(--bg-black);
-  color: #ffffff;
-  font-family: var(--font-mono);
-  font-size: 0.84rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  padding: 0 24px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-  text-transform: uppercase;
-  transition: background 0.15s ease;
-}
-
-.neo-input-group button:hover:not(:disabled) {
-  background: #262626;
-}
-
-.neo-input-group button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* ==========================================================================
-   TABS STRIP (TOP OF FORM CARD)
-   ========================================================================== */
-.neo-tabs-header {
-  display: flex;
-  align-items: stretch;
-  border-bottom: 1px solid var(--border-black);
-  margin-bottom: 0;
-  background: #ffffff;
-}
-
-.neo-tab-btn {
-  flex: 1;
-  padding: 16px 20px;
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  border: none;
-  cursor: pointer;
-  background: #ffffff;
-  color: var(--text-main);
-  transition: all 0.15s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.neo-tab-btn:first-child {
-  border-right: 1px solid var(--border-black);
-}
-
-.neo-tab-btn.active {
-  background: var(--bg-black);
-  color: #ffffff;
-}
-
-.neo-tab-btn:hover:not(.active) {
-  background: #f0ebe0;
-}
-
-/* ==========================================================================
-   CARDS & CONTAINERS
-   ========================================================================== */
-.neo-box {
-  background: var(--bg-card);
-  border: 1px solid var(--border-black);
-}
-
-.neo-box-shadow {
-  background: var(--bg-card);
-  border: 1px solid var(--border-black);
-  box-shadow: 6px 6px 0px 0px rgba(10, 10, 10, 1);
-}
-
-/* Micro-labels */
 .mono-tag {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 11.5px;
+  letter-spacing: 1.8px;
   font-weight: 700;
+  color: var(--color-blue);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--accent-coral);
 }
 
 .mono-label {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 11.5px;
+  letter-spacing: 1.5px;
   font-weight: 700;
+  color: var(--text-body);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-secondary);
-}
-
-/* Badges */
-.badge-onfile {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  padding: 3px 8px;
-  background: var(--accent-sage);
-  color: #064e3b;
-  border: 1px solid var(--border-black);
-}
-
-.badge-missing {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  padding: 3px 8px;
-  background: var(--accent-ochre);
-  color: #78350f;
-  border: 1px solid var(--border-black);
 }
 
 /* ==========================================================================
-   HERO SPLIT LAYOUT (FIGMA MAKE SPEC)
+   HOW IT WORKS SECTION
    ========================================================================== */
-.neo-hero-grid {
-  display: grid;
-  grid-template-columns: 1fr 1.05fr;
-  border-bottom: 1px solid var(--border-black);
-  min-height: calc(100vh - 64px);
-}
-
-.neo-hero-left {
+.dbit-how-section {
+  background: #FFFFFF;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  padding: 56px 64px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  border-right: 1px solid var(--border-black);
-  background: var(--bg-blue-tint); /* Half blue shade */
-}
-
-.neo-hero-left-content {
-  padding: 56px 48px;
-}
-
-.neo-hero-title {
-  font-family: var(--font-display);
-  font-size: clamp(3rem, 5.5vw, 5.2rem);
-  font-weight: 900;
-  line-height: 0.95;
-  letter-spacing: -0.04em;
-  color: var(--text-main);
-  text-transform: uppercase;
-  margin: 32px 0 24px;
-}
-
-.neo-hero-desc {
-  font-family: var(--font-body);
-  font-size: 1.05rem;
-  line-height: 1.5;
-  color: var(--text-secondary);
-  max-width: 520px;
-}
-
-.neo-hero-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  border-top: 1px solid var(--border-black);
-  background: var(--bg-blue-tint);
-}
-
-.neo-hero-stat-cell {
-  padding: 32px 48px;
-}
-
-.neo-hero-stat-cell:first-child {
-  border-right: 1px solid var(--border-black);
-}
-
-.neo-hero-stat-value {
-  font-family: var(--font-display);
-  font-size: clamp(2.2rem, 3.8vw, 3.4rem);
-  font-weight: 900;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  color: var(--text-main);
-  margin-bottom: 8px;
-  text-transform: uppercase;
-}
-
-.neo-hero-stat-label {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-}
-
-.neo-hero-right {
-  padding: 56px 48px;
-  background: #ffffff; /* Half white shade */
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-}
-
-.neo-hero-portal-card {
-  width: 100%;
-  max-width: 560px;
-  background: #ffffff;
-  border: 1px solid var(--border-black);
-  box-shadow: 4px 4px 0px 0px var(--border-black);
-}
-
-.neo-portal-body {
-  padding: 36px 36px;
-  background: #ffffff;
-}
-
-/* ==========================================================================
-   "BEFORE YOU ARRIVE." SECTION (FIGMA SPEC)
-   ========================================================================== */
-.before-arrive-section {
-  border-bottom: 1px solid var(--border-black);
-  background: #ffffff;
-}
-
-.before-arrive-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
   gap: 32px;
-  padding: 64px 48px 48px;
-  border-bottom: 1px solid var(--border-black);
-  background: #ffffff;
 }
 
-.before-arrive-title {
-  font-family: var(--font-display);
-  font-size: clamp(2.4rem, 4.5vw, 4.2rem);
-  font-weight: 900;
-  line-height: 0.95;
-  letter-spacing: -0.04em;
-  color: var(--text-main);
-  text-transform: uppercase;
+.dbit-section-tag-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
-.before-arrive-desc {
-  font-family: var(--font-body);
-  font-size: 1.05rem;
-  line-height: 1.45;
-  color: var(--text-secondary);
-  max-width: 440px;
+.dbit-gold-divider-small {
+  display: block;
+  width: 32px;
+  height: 3px;
+  background: var(--color-gold);
+  border-radius: 2px;
 }
 
-.before-arrive-cards {
+.dbit-section-tag {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 2px;
+  font-weight: 700;
+  color: var(--color-blue);
+}
+
+.dbit-how-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
 }
 
-.before-arrive-card {
-  padding: 48px 40px;
-  min-height: 260px;
+.dbit-how-card {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 10px;
+  padding: 24px;
+  background: var(--bg-page);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-box);
 }
 
-.before-arrive-card:not(:last-child) {
-  border-right: 1px solid var(--border-black);
-}
-
-.before-arrive-card.card-sage {
-  background: var(--card-blue-1); /* Ice blue */
-}
-
-.before-arrive-card.card-lilac {
-  background: var(--card-blue-2); /* Soft Sky/Royal blue tint */
-}
-
-.before-arrive-card.card-ochre {
-  background: var(--card-blue-3); /* Crisp white */
-}
-
-.before-arrive-card-num {
+.dbit-how-step-num {
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--accent-coral);
-  letter-spacing: 0.1em;
+  color: var(--color-blue);
 }
 
-.before-arrive-card-heading {
-  font-family: var(--font-display);
-  font-size: 1.55rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: var(--text-main);
-  text-transform: uppercase;
-  margin: 28px 0 12px;
+.dbit-how-title {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.5px;
+  font-weight: 700;
+  color: var(--color-navy);
 }
 
-.before-arrive-card-body {
-  font-family: var(--font-body);
-  font-size: 0.96rem;
-  line-height: 1.45;
-  color: #2b2b2b;
+.dbit-how-desc {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-body);
 }
 
 /* ==========================================================================
-   MANIFESTO / GRAND FINALE SECTION (FIGMA SPEC)
+   EVENT ATMOSPHERE / CONCERT SECTION
    ========================================================================== */
-.manifesto-section {
+.dbit-event-preview-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  border-bottom: 1px solid var(--border-black);
-  background: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+  background: #FFFFFF;
 }
 
-.manifesto-left {
+.dbit-event-preview-left {
   padding: 64px 48px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-right: 1px solid var(--border-black);
-  background: var(--bg-blue-tint); /* Half blue shade */
+  border-right: 1px solid var(--border-color);
+  background: linear-gradient(180deg, #F0F5FD 0%, #FFFFFF 100%);
 }
 
-.manifesto-top-meta {
+.dbit-event-meta-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
-.manifesto-title {
-  font-family: var(--font-display);
-  font-size: clamp(3rem, 5.2vw, 5rem);
-  font-weight: 900;
-  line-height: 0.95;
-  letter-spacing: -0.04em;
-  color: var(--text-main);
-  text-transform: uppercase;
-  margin: 48px 0 24px;
+.dbit-event-title {
+  font-size: clamp(2.8rem, 4.5vw, 4.4rem);
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: -2px;
+  color: var(--color-navy);
+  margin: 40px 0 20px;
 }
 
-.manifesto-text {
-  font-family: var(--font-body);
-  font-size: 1.1rem;
-  line-height: 1.5;
-  color: var(--text-secondary);
-  max-width: 500px;
-  margin-bottom: 40px;
+.dbit-event-desc {
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--text-body);
+  max-width: 480px;
+  margin-bottom: 36px;
 }
 
-.manifesto-right {
+.dbit-claim-action-btn {
+  align-self: flex-start;
+  padding: 16px 32px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  color: #FFFFFF !important;
+  background: var(--color-navy);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.dbit-claim-action-btn:hover {
+  background: var(--color-blue);
+  transform: translateY(-1px);
+}
+
+.dbit-event-preview-right {
   display: flex;
   flex-direction: column;
-  background: #0a0a0a;
-}
-
-.manifesto-image-wrapper {
-  position: relative;
-  flex: 1;
-  min-height: 480px;
-  overflow: hidden;
   background: #000000;
 }
 
-.manifesto-image {
+.dbit-event-image-box {
+  position: relative;
+  flex: 1;
+  min-height: 440px;
+  overflow: hidden;
+}
+
+.dbit-event-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: grayscale(100%) contrast(130%) brightness(95%);
+  display: block;
+  filter: contrast(110%);
+}
+
+.dbit-event-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  background: #0E1F45;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #A9B8D8;
+}
+
+/* ==========================================================================
+   FOOTER (DBIT SPEC)
+   ========================================================================== */
+.dbit-footer {
+  background: var(--color-navy);
+  color: #FFFFFF;
+  padding: 36px 64px;
+}
+
+.dbit-footer-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.dbit-footer-branding {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.dbit-footer-logos-box {
+  background: #FFFFFF;
+  border-radius: var(--radius-box);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dbit-footer-emblem {
+  width: 52px;
+  height: auto;
   display: block;
 }
 
-.manifesto-caption-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 20px;
-  background: var(--bg-blue-soft);
-  border-top: 1px solid var(--border-black);
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-main);
+.dbit-footer-assoc {
+  width: 72px;
+  height: auto;
+  display: block;
 }
 
-/* ==========================================================================
-   FOOTER (SHARP EDITORIAL)
-   ========================================================================== */
-.neo-footer {
-  background: #ffffff;
-  border-top: 1px solid var(--border-black);
+.dbit-footer-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.neo-footer-main {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 40px 48px;
-  border-bottom: 1px solid var(--border-black);
-  background: #ffffff;
-}
-
-.neo-footer-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 48px;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
+.dbit-footer-college {
+  font-size: 18px;
   font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  background: var(--bg-blue-soft);
+  color: #FFFFFF;
+}
+
+.dbit-footer-sub {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 1.5px;
+  color: #A9B8D8;
+}
+
+.dbit-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.dbit-footer-meet-tag {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 1.2px;
+  color: #A9B8D8;
+}
+
+.dbit-footer-admin-link {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 1.2px;
+  color: #FFFFFF !important;
+  text-decoration: none;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.dbit-footer-admin-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #FFFFFF;
 }
 
 /* ==========================================================================
-   TICKET BOARDING PASS (SHARP NEO-BRUTALIST SPEC)
+   TICKET / BOARDING PASS STYLES
    ========================================================================== */
 .ticket-wrapper-neo {
   width: 100%;
@@ -727,339 +788,118 @@ html, body {
 }
 
 .ticket-neo {
-  background: #ffffff;
-  border: 1px solid var(--border-black);
+  background: #FFFFFF;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  box-shadow: 0 16px 40px -16px rgba(14, 31, 69, 0.2);
 }
 
 .ticket-neo-header {
-  background: var(--bg-black);
-  color: #ffffff;
+  background: var(--color-navy);
+  color: #FFFFFF;
   padding: 20px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--border-black);
 }
 
 .ticket-neo-tear {
-  border-top: 2px dashed #0a0a0a;
+  border-top: 2px dashed var(--border-color);
   position: relative;
   margin: 0;
   background: var(--bg-page);
   height: 20px;
 }
 
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
 /* ==========================================================================
    RESPONSIVE
    ========================================================================== */
 @media (max-width: 992px) {
-  .neo-hero-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .neo-hero-left {
-    border-right: none;
-    border-bottom: 1px solid var(--border-black);
+  .dbit-header {
+    padding: 12px 24px;
   }
 
-  .before-arrive-header {
-    flex-direction: column;
-    align-items: flex-start;
+  .dbit-hero-left {
+    padding: 48px 32px;
   }
 
-  .before-arrive-cards {
-    grid-template-columns: 1fr;
+  .dbit-hero-right {
+    padding: 32px 24px 48px;
   }
 
-  .before-arrive-card:not(:last-child) {
-    border-right: none;
-    border-bottom: 1px solid var(--border-black);
-  }
-
-  .manifesto-section {
+  .dbit-event-preview-section {
     grid-template-columns: 1fr;
   }
 
-  .manifesto-left {
+  .dbit-event-preview-left {
     border-right: none;
-    border-bottom: 1px solid var(--border-black);
+    border-bottom: 1px solid var(--border-color);
+    padding: 48px 32px;
+  }
+
+  .dbit-how-section {
+    padding: 48px 32px;
+  }
+
+  .dbit-footer {
+    padding: 36px 32px;
   }
 }
 
 @media (max-width: 640px) {
-  .neo-nav-brand {
-    padding: 0 18px;
-    font-size: 1.25rem;
+  .dbit-header {
+    padding: 10px 16px;
   }
 
-  .neo-nav-links .neo-nav-item {
+  .dbit-header-name {
+    font-size: 19px;
+  }
+
+  .dbit-header-logo {
+    width: 42px;
+  }
+
+  .dbit-header-nav .dbit-nav-link {
     display: none;
   }
 
-  .neo-nav-cta {
-    padding: 0 18px;
-    font-size: 0.75rem;
-  }
-  
-  .neo-hero-left-content {
-    padding: 36px 20px 28px;
+  .dbit-hero-left {
+    padding: 36px 20px;
   }
 
-  .neo-hero-title {
-    font-size: clamp(2.3rem, 10vw, 3.8rem);
-    letter-spacing: -0.04em;
-    word-break: break-word;
-    margin: 20px 0 16px;
+  .dbit-hero-assoc-logo {
+    width: 96px;
   }
 
-  .neo-hero-right {
-    padding: 24px 16px;
+  .dbit-hero-title {
+    font-size: 2.8rem;
+    letter-spacing: -1.5px;
   }
 
-  .neo-portal-body {
-    padding: 24px 18px;
+  .dbit-hero-right {
+    padding: 20px 16px 40px;
   }
 
-  .neo-input-group button {
-    padding: 0 14px;
-    font-size: 0.74rem;
+  .dbit-portal-content {
+    padding: 24px 20px;
   }
 
-  .neo-input-group input {
-    padding: 12px 14px;
-    font-size: 0.95rem;
+  .dbit-how-section {
+    padding: 36px 20px;
   }
 
-  .before-arrive-header {
-    padding: 40px 20px 28px;
-  }
-
-  .before-arrive-card {
-    padding: 32px 24px;
-    min-height: auto;
-  }
-
-  .manifesto-left {
-    padding: 40px 20px;
-  }
-
-  .manifesto-title {
-    font-size: clamp(2.4rem, 10vw, 4rem);
-    margin: 28px 0 16px;
-  }
-
-  .neo-footer-main {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 20px;
-    padding: 32px 20px;
-  }
-
-  .neo-footer-bottom {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    padding: 16px 20px;
-  }
-
-  .neo-hero-stats {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .neo-hero-stat-cell {
-    padding: 20px 20px;
+  .dbit-footer {
+    padding: 28px 20px;
   }
 }
-
-/* ==========================================================================
-   ADMIN & SCANNER BRUTALIST ARCHITECTURAL UTILITIES
-   ========================================================================== */
-.neo-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #ffffff;
-  border: 1px solid var(--border-black);
-  font-family: var(--font-body);
-  font-size: 0.88rem;
-}
-
-.neo-table th {
-  background: var(--bg-black);
-  color: #ffffff;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 14px 16px;
-  text-align: left;
-  border-right: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.neo-table td {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border-subtle);
-  border-right: 1px solid var(--border-subtle);
-  vertical-align: middle;
-}
-
-.neo-table tr:hover td {
-  background: var(--bg-blue-tint);
-}
-
-.neo-stat-card {
-  background: #ffffff;
-  border: 1px solid var(--border-black);
-  padding: 20px 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.neo-badge {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 4px 8px;
-  border: 1px solid var(--border-black);
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.neo-badge-approved { background: var(--card-blue-1); color: #0f2b5c; }
-.neo-badge-pending { background: #fef3c7; color: #78350f; }
-.neo-badge-rejected { background: #fee2e2; color: #991b1b; }
-.neo-badge-checkedin { background: #d1fae5; color: #065f46; }
-
-.neo-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(10, 25, 47, 0.65);
-  backdrop-filter: blur(2px);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.neo-modal {
-  background: #ffffff;
-  border: 2px solid var(--border-black);
-  box-shadow: 8px 8px 0px 0px var(--border-black);
-  width: 100%;
-  max-width: 640px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.neo-modal-header {
-  background: var(--bg-black);
-  color: #ffffff;
-  padding: 16px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border-black);
-}
-
-/* ==========================================================================
-   GATE SCANNER BRUTALIST CAMERA & CONTROLS
-   ========================================================================== */
-.scanner-camera-frame {
-  position: relative;
-  width: 100%;
-  max-width: 480px;
-  height: 320px;
-  margin: 0 auto;
-  background: var(--bg-black);
-  border: 2px solid var(--border-black);
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.scanner-laser-line {
-  position: absolute;
-  left: 5%;
-  right: 5%;
-  height: 3px;
-  background: #38bdf8;
-  box-shadow: 0 0 12px 2px #38bdf8;
-  animation: scannerLaserSweep 2.2s ease-in-out infinite;
-  z-index: 10;
-  pointer-events: none;
-}
-
-@keyframes scannerLaserSweep {
-  0% { top: 8%; opacity: 0.8; }
-  50% { top: 92%; opacity: 1; }
-  100% { top: 8%; opacity: 0.8; }
-}
-
-.neo-stepper-btn {
-  width: 42px;
-  height: 42px;
-  background: #ffffff;
-  border: 1px solid var(--border-black);
-  color: var(--text-main);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-family: var(--font-mono);
-  font-weight: 700;
-  transition: all 0.15s ease;
-}
-
-.neo-stepper-btn:hover:not(:disabled) {
-  background: var(--bg-black);
-  color: #ffffff;
-}
-
-.neo-stepper-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-  background: #f1f5f9;
-}
-
-.neo-stepper-val {
-  min-width: 60px;
-  height: 42px;
-  background: var(--card-blue-1);
-  border: 1px solid var(--border-black);
-  font-family: var(--font-mono);
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--text-main);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 12px;
-}
-
-.neo-chip-btn {
-  padding: 6px 14px;
-  background: #ffffff;
-  border: 1px solid var(--border-black);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--text-main);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.neo-chip-btn:hover {
-  background: var(--bg-blue-tint);
-}
-
-.neo-chip-btn.active {
-  background: var(--bg-black);
-  color: #ffffff;
-}
-
