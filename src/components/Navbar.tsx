@@ -36,6 +36,9 @@ export default function Navbar() {
           <a href="#faq" className="dbit-nav-link">
             FAQ
           </a>
+          <a href="#contact" className="dbit-nav-link">
+            CONTACT
+          </a>
           <a href="#claim" className="dbit-nav-cta">
             CLAIM PASS ↗
           </a>

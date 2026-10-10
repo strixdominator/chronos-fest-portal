@@ -849,36 +849,39 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ==========================================================================
-   FOOTER (DBIT SPEC)
+   FOOTER & CONTACT US (DBIT SPEC)
    ========================================================================== */
 .dbit-footer {
   background: var(--color-navy);
   color: #FFFFFF;
-  padding: 36px 64px;
+  padding: 56px 64px 32px;
 }
 
 .dbit-footer-content {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 24px;
+  gap: 48px;
+  padding-bottom: 40px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .dbit-footer-branding {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 20px;
-  flex-wrap: wrap;
+  max-width: 460px;
 }
 
 .dbit-footer-logos-box {
   background: #FFFFFF;
   border-radius: var(--radius-box);
   padding: 10px 16px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 14px;
+  width: fit-content;
 }
 
 .dbit-footer-emblem {
@@ -896,13 +899,14 @@ input:focus, select:focus, textarea:focus {
 .dbit-footer-text-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .dbit-footer-college {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   color: #FFFFFF;
+  letter-spacing: -0.3px;
 }
 
 .dbit-footer-sub {
@@ -912,11 +916,82 @@ input:focus, select:focus, textarea:focus {
   color: #A9B8D8;
 }
 
-.dbit-footer-right {
+/* CONTACT US SECTION */
+.dbit-footer-contact {
   display: flex;
-  align-items: center;
-  gap: 20px;
+  flex-direction: column;
+  min-width: 280px;
+}
+
+.dbit-contact-header {
+  margin-bottom: 20px;
+}
+
+.dbit-contact-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -0.3px;
+}
+
+.dbit-contact-gold-bar {
+  display: block;
+  width: 42px;
+  height: 3.5px;
+  background: #F5B82E;
+  border-radius: 2px;
+  margin-top: 8px;
+}
+
+.dbit-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.dbit-contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  color: #FFFFFF;
+}
+
+.dbit-contact-icon {
+  flex-shrink: 0;
+  color: #FFFFFF;
+  margin-top: 3px;
+}
+
+.dbit-contact-link {
+  font-size: 16px;
+  color: #FFFFFF;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  line-height: 1.4;
+}
+
+.dbit-contact-link:hover {
+  color: var(--color-gold);
+  text-decoration: underline;
+}
+
+.dbit-contact-address {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: #FFFFFF;
+}
+
+.dbit-footer-bottom {
+  padding-top: 24px;
+  display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .dbit-footer-meet-tag {
@@ -926,21 +1001,11 @@ input:focus, select:focus, textarea:focus {
   color: #A9B8D8;
 }
 
-.dbit-footer-admin-link {
+.dbit-footer-copy {
   font-family: var(--font-mono);
   font-size: 11.5px;
-  letter-spacing: 1.2px;
-  color: #FFFFFF !important;
-  text-decoration: none;
-  padding: 8px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.dbit-footer-admin-link:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: #FFFFFF;
+  letter-spacing: 1px;
+  color: #6C81A8;
 }
 
 /* ==========================================================================
@@ -1394,6 +1459,18 @@ input:focus, select:focus, textarea:focus {
   }
 
   .dbit-footer {
-    padding: 28px 20px;
+    padding: 36px 20px 24px;
+  }
+
+  .dbit-footer-content {
+    flex-direction: column;
+    gap: 36px;
+    padding-bottom: 28px;
+  }
+
+  .dbit-footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
   }
 }

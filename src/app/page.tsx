@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { Phone, Mail, MapPin } from 'lucide-react';
 import RegistrationForm from '@/components/RegistrationForm';
 import PassLogin from '@/components/PassLogin';
 import { EventSettings } from '@/lib/types';
@@ -318,8 +319,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="dbit-footer no-print">
+      {/* FOOTER & CONTACT US */}
+      <footer id="contact" className="dbit-footer no-print">
         <div className="dbit-footer-content">
           <div className="dbit-footer-branding">
             <div className="dbit-footer-logos-box">
@@ -344,9 +345,45 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="dbit-footer-right">
-            <span className="dbit-footer-meet-tag">MILAN 2026 · ALUMNI MEET</span>
+          {/* CONTACT US */}
+          <div className="dbit-footer-contact">
+            <div className="dbit-contact-header">
+              <h3 className="dbit-contact-title">Contact Us</h3>
+              <span className="dbit-contact-gold-bar" />
+            </div>
+
+            <div className="dbit-contact-list">
+              <div className="dbit-contact-item">
+                <Phone size={19} className="dbit-contact-icon" />
+                <a href="tel:+9606236236" className="dbit-contact-link">
+                  +9606236236
+                </a>
+              </div>
+
+              <div className="dbit-contact-item">
+                <Mail size={19} className="dbit-contact-icon" />
+                <a href="mailto:alumni.relations@dbit.co.in" className="dbit-contact-link">
+                  alumni.relations@dbit.co.in
+                </a>
+              </div>
+
+              <div className="dbit-contact-item">
+                <MapPin size={19} className="dbit-contact-icon" />
+                <div className="dbit-contact-address">
+                  <span>Don Bosco Institute of Technology</span>
+                  <span>Kumbalagodu, Mysore Road</span>
+                  <span>Bengaluru – 560074, India</span>
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
+
+        <div className="dbit-footer-bottom">
+          <span className="dbit-footer-meet-tag">MILAN 2026 · ALUMNI MEET</span>
+          <span className="dbit-footer-copy">
+            © 2026 Don Bosco Institute of Technology Alumni Association (R). All rights reserved.
+          </span>
         </div>
       </footer>
     </div>
