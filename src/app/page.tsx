@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import RegistrationForm from '@/components/RegistrationForm';
 import PassLogin from '@/components/PassLogin';
 import { EventSettings } from '@/lib/types';
@@ -347,9 +346,6 @@ export default function HomePage() {
 
           <div className="dbit-footer-right">
             <span className="dbit-footer-meet-tag">MILAN 2026 · ALUMNI MEET</span>
-            <Link href="/admin" className="dbit-footer-admin-link">
-              COMMITTEE LOGIN ↗
-            </Link>
           </div>
         </div>
       </footer>
