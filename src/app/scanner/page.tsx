@@ -40,7 +40,15 @@ export default function GateScannerPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState('');
-  const [volunteerName, setVolunteerName] = useState('Gate 1 - North Entrance');
+  const [volunteerName, setVolunteerName] = useState('Gate Security');
+
+  useEffect(() => {
+    const savedPin = sessionStorage.getItem('dbit_scanner_pin');
+    if (savedPin && (savedPin === 'milan#entry' || savedPin === 'alumni#milan')) {
+      setPin(savedPin);
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   const [scanning, setScanning] = useState(false);
   const [manualCode, setManualCode] = useState('');
@@ -121,9 +129,11 @@ export default function GateScannerPage() {
   // Handle staff PIN authentication
   const handlePinSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (pin === 'gate2026' || pin === 'admin123' || pin === '1234') {
+    const cleanedPin = pin.trim();
+    if (cleanedPin === 'milan#entry' || cleanedPin === 'alumni#milan') {
       setIsAuthenticated(true);
       setPinError('');
+      sessionStorage.setItem('dbit_scanner_pin', cleanedPin);
     } else {
       setPinError('Access Denied: Invalid Gate Authorization PIN.');
     }
@@ -227,11 +237,15 @@ export default function GateScannerPage() {
     try {
       const res = await fetch('/api/scan', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-scanner-pin': pin 
+        },
         body: JSON.stringify({
           code: codeToVerify.trim(),
           action: 'PREVIEW',
           volunteerName,
+          pin,
         }),
       });
 
@@ -288,12 +302,16 @@ export default function GateScannerPage() {
     try {
       const res = await fetch('/api/scan', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-scanner-pin': pin 
+        },
         body: JSON.stringify({
           code: scanPreview.code,
           action: 'CHECKIN',
           admittingCount: countToAdmit,
           volunteerName,
+          pin,
         }),
       });
 
@@ -383,7 +401,7 @@ export default function GateScannerPage() {
 
           <div className="dbit-auth-body">
             <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--text-body)', marginBottom: 20 }}>
-              Select your gate checkpoint station and enter the volunteer PIN to unlock optical pass verification.
+              Enter authorized gate PIN to unlock optical pass verification.
             </p>
 
             {pinError && (
@@ -393,30 +411,13 @@ export default function GateScannerPage() {
             )}
 
             <form onSubmit={handlePinSubmit}>
-              <div style={{ marginBottom: 16 }}>
-                <label className="mono-label" style={{ display: 'block', marginBottom: 6 }}>
-                  GATE / POST LOCATION
-                </label>
-                <select
-                  className="neo-input"
-                  value={volunteerName}
-                  onChange={e => setVolunteerName(e.target.value)}
-                  style={{ width: '100%' }}
-                >
-                  <option value="Gate 1 - North Entrance">Gate 1 - North Entrance</option>
-                  <option value="Gate 2 - South Arch">Gate 2 - South Arch</option>
-                  <option value="Gate 3 - Amphitheatre East">Gate 3 - Amphitheatre East</option>
-                  <option value="VIP & Performer Check-in">VIP & Performer Check-in</option>
-                </select>
-              </div>
-
               <div style={{ marginBottom: 20 }}>
                 <label className="mono-label" style={{ display: 'block', marginBottom: 6 }}>
-                  VOLUNTEER PIN
+                  GATE AUTHORIZATION PIN
                 </label>
                 <input
                   type="password"
-                  placeholder="Enter PIN (gate2026)"
+                  placeholder="Enter Gate PIN"
                   className="neo-input"
                   value={pin}
                   onChange={e => setPin(e.target.value)}
@@ -487,6 +488,17 @@ export default function GateScannerPage() {
           >
             3. ADMIN CENTER ↗
           </Link>
+          <button
+            onClick={() => {
+              sessionStorage.removeItem('dbit_scanner_pin');
+              setIsAuthenticated(false);
+              setPin('');
+            }}
+            className="btn-neo-outline"
+            style={{ padding: '8px 14px', fontSize: '0.75rem', borderRadius: 8, color: '#dc2626', borderColor: '#fca5a5', cursor: 'pointer' }}
+          >
+            LOCK SCANNER
+          </button>
         </div>
       </div>
 

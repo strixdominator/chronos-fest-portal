@@ -7,12 +7,21 @@ import {
   normalizeRecordFromObject 
 } from '@/lib/alumni';
 import { AlumniRecord } from '@/lib/types';
+import { verifyAdminPasscode, getAdminPasscodeFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const isAdmin = verifyAdminPasscode(getAdminPasscodeFromRequest(request));
+    if (!isAdmin) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Admin passcode required.' },
+        { status: 401 }
+      );
+    }
+
     const list = getAlumniMaster();
     
     // Group counts by department
@@ -39,6 +48,14 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const isAdmin = verifyAdminPasscode(getAdminPasscodeFromRequest(request));
+    if (!isAdmin) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Admin passcode required.' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
 

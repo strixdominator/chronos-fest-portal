@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { bulkApproveAttendees, getAttendees } from '@/lib/db';
+import { verifyAdminPasscode, getAdminPasscodeFromRequest } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
+    const isAdmin = verifyAdminPasscode(getAdminPasscodeFromRequest(request));
+    if (!isAdmin) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Admin passcode required.' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     let ids: string[] = body.ids;
 

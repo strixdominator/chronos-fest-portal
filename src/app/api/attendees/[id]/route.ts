@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAttendeeById, getAttendeeByTicketCode, deleteAttendee } from '@/lib/db';
 import { clearAlumniSession } from '@/lib/alumni';
+import { verifyAdminPasscode, getAdminPasscodeFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -41,6 +42,14 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const isAdmin = verifyAdminPasscode(getAdminPasscodeFromRequest(_request));
+    if (!isAdmin) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Admin passcode required.' },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     const result = deleteAttendee(id);
 

@@ -1,11 +1,20 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getAttendees } from '@/lib/db';
+import { verifyAdminPasscode, getAdminPasscodeFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const isAdmin = verifyAdminPasscode(getAdminPasscodeFromRequest(request));
+    if (!isAdmin) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Admin passcode required to export attendee records.' },
+        { status: 401 }
+      );
+    }
+
     const attendees = getAttendees();
 
     // CSV header with full registration form responses

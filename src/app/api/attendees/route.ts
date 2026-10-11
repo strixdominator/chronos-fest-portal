@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAttendees, getSettings, deleteAllAttendees, deleteSelectedAttendees } from '@/lib/db';
 import { clearAlumniSession } from '@/lib/alumni';
+import { verifyAdminPasscode, getAdminPasscodeFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -10,6 +11,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search')?.toLowerCase() || '';
     const status = searchParams.get('status') || 'ALL';
+    const isAdmin = verifyAdminPasscode(getAdminPasscodeFromRequest(request));
 
     const allAttendees = getAttendees();
     const settings = getSettings();
@@ -55,7 +57,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      attendees: filtered,
+      attendees: isAdmin ? filtered : [],
       stats,
       settings,
     }, {
@@ -75,6 +77,14 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const isAdmin = verifyAdminPasscode(getAdminPasscodeFromRequest(request));
+    if (!isAdmin) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Admin passcode required.' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json().catch(() => ({}));
     const { ids, resetAll } = body;
 

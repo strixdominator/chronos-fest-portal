@@ -1,15 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkInAttendee, getScanPreview, normalizeScanCode } from '@/lib/db';
+import { verifyScannerPin, getScannerPinFromRequest } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     let { 
       code, 
-      volunteerName = "Gate Volunteer", 
+      volunteerName = "Gate Security", 
       action = "CHECKIN", 
-      admittingCount 
+      admittingCount,
+      pin
     } = body;
+
+    // Security Gate Authorization PIN Check
+    const providedPin = getScannerPinFromRequest(request, pin);
+    if (!verifyScannerPin(providedPin)) {
+      return NextResponse.json(
+        { success: false, status: 'UNAUTHORIZED', error: 'Access Denied: Invalid or missing Gate Authorization PIN.' },
+        { status: 401 }
+      );
+    }
 
     if (!code || typeof code !== 'string') {
       return NextResponse.json(

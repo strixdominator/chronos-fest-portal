@@ -103,6 +103,14 @@ export default function AdminPage() {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [settingsForm, setSettingsForm] = useState<Partial<EventSettings>>({});
 
+  useEffect(() => {
+    const saved = sessionStorage.getItem('dbit_admin_passcode');
+    if (saved && saved.trim() === 'alumni#milan') {
+      setAdminPasscode(saved.trim());
+      setIsAuthenticated(true);
+    }
+  }, []);
+
   const fetchAttendees = async (silent: boolean = false) => {
     if (!silent) setLoading(true);
     else setIsLiveSyncing(true);
@@ -118,6 +126,7 @@ export default function AdminPage() {
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
+          'x-admin-passcode': adminPasscode,
         },
       });
       const data = await res.json();
@@ -142,6 +151,7 @@ export default function AdminPage() {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'x-admin-passcode': adminPasscode,
         },
       });
       const data = await res.json();
@@ -181,9 +191,11 @@ export default function AdminPage() {
 
   const handleAuth = (e: React.FormEvent) => {
     e.preventDefault();
-    if (adminPasscode === 'admin123' || adminPasscode === 'lead2026' || adminPasscode === 'admin') {
+    const cleaned = adminPasscode.trim();
+    if (cleaned === 'alumni#milan') {
       setIsAuthenticated(true);
       setAuthError('');
+      sessionStorage.setItem('dbit_admin_passcode', cleaned);
     } else {
       setAuthError('Access Denied: Incorrect administrator passcode.');
     }
@@ -195,7 +207,10 @@ export default function AdminPage() {
     try {
       const res = await fetch(`/api/attendees/${id}/status`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-admin-passcode': adminPasscode 
+        },
         body: JSON.stringify({ status, rejectionReason: reason }),
       });
       const data = await res.json();
@@ -219,7 +234,10 @@ export default function AdminPage() {
     try {
       const res = await fetch(`/api/attendees/${id}/status`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-admin-passcode': adminPasscode 
+        },
         body: JSON.stringify({ action: 'RESET_CHECKIN' }),
       });
       const data = await res.json();
@@ -246,7 +264,10 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/attendees/bulk-approve', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-admin-passcode': adminPasscode 
+        },
         body: JSON.stringify({}),
       });
       const data = await res.json();
@@ -270,6 +291,7 @@ export default function AdminPage() {
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
+          'x-admin-passcode': adminPasscode,
         },
       });
       const data = await res.json();
@@ -298,6 +320,7 @@ export default function AdminPage() {
           'Content-Type': 'application/json',
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
+          'x-admin-passcode': adminPasscode,
         },
         body: JSON.stringify({ resetAll: true }),
       });
@@ -332,6 +355,9 @@ export default function AdminPage() {
       setImportStatus(`Reading and normalizing ${files.length} spreadsheet file(s)...`);
       const res = await fetch('/api/alumni/master', {
         method: 'POST',
+        headers: {
+          'x-admin-passcode': adminPasscode,
+        },
         body: formData,
       });
       const data = await res.json();
@@ -358,7 +384,10 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/alumni/master?action=syncDataDir', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-admin-passcode': adminPasscode 
+        },
       });
       const data = await res.json();
       if (data.success) {
@@ -404,7 +433,10 @@ export default function AdminPage() {
 
       const res = await fetch('/api/alumni/master', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-admin-passcode': adminPasscode 
+        },
         body: JSON.stringify({ records }),
       });
       const data = await res.json();
@@ -428,7 +460,10 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/settings', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-admin-passcode': adminPasscode 
+        },
         body: JSON.stringify(settingsForm),
       });
       const data = await res.json();
@@ -480,7 +515,10 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/admin/test-notification', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-admin-passcode': adminPasscode 
+        },
         body: JSON.stringify({ type: testType, target: testTarget.trim() }),
       });
       const data = await res.json();
@@ -617,6 +655,17 @@ export default function AdminPage() {
           >
             3. ADMIN CENTER (ACTIVE)
           </span>
+          <button
+            onClick={() => {
+              sessionStorage.removeItem('dbit_admin_passcode');
+              setIsAuthenticated(false);
+              setAdminPasscode('');
+            }}
+            className="btn-neo-outline"
+            style={{ padding: '8px 14px', fontSize: '0.75rem', borderRadius: 8, color: '#dc2626', borderColor: '#fca5a5', cursor: 'pointer' }}
+          >
+            LOGOUT
+          </button>
         </div>
       </div>
 
@@ -677,7 +726,7 @@ export default function AdminPage() {
             EVENT SETTINGS ↗
           </button>
           <a
-            href="/api/export"
+            href={`/api/export?passcode=${encodeURIComponent(adminPasscode)}`}
             download="milan2026_registration_responses.csv"
             className="btn-neo-outline"
             style={{
@@ -869,7 +918,7 @@ export default function AdminPage() {
                   </button>
                 )}
                 <a
-                  href="/api/export"
+                  href={`/api/export?passcode=${encodeURIComponent(adminPasscode)}`}
                   download="milan2026_registration_responses.csv"
                   className="btn-neo-yellow"
                   style={{
