@@ -13,7 +13,7 @@ const FAQS = [
   },
   {
     q: 'What if I cannot find my record?',
-    a: 'Check your USN for typos first. If it still does not match, write to the alumni association at alumni@dbit.co.in and we will look into it.'
+    a: 'Check your USN for typos first. If it still does not match, write to the alumni association at alumni.relations@dbit.co.in and we will look into it.'
   },
   {
     q: 'What do I need to bring on the day?',
@@ -67,9 +67,9 @@ export default function HomePage() {
         <div className="dbit-hero-left">
           {/* Logo & Meta Badge */}
           <div className="dbit-hero-badge-wrap">
-            <img 
-              src="/assets/1662177580bae749e245f3973661f37f.png" 
-              alt="DBIT Alumni Association logo" 
+            <img
+              src="/assets/1662177580bae749e245f3973661f37f.png"
+              alt="DBIT Alumni Association logo"
               className="dbit-hero-assoc-logo"
             />
             <div className="dbit-hero-meta">
@@ -246,9 +246,9 @@ export default function HomePage() {
 
         <div className="dbit-event-preview-right">
           <div className="dbit-event-image-box">
-            <img 
-              src="/fest-banner.jpg" 
-              alt="Milan 2026 Grand Celebration" 
+            <img
+              src="/fest-banner.jpg"
+              alt="Milan 2026 Grand Celebration"
               className="dbit-event-image"
             />
           </div>
@@ -270,8 +270,8 @@ export default function HomePage() {
           <h2 className="dbit-faq-title">Good to know.</h2>
           <p className="dbit-faq-desc">
             Quick answers before you claim your pass. Still stuck? Write to us at{' '}
-            <a href="mailto:alumni@dbit.co.in" style={{ color: 'var(--color-blue)', textDecoration: 'underline' }}>
-              alumni@dbit.co.in
+            <a href="mailto:alumni.relations@dbit.co.in" style={{ color: 'var(--color-blue)', textDecoration: 'underline' }}>
+              alumni.relations@dbit.co.in
             </a>
             .
           </p>
@@ -289,18 +289,18 @@ export default function HomePage() {
                   aria-expanded={isOpen}
                 >
                   <span>{faq.q}</span>
-                  <span 
-                    className="dbit-faq-toggle-icon" 
+                  <span
+                    className="dbit-faq-toggle-icon"
                     style={{ transform: isOpen ? 'rotate(45deg)' : 'none' }}
                   >
-                    <svg 
-                      width="16" 
-                      height="16" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="2.5" 
-                      strokeLinecap="round" 
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
                       strokeLinejoin="round"
                     >
                       <line x1="12" y1="5" x2="12" y2="19" />
@@ -324,14 +324,14 @@ export default function HomePage() {
         <div className="dbit-footer-content">
           <div className="dbit-footer-branding">
             <div className="dbit-footer-logos-box">
-              <img 
-                src="/assets/66eff0e624600df79e9f69030275731c.png" 
-                alt="Don Bosco Institute of Technology emblem" 
+              <img
+                src="/assets/66eff0e624600df79e9f69030275731c.png"
+                alt="Don Bosco Institute of Technology emblem"
                 className="dbit-footer-emblem"
               />
-              <img 
-                src="/assets/1662177580bae749e245f3973661f37f.png" 
-                alt="DBIT Alumni Association logo" 
+              <img
+                src="/assets/1662177580bae749e245f3973661f37f.png"
+                alt="DBIT Alumni Association logo"
                 className="dbit-footer-assoc"
               />
             </div>
@@ -355,7 +355,7 @@ export default function HomePage() {
             <div className="dbit-contact-list">
               <div className="dbit-contact-item">
                 <Phone size={19} className="dbit-contact-icon" />
-                <a href="tel:+9606236236" className="dbit-contact-link">
+                <a href="tel:9606236236" className="dbit-contact-link">
                   +9606236236
                 </a>
               </div>
