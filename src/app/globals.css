@@ -985,6 +985,62 @@ input:focus, select:focus, textarea:focus {
   color: #FFFFFF;
 }
 
+/* CONNECT US ON (SOCIAL LINKS) */
+.dbit-footer-connect {
+  display: flex;
+  flex-direction: column;
+  min-width: 280px;
+}
+
+.dbit-social-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.dbit-social-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.22s ease, filter 0.22s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  flex-shrink: 0;
+}
+
+.dbit-social-circle:hover {
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
+  filter: brightness(1.12);
+}
+
+.dbit-social-facebook {
+  background: #1877F2;
+}
+
+.dbit-social-x {
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.dbit-social-instagram {
+  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+}
+
+.dbit-social-linkedin {
+  background: #0A66C2;
+}
+
+.dbit-social-youtube {
+  background: #FF0000;
+}
+
 .dbit-footer-bottom {
   padding-top: 24px;
   display: flex;
