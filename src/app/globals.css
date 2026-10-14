@@ -309,36 +309,9 @@ input:focus, select:focus, textarea:focus {
   color: var(--text-body);
 }
 
-.dbit-hero-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-top: 8px;
-}
-
+.dbit-hero-stats,
 .dbit-stat-card {
-  background: #FFFFFF;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-box);
-  padding: 18px 28px;
-  min-width: 150px;
-}
-
-.dbit-stat-number {
-  font-size: 40px;
-  font-weight: 700;
-  letter-spacing: -1.5px;
-  line-height: 1;
-  color: var(--color-navy);
-}
-
-.dbit-stat-label {
-  margin-top: 8px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 1.5px;
-  color: var(--text-muted);
-  font-weight: 700;
+  display: none !important;
 }
 
 /* ==========================================================================
@@ -1548,23 +1521,9 @@ input:focus, select:focus, textarea:focus {
     margin-bottom: 12px;
   }
 
-  .dbit-hero-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-
+  .dbit-hero-stats,
   .dbit-stat-card {
-    padding: 16px 14px;
-  }
-
-  .dbit-stat-value {
-    font-size: 32px;
-  }
-
-  .dbit-stat-label {
-    font-size: 9.5px;
+    display: none !important;
   }
 
   .dbit-hero-right {
