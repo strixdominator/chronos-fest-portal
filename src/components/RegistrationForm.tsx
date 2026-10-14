@@ -15,9 +15,11 @@ import {
   Search,
   Lock,
   Users,
-  UserPlus
+  UserPlus,
+  ArrowLeft
 } from 'lucide-react';
 import TicketCard from './TicketCard';
+import ContributionModal from './ContributionModal';
 import { Attendee } from '@/lib/types';
 
 interface VerifiedAlumnus {
@@ -95,6 +97,46 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
 
   // Completed Pass
   const [issuedPass, setIssuedPass] = useState<Attendee | null>(null);
+  const [showContributionModal, setShowContributionModal] = useState(false);
+
+  // Reset to fresh pass generation flow
+  const handleResetToFreshPass = () => {
+    setIssuedPass(null);
+    setAlumnus(null);
+    setUsnInput('');
+    setOtpSent(false);
+    setIsOtpVerified(false);
+    setAlreadyRegistered(false);
+    setClaimedSummary(null);
+    setSessionToken('');
+    setOrganization('');
+    setDesignation('');
+    setOtpCode('');
+    setLookupError(null);
+    setShowManualReview(false);
+    if (typeof window !== 'undefined') {
+      const claimEl = document.getElementById('claim');
+      if (claimEl) {
+        claimEl.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
+  React.useEffect(() => {
+    const handleFreshEvent = () => {
+      handleResetToFreshPass();
+    };
+    const handlePopState = () => {
+      handleResetToFreshPass();
+    };
+
+    window.addEventListener('generate-fresh-pass', handleFreshEvent);
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('generate-fresh-pass', handleFreshEvent);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   // 1. Look up USN in Alumni Master Database
   const handleLookupUsn = async (e: React.FormEvent) => {
@@ -210,6 +252,12 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
       }
 
       setIssuedPass(data.attendee);
+      setTimeout(() => {
+        setShowContributionModal(true);
+      }, 2000);
+      if (typeof window !== 'undefined') {
+        window.history.pushState({ step: 'pass' }, '');
+      }
       confetti({
         particleCount: 100,
         spread: 80,
@@ -344,6 +392,12 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
       }
 
       setIssuedPass(data.attendee);
+      setTimeout(() => {
+        setShowContributionModal(true);
+      }, 2000);
+      if (typeof window !== 'undefined') {
+        window.history.pushState({ step: 'pass' }, '');
+      }
       confetti({
         particleCount: 100,
         spread: 80,
@@ -395,6 +449,12 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
       }
 
       setIssuedPass(data.attendee);
+      setTimeout(() => {
+        setShowContributionModal(true);
+      }, 2000);
+      if (typeof window !== 'undefined') {
+        window.history.pushState({ step: 'pass' }, '');
+      }
     } catch (err: any) {
       setReviewError(err.message);
     } finally {
@@ -418,6 +478,39 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
     const isPending = issuedPass.status === 'PENDING';
     return (
       <div className="animate-fade-in">
+        <ContributionModal
+          isOpen={showContributionModal}
+          onClose={() => setShowContributionModal(false)}
+        />
+
+        {/* Top Back / Generate Fresh Pass button */}
+        <div style={{ marginBottom: 16 }}>
+          <button
+            type="button"
+            onClick={handleResetToFreshPass}
+            className="btn-neo-outline"
+            style={{ 
+              width: '100%', 
+              padding: '12px 16px',
+              background: '#FFFFFF',
+              color: 'var(--color-navy, #0A192F)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              fontWeight: 800,
+              fontSize: '0.82rem',
+              letterSpacing: '1px',
+              borderRadius: 8,
+              border: '1.5px solid var(--border-color)',
+              cursor: 'pointer'
+            }}
+          >
+            <ArrowLeft size={16} />
+            GENERATE ANOTHER FRESH PASS ↗
+          </button>
+        </div>
+
         <div style={{
           padding: '20px',
           background: isPending ? 'var(--accent-ochre)' : 'var(--accent-sage)',
@@ -444,17 +537,23 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
         <div style={{ marginTop: 24, textAlign: 'center' }}>
           <button
             type="button"
-            onClick={() => {
-              setIssuedPass(null);
-              setAlumnus(null);
-              setUsnInput('');
-              setOtpSent(false);
-              setIsOtpVerified(false);
-            }}
+            onClick={handleResetToFreshPass}
             className="btn-neo-outline"
-            style={{ width: '100%' }}
+            style={{ 
+              width: '100%',
+              padding: '14px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              fontWeight: 800,
+              fontSize: '0.85rem',
+              borderRadius: 8,
+              cursor: 'pointer'
+            }}
           >
-            REGISTER ANOTHER ALUMNUS ↗
+            <ArrowLeft size={16} />
+            GENERATE ANOTHER FRESH PASS ↗
           </button>
         </div>
       </div>

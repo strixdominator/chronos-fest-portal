@@ -61,6 +61,17 @@ export default function HomePage() {
 
   return (
     <div className="dbit-page-wrapper">
+      {/* HEADER BANNER POSTER */}
+      <div className="dbit-header-banner-container no-print">
+        <div className="dbit-header-banner-inner">
+          <img
+            src="/header-banner.jpg"
+            alt="Milan 2026 DBIT Alumni Grand Reunion"
+            className="dbit-header-banner-img"
+          />
+        </div>
+      </div>
+
       {/* HERO SECTION */}
       <section id="about" className="dbit-hero-section">
         {/* Hero Left Column */}
@@ -223,7 +234,7 @@ export default function HomePage() {
 
       {/* EVENT ATMOSPHERE / CONCERT SECTION */}
       <section className="dbit-event-preview-section">
-        <div className="dbit-event-preview-left">
+        <div className="dbit-event-preview-full">
           <div className="dbit-event-meta-top">
             <span>ANNUAL ALUMNI GRAND REUNION</span>
             <span>BENGALURU • INDIA</span>
@@ -240,22 +251,8 @@ export default function HomePage() {
           </div>
 
           <a href="#claim" className="dbit-claim-action-btn">
-            CLAIM ALUMNI PASS ↗
+            GENERATE ALUMNI PASS ↗
           </a>
-        </div>
-
-        <div className="dbit-event-preview-right">
-          <div className="dbit-event-image-box">
-            <img
-              src="/fest-banner.jpg"
-              alt="Milan 2026 Grand Celebration"
-              className="dbit-event-image"
-            />
-          </div>
-          <div className="dbit-event-caption">
-            <span>MILAN 2026 / MAIN CAMPUS STAGE</span>
-            <span>ALUMNI ARCHIVE</span>
-          </div>
         </div>
       </section>
 

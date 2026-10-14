@@ -7,9 +7,27 @@ import { usePathname } from 'next/navigation';
 export default function Navbar() {
   const pathname = usePathname();
   const hideNav = pathname?.startsWith('/admin') || pathname?.startsWith('/scanner');
+  const handleGeneratePassClick = () => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('generate-fresh-pass'));
+      if (pathname === '/') {
+        const claimEl = document.getElementById('claim');
+        if (claimEl) {
+          claimEl.scrollIntoView({ behavior: 'smooth' });
+        }
+      } else {
+        window.location.href = '/#claim';
+      }
+    }
+  };
+
   return (
     <header className="dbit-header no-print">
-      <Link href="/" className="dbit-header-brand">
+      <Link href="/" className="dbit-header-brand" onClick={() => {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('generate-fresh-pass'));
+        }
+      }}>
         <img 
           src="/assets/66eff0e624600df79e9f69030275731c.png" 
           alt="Don Bosco Institute of Technology emblem" 
@@ -39,9 +57,14 @@ export default function Navbar() {
           <a href="#contact" className="dbit-nav-link">
             CONTACT
           </a>
-          <a href="#claim" className="dbit-nav-cta">
-            CLAIM PASS ↗
-          </a>
+          <button
+            type="button"
+            onClick={handleGeneratePassClick}
+            className="dbit-nav-cta"
+            aria-label="Generate fresh pass"
+          >
+            GENERATE PASS ↗
+          </button>
         </nav>
       )}
     </header>

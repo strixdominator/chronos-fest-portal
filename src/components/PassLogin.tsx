@@ -7,9 +7,11 @@ import {
   KeyRound, 
   CheckCircle2,
   Mail,
-  Phone
+  Phone,
+  ArrowLeft
 } from 'lucide-react';
 import TicketCard from './TicketCard';
+import ContributionModal from './ContributionModal';
 import { Attendee, EventSettings } from '@/lib/types';
 
 interface PassLoginProps {
@@ -37,6 +39,38 @@ export default function PassLogin({ initialUsn = '', settings, onUnlocked }: Pas
 
   // Unlocked pass
   const [unlockedPass, setUnlockedPass] = useState<Attendee | null>(null);
+  const [showContributionModal, setShowContributionModal] = useState(false);
+
+  const handleResetToFreshPass = () => {
+    setUnlockedPass(null);
+    setMatchedAttendee(null);
+    setUsn('');
+    setOtpSent(false);
+    setOtpCode('');
+    setError(null);
+    if (typeof window !== 'undefined') {
+      const claimEl = document.getElementById('claim');
+      if (claimEl) {
+        claimEl.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
+  React.useEffect(() => {
+    const handleFreshEvent = () => {
+      handleResetToFreshPass();
+    };
+    const handlePopState = () => {
+      handleResetToFreshPass();
+    };
+
+    window.addEventListener('generate-fresh-pass', handleFreshEvent);
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('generate-fresh-pass', handleFreshEvent);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   // 1. Find pass by USN
   const handleFindPass = async (e: React.FormEvent) => {
@@ -140,6 +174,12 @@ export default function PassLogin({ initialUsn = '', settings, onUnlocked }: Pas
       }
 
       setUnlockedPass(data.attendee);
+      setTimeout(() => {
+        setShowContributionModal(true);
+      }, 2000);
+      if (typeof window !== 'undefined') {
+        window.history.pushState({ step: 'pass' }, '');
+      }
       if (onUnlocked) onUnlocked(data.attendee);
     } catch (err: any) {
       setError(err.message);
@@ -152,6 +192,39 @@ export default function PassLogin({ initialUsn = '', settings, onUnlocked }: Pas
   if (unlockedPass) {
     return (
       <div className="animate-fade-in">
+        <ContributionModal
+          isOpen={showContributionModal}
+          onClose={() => setShowContributionModal(false)}
+        />
+
+        {/* Top Back / Generate Fresh Pass button */}
+        <div style={{ marginBottom: 16 }}>
+          <button
+            type="button"
+            onClick={handleResetToFreshPass}
+            className="btn-neo-outline"
+            style={{ 
+              width: '100%', 
+              padding: '12px 16px',
+              background: '#FFFFFF',
+              color: 'var(--color-navy, #0A192F)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              fontWeight: 800,
+              fontSize: '0.82rem',
+              letterSpacing: '1px',
+              borderRadius: 8,
+              border: '1.5px solid var(--border-color)',
+              cursor: 'pointer'
+            }}
+          >
+            <ArrowLeft size={16} />
+            GENERATE ANOTHER FRESH PASS ↗
+          </button>
+        </div>
+
         <div style={{
           padding: '16px 20px',
           background: 'var(--accent-sage)',
@@ -169,16 +242,23 @@ export default function PassLogin({ initialUsn = '', settings, onUnlocked }: Pas
         <div style={{ marginTop: 20, textAlign: 'center' }}>
           <button
             type="button"
-            onClick={() => {
-              setUnlockedPass(null);
-              setMatchedAttendee(null);
-              setUsn('');
-              setOtpSent(false);
-            }}
+            onClick={handleResetToFreshPass}
             className="btn-neo-outline"
-            style={{ width: '100%' }}
+            style={{ 
+              width: '100%',
+              padding: '14px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              fontWeight: 800,
+              fontSize: '0.85rem',
+              borderRadius: 8,
+              cursor: 'pointer'
+            }}
           >
-            RETRIEVE ANOTHER PASS ↗
+            <ArrowLeft size={16} />
+            GENERATE ANOTHER FRESH PASS ↗
           </button>
         </div>
       </div>

@@ -8,7 +8,8 @@ import {
   Clock, 
   XCircle, 
   Download, 
-  Printer, 
+  Mail, 
+  Loader2, 
   ShieldCheck, 
   Users
 } from 'lucide-react';
@@ -21,6 +22,34 @@ interface TicketCardProps {
 export default function TicketCard({ attendee, settings }: TicketCardProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [liveClock, setLiveClock] = useState<string>('');
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailSuccess, setEmailSuccess] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const autoEmailTriggeredRef = useRef(false);
+
+  // Automatically deliver pass to alumnus email upon approval
+  useEffect(() => {
+    if (attendee.status === 'APPROVED' && attendee.id && attendee.email && !autoEmailTriggeredRef.current) {
+      autoEmailTriggeredRef.current = true;
+      fetch('/api/alumni/send-pass-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          attendeeId: attendee.id,
+          email: attendee.email,
+        }),
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setEmailSuccess(`Pass automatically delivered with QR code to ${data.targetEmail || attendee.email}`);
+        }
+      })
+      .catch(err => {
+        console.error('Auto email dispatch notification:', err);
+      });
+    }
+  }, [attendee.status, attendee.id, attendee.email]);
 
   // Live anti-screenshot moving security clock
   useEffect(() => {
@@ -59,18 +88,152 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
     }
   }, [attendee]);
 
-  const handlePrint = () => {
-    if (typeof window !== 'undefined') {
-      window.print();
+  // Mandatory high-resolution digital pass download
+  const handleDownloadPass = () => {
+    if (!canvasRef.current) return;
+    try {
+      const qrCanvas = canvasRef.current;
+      const width = 640;
+      const height = 940;
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('No 2d context');
+
+      // Card Background
+      ctx.fillStyle = '#0A192F';
+      ctx.fillRect(0, 0, width, height);
+
+      // Gold Outer Border
+      ctx.strokeStyle = '#F5B82E';
+      ctx.lineWidth = 6;
+      ctx.strokeRect(14, 14, width - 28, height - 28);
+
+      // Header Box
+      ctx.fillStyle = '#07152B';
+      ctx.fillRect(20, 20, width - 40, 140);
+      ctx.strokeStyle = '#1E3A8A';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(20, 20, width - 40, 140);
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 36px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('MILAN 2026', width / 2, 75);
+
+      ctx.fillStyle = '#93C5FD';
+      ctx.font = 'bold 14px monospace';
+      ctx.fillText('DON BOSCO INSTITUTE OF TECHNOLOGY', width / 2, 106);
+
+      ctx.fillStyle = '#F5B82E';
+      ctx.font = 'bold 12px monospace';
+      ctx.fillText('OFFICIAL ALUMNI DIGITAL ENTRY PASS', width / 2, 134);
+
+      // Attendee Info Box
+      ctx.fillStyle = '#112240';
+      ctx.fillRect(40, 185, width - 80, 135);
+      ctx.strokeStyle = '#1E3A8A';
+      ctx.strokeRect(40, 185, width - 80, 135);
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 26px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(attendee.fullName.toUpperCase(), width / 2, 230);
+
+      ctx.fillStyle = '#F5B82E';
+      ctx.font = 'bold 20px monospace';
+      ctx.fillText(`USN: ${attendee.usn || attendee.rollNumber}`, width / 2, 266);
+
+      ctx.fillStyle = '#CBD5E1';
+      ctx.font = '15px sans-serif';
+      ctx.fillText(`${attendee.department || 'Engineering'} · ${attendee.year || 'Alumni'}`, width / 2, 298);
+
+      // QR Box
+      const qrBoxSize = 300;
+      const qrX = (width - qrBoxSize) / 2;
+      const qrY = 345;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(qrX, qrY, qrBoxSize, qrBoxSize);
+      ctx.strokeStyle = '#F5B82E';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(qrX, qrY, qrBoxSize, qrBoxSize);
+
+      ctx.drawImage(qrCanvas, qrX + 15, qrY + 15, qrBoxSize - 30, qrBoxSize - 30);
+
+      // Security Details
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 18px monospace';
+      ctx.fillText(`CODE: ${attendee.ticketCode}`, width / 2, 680);
+
+      ctx.fillStyle = '#94A3B8';
+      ctx.font = '12px monospace';
+      ctx.fillText('PRESENT AT SECURITY GATE FOR WRISTBAND', width / 2, 706);
+
+      // Event Info Box
+      ctx.fillStyle = '#1E3A8A';
+      ctx.fillRect(40, 735, width - 80, 85);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 17px sans-serif';
+      ctx.fillText('📅 7 NOVEMBER 2026 · ⏰ 3:00 PM', width / 2, 770);
+      ctx.fillStyle = '#FCD34D';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillText('📍 DBIT CRICKET GROUND, BANGALORE', width / 2, 800);
+
+      // Footer
+      ctx.fillStyle = '#64748B';
+      ctx.font = '11px monospace';
+      ctx.fillText('DBIT ALUMNI ASSOCIATION · RECONNECTING RELATIONS', width / 2, 865);
+      ctx.fillText('ONE IDENTITY · ONE VERIFIED PASS · NON-TRANSFERABLE', width / 2, 890);
+
+      const link = document.createElement('a');
+      link.download = `MILAN2026_Pass_${attendee.usn || attendee.rollNumber}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (e) {
+      if (canvasRef.current) {
+        const link = document.createElement('a');
+        link.download = `MILAN2026_Pass_${attendee.usn || attendee.rollNumber}.png`;
+        link.href = canvasRef.current.toDataURL('image/png');
+        link.click();
+      }
     }
   };
 
-  const handleDownloadImage = () => {
-    if (!canvasRef.current) return;
-    const link = document.createElement('a');
-    link.download = `ChronosFest_Ticket_${attendee.rollNumber}.png`;
-    link.href = canvasRef.current.toDataURL('image/png');
-    link.click();
+  // Deliver pass to alumnus email
+  const handleDeliverEmail = async () => {
+    if (!attendee.id) return;
+    setSendingEmail(true);
+    setEmailSuccess(null);
+    setEmailError(null);
+
+    try {
+      let qrDataUrl = '';
+      if (canvasRef.current) {
+        qrDataUrl = canvasRef.current.toDataURL('image/png');
+      }
+
+      const res = await fetch('/api/alumni/send-pass-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          attendeeId: attendee.id,
+          email: attendee.email,
+          qrDataUrl,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to dispatch pass to email.');
+      }
+
+      setEmailSuccess(`Official pass with QR code delivered to ${data.targetEmail || attendee.email}!`);
+    } catch (err: any) {
+      setEmailError(err.message || 'Delivery failed. Please try again.');
+    } finally {
+      setSendingEmail(false);
+    }
   };
 
   const isApproved = attendee.status === 'APPROVED';
@@ -314,24 +477,93 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
         }} className="no-print">
           <button
             type="button"
-            onClick={handleDownloadImage}
+            onClick={handleDownloadPass}
             disabled={!isApproved}
-            className="btn-neo-outline"
-            style={{ border: 'none', borderRight: '1px solid var(--border-black)', padding: '14px' }}
+            className="btn-neo-black"
+            style={{ 
+              border: 'none', 
+              borderRight: '1px solid var(--border-black)', 
+              padding: '16px 12px',
+              background: 'var(--color-navy, #0A192F)',
+              color: '#FFFFFF',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.82rem',
+              fontWeight: 800,
+              cursor: isApproved ? 'pointer' : 'not-allowed',
+            }}
           >
-            <Download size={15} />
-            DOWNLOAD ↗
+            <Download size={16} />
+            SAVE AS IMAGE (PNG) ↗
           </button>
           <button
             type="button"
-            onClick={handlePrint}
-            className="btn-neo-black"
-            style={{ border: 'none', padding: '14px' }}
+            onClick={handleDeliverEmail}
+            disabled={!isApproved || sendingEmail}
+            className="btn-neo-outline"
+            style={{ 
+              border: 'none', 
+              padding: '16px 12px',
+              background: '#FFFFFF',
+              color: 'var(--color-navy, #0A192F)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.82rem',
+              fontWeight: 800,
+              cursor: isApproved && !sendingEmail ? 'pointer' : 'not-allowed',
+            }}
           >
-            <Printer size={15} />
-            PRINT / PDF ↗
+            {sendingEmail ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                SENDING...
+              </>
+            ) : (
+              <>
+                <Mail size={16} />
+                {emailSuccess ? 'RESEND TO EMAIL ↗' : 'DELIVER TO EMAIL ↗'}
+              </>
+            )}
           </button>
         </div>
+
+        {/* Email delivery feedback */}
+        {emailSuccess && (
+          <div style={{ 
+            padding: '12px 16px', 
+            background: '#ECFDF5', 
+            borderTop: '1px solid #A7F3D0', 
+            color: '#065F46', 
+            fontFamily: 'var(--font-mono)', 
+            fontSize: '0.8rem', 
+            fontWeight: 700, 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 8 
+          }}>
+            <CheckCircle2 size={16} color="#059669" />
+            {emailSuccess}
+          </div>
+        )}
+        {emailError && (
+          <div style={{ 
+            padding: '12px 16px', 
+            background: '#FEF2F2', 
+            borderTop: '1px solid #FECACA', 
+            color: '#991B1B', 
+            fontFamily: 'var(--font-mono)', 
+            fontSize: '0.8rem', 
+            fontWeight: 700 
+          }}>
+            {emailError}
+          </div>
+        )}
       </div>
     </div>
   );

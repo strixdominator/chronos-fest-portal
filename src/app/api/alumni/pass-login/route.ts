@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createOtp, verifyOtp, findAlumnusByUsn, maskEmail, maskPhone } from '@/lib/alumni';
 import { getAttendees } from '@/lib/db';
-import { sendEmailOtp, sendSmsOtp } from '@/lib/notifications';
+import { sendEmailOtp, sendSmsOtp, sendEmailPass } from '@/lib/notifications';
+import QRCode from 'qrcode';
 import { getClientIp, checkOtpDispatchLimits, checkOtpVerifyAttempts, recordFailedOtpAttempt, resetFailedOtpAttempts } from '@/lib/rateLimit';
 
 // POST: Handles both 'SEND_OTP' and 'VERIFY_OTP' for logging into already claimed passes
@@ -141,7 +142,31 @@ export async function POST(request: NextRequest) {
 
       resetFailedOtpAttempts(cleanedUsn);
 
-      // Security check passed! Return the full unlocked attendee pass
+      // Security check passed! Automatically deliver pass to email
+      if (attendee?.email) {
+        const passUrl = `${request.nextUrl.origin}/ticket/${attendee.id}`;
+        QRCode.toDataURL(passUrl, {
+          width: 300,
+          margin: 2,
+          color: { dark: '#0a0a0a', light: '#ffffff' },
+          errorCorrectionLevel: 'H',
+        }).then((qrDataUrl) => {
+          return sendEmailPass({
+            toEmail: attendee.email,
+            recipientName: attendee.fullName,
+            usn: attendee.usn || attendee.rollNumber,
+            ticketCode: attendee.ticketCode,
+            department: attendee.department,
+            year: attendee.year,
+            qrDataUrl,
+            passUrl,
+          });
+        }).catch(err => {
+          console.error('Error auto-dispatching pass email on unlock:', err);
+        });
+      }
+
+      // Return the full unlocked attendee pass
       return NextResponse.json({
         success: true,
         message: 'Identity verified successfully! Pass unlocked.',

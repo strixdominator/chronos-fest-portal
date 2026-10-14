@@ -383,3 +383,241 @@ export async function sendSmsOtp({
     message: 'SMS Simulation Mode. Configure FAST2SMS_API_KEY or TWILIO credentials in .env.local for real SMS.',
   };
 }
+
+export interface EmailPassParams {
+  toEmail: string;
+  recipientName: string;
+  usn: string;
+  ticketCode: string;
+  department?: string;
+  year?: string;
+  qrDataUrl: string;
+  passUrl?: string;
+}
+
+/**
+ * Dispatches official digital entry pass with QR code directly to alumnus email.
+ */
+export async function sendEmailPass({
+  toEmail,
+  recipientName,
+  usn,
+  ticketCode,
+  department = 'Engineering',
+  year = '2026',
+  qrDataUrl,
+  passUrl,
+}: EmailPassParams): Promise<NotificationResult> {
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPassword = process.env.GMAIL_APP_PASSWORD;
+  const resendKey = process.env.RESEND_API_KEY;
+  const brevoKey = process.env.BREVO_API_KEY;
+  const gmailRelayUrl = process.env.GMAIL_RELAY_URL || process.env.GMAIL_WEBHOOK_URL;
+
+  const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Your MILAN 2026 Official Entry Pass</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #06101E; margin: 0; padding: 20px; color: #f8fafc; }
+    .card { max-width: 560px; margin: 0 auto; background: #0A192F; border: 2px solid #1E3A8A; border-radius: 8px; overflow: hidden; }
+    .header { background: #07152B; padding: 26px 20px; text-align: center; color: #ffffff; border-bottom: 2px solid #F5B82E; }
+    .header h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #FFFFFF; }
+    .header p { margin: 6px 0 0; font-size: 13px; font-weight: 600; color: #93C5FD; letter-spacing: 1.5px; }
+    .badge { display: inline-block; background: #F5B82E; color: #07152B; padding: 4px 12px; font-weight: 800; font-size: 11px; letter-spacing: 1px; margin-top: 10px; border-radius: 4px; text-transform: uppercase; }
+    .content { padding: 28px 24px; text-align: center; }
+    .name { font-size: 22px; font-weight: 800; color: #FFFFFF; margin-bottom: 4px; }
+    .usn { font-family: monospace; font-size: 16px; color: #F5B82E; font-weight: 700; margin-bottom: 14px; }
+    .details { background: #112240; border: 1px solid #1E3A8A; padding: 14px; border-radius: 6px; text-align: left; margin: 18px 0; font-size: 13px; line-height: 1.6; color: #CBD5E1; }
+    .qr-box { background: #FFFFFF; padding: 16px; display: inline-block; border: 3px solid #F5B82E; border-radius: 8px; margin: 14px auto; }
+    .qr-img { display: block; width: 220px; height: 220px; margin: 0 auto; }
+    .notice { font-size: 12px; color: #94A3B8; margin-top: 14px; line-height: 1.5; }
+    .event-info { background: #1E3A8A; color: #FFFFFF; padding: 12px; border-radius: 6px; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; margin: 16px 0; }
+    .btn { display: inline-block; background: #F5B82E; color: #07152B; padding: 12px 28px; font-weight: 800; text-decoration: none; border-radius: 6px; font-size: 13px; letter-spacing: 1px; margin-top: 12px; }
+    .footer { border-top: 1px solid #1E3A8A; padding: 18px; text-align: center; font-size: 11px; color: #64748B; background: #06101E; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h1>MILAN 2026</h1>
+      <p>DON BOSCO INSTITUTE OF TECHNOLOGY</p>
+      <div class="badge">OFFICIAL ALUMNI DIGITAL PASS</div>
+    </div>
+    <div class="content">
+      <div class="name">${recipientName}</div>
+      <div class="usn">USN: ${usn}</div>
+
+      <div class="qr-box">
+        <img src="${qrDataUrl}" alt="Milan 2026 QR Entry Pass" class="qr-img" />
+      </div>
+
+      <div class="event-info">
+        📅 7 NOVEMBER 2026 · ⏰ 3:00 PM<br>
+        📍 DBIT CRICKET GROUND, MYSORE ROAD, BANGALORE
+      </div>
+
+      <div class="details">
+        <strong>TICKET CODE:</strong> ${ticketCode}<br>
+        <strong>DEPARTMENT:</strong> ${department}<br>
+        <strong>BATCH:</strong> ${year}<br>
+        <strong>ADMISSION:</strong> 1 PERSON · NON-TRANSFERABLE
+      </div>
+
+      <div class="notice">
+        ⚡ <strong>Gate Security Instruction:</strong> Present this QR Code directly from your smartphone or printout at the verification gate for immediate wristband issuance.
+      </div>
+
+      ${passUrl ? `<a href="${passUrl}" class="btn" target="_blank">VIEW DIGITAL PASS ONLINE ↗</a>` : ''}
+    </div>
+    <div class="footer">
+      DBIT ALUMNI ASSOCIATION (R) · RECONNECTING RELATIONS<br>
+      Kumbalagodu, Mysore Road, Bengaluru – 560074, India
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  // METHOD 1: Resend HTTP REST API
+  if (resendKey && resendKey.trim()) {
+    try {
+      const fromEmail = process.env.RESEND_FROM || 'MILAN 2026 <onboarding@resend.dev>';
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${resendKey.trim()}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: fromEmail,
+          to: [toEmail],
+          subject: `Your MILAN 2026 Official Entry Pass & QR Code (${usn})`,
+          html: htmlContent,
+        }),
+      });
+
+      const resData = await res.json();
+      if (res.ok && resData.id) {
+        console.log(`[RESEND PASS SENT] ID: ${resData.id} to ${toEmail}`);
+        return {
+          success: true,
+          isReal: true,
+          provider: 'RESEND',
+          message: `Official Pass with QR Code delivered to ${toEmail} via Resend!`,
+        };
+      }
+    } catch (err: any) {
+      console.error('[RESEND PASS ERROR]', err.message);
+    }
+  }
+
+  // METHOD 2: Brevo HTTP REST API
+  if (brevoKey && brevoKey.trim()) {
+    try {
+      const senderEmail = process.env.BREVO_SENDER || gmailUser || 'telegramuserkishan@gmail.com';
+      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': brevoKey.trim(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sender: { name: 'MILAN 2026', email: senderEmail },
+          to: [{ email: toEmail, name: recipientName }],
+          subject: `Your MILAN 2026 Official Entry Pass & QR Code (${usn})`,
+          htmlContent: htmlContent,
+        }),
+      });
+
+      const resData = await res.json();
+      if (res.ok && (resData.messageId || resData.id)) {
+        console.log(`[BREVO PASS SENT] to ${toEmail}`);
+        return {
+          success: true,
+          isReal: true,
+          provider: 'BREVO',
+          message: `Official Pass with QR Code delivered to ${toEmail} via Brevo!`,
+        };
+      }
+    } catch (err: any) {
+      console.error('[BREVO PASS ERROR]', err.message);
+    }
+  }
+
+  // METHOD 3: Gmail Webhook Relay
+  if (gmailRelayUrl && gmailRelayUrl.trim()) {
+    try {
+      const res = await fetch(gmailRelayUrl.trim(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: toEmail,
+          subject: `Your MILAN 2026 Official Entry Pass & QR Code (${usn})`,
+          html: htmlContent,
+          text: `Hello ${recipientName},\nYour MILAN 2026 Entry Pass code is ${ticketCode} for USN ${usn}.\nDate: 7 November 2026 at DBIT Cricket Ground.\nView online: ${passUrl || 'https://milan2026.dbit.co.in'}`,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        return {
+          success: true,
+          isReal: true,
+          provider: 'GMAIL_RELAY',
+          message: `Pass delivered to ${toEmail} via Gmail Relay!`,
+        };
+      }
+    } catch (err: any) {
+      console.error('[GMAIL RELAY PASS ERROR]', err.message);
+    }
+  }
+
+  // METHOD 4: Direct Nodemailer Gmail SMTP
+  if (gmailUser && gmailPassword) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port: Number(process.env.SMTP_PORT) || 465,
+        secure: process.env.SMTP_SECURE ? process.env.SMTP_SECURE === 'true' : true,
+        auth: {
+          user: gmailUser,
+          pass: gmailPassword.replace(/\s+/g, ''),
+        },
+        tls: { rejectUnauthorized: false },
+        family: 4,
+        connectionTimeout: 4000,
+        socketTimeout: 6000,
+      } as any);
+
+      await transporter.sendMail({
+        from: `"MILAN 2026" <${gmailUser}>`,
+        to: toEmail,
+        subject: `Your MILAN 2026 Official Entry Pass & QR Code (${usn})`,
+        html: htmlContent,
+        text: `Hello ${recipientName},\nYour MILAN 2026 Entry Pass code is ${ticketCode} for USN ${usn}.\nDate: 7 November 2026 at DBIT Cricket Ground.\nView pass: ${passUrl || ''}`,
+      });
+
+      console.log(`[REAL GMAIL SMTP PASS SENT] Successfully delivered pass to ${toEmail} for ${usn}`);
+      return {
+        success: true,
+        isReal: true,
+        provider: 'GMAIL_SMTP',
+        message: `Official Pass with QR Code delivered to ${toEmail}!`,
+      };
+    } catch (error: any) {
+      console.error('[GMAIL SMTP PASS ERROR]', error.message);
+    }
+  }
+
+  // Fallback simulation
+  console.log(`[PASS EMAIL SIMULATION] To: ${toEmail} | Alumnus: ${recipientName} (${usn}) | Code: ${ticketCode}`);
+  return {
+    success: true,
+    isReal: false,
+    provider: 'SIMULATION',
+    message: `Pass simulated for ${toEmail}. For live email dispatch, verify BREVO_API_KEY, RESEND_API_KEY or GMAIL in .env.local.`,
+  };
+}
+

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyOtp, findAlumnusByUsn, createVerifiedSession, verifySessionToken, getSessionData } from '@/lib/alumni';
 import { createAttendee } from '@/lib/db';
 import { getClientIp, checkRateLimit, checkOtpVerifyAttempts, recordFailedOtpAttempt, resetFailedOtpAttempts } from '@/lib/rateLimit';
+import QRCode from 'qrcode';
+import { sendEmailPass } from '@/lib/notifications';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -146,6 +148,31 @@ export async function POST(request: NextRequest) {
 
     if (!result.success) {
       return NextResponse.json({ success: false, error: result.error }, { status: 400 });
+    }
+
+    // Automatically deliver pass to email
+    if (result.attendee?.email) {
+      const attendee = result.attendee;
+      const passUrl = `${request.nextUrl.origin}/ticket/${attendee.id}`;
+      QRCode.toDataURL(passUrl, {
+        width: 300,
+        margin: 2,
+        color: { dark: '#0a0a0a', light: '#ffffff' },
+        errorCorrectionLevel: 'H',
+      }).then((qrDataUrl) => {
+        return sendEmailPass({
+          toEmail: attendee.email,
+          recipientName: attendee.fullName,
+          usn: attendee.usn || attendee.rollNumber,
+          ticketCode: attendee.ticketCode,
+          department: attendee.department,
+          year: attendee.year,
+          qrDataUrl,
+          passUrl,
+        });
+      }).catch(err => {
+        console.error('Error auto-dispatching pass email:', err);
+      });
     }
 
     return NextResponse.json({
