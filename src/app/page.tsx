@@ -54,6 +54,11 @@ export default function HomePage() {
         .catch(err => console.error("Error fetching stats:", err));
     };
 
+    // Ensure page opens at the very top including the header banner
+    if (typeof window !== 'undefined' && !window.location.hash) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+
     loadStats();
     const interval = setInterval(loadStats, 5000);
     return () => clearInterval(interval);
@@ -104,18 +109,6 @@ export default function HomePage() {
           <p className="dbit-hero-description">
             Every pass is matched against official alumni records. One identity, one verified pass — no screenshots, no transfers.
           </p>
-
-          {/* Live Stats Cards */}
-          <div className="dbit-hero-stats">
-            <div className="dbit-stat-card">
-              <div className="dbit-stat-number">{stats.total}</div>
-              <div className="dbit-stat-label">PASSES CLAIMED</div>
-            </div>
-            <div className="dbit-stat-card">
-              <div className="dbit-stat-number">100%</div>
-              <div className="dbit-stat-label">VERIFIED ALUMNI</div>
-            </div>
-          </div>
         </div>
 
         {/* Hero Right Column (Claim & Find Portal Card) */}

@@ -594,7 +594,6 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
                 value={usnInput}
                 onChange={e => setUsnInput(e.target.value.toUpperCase())}
                 disabled={lookingUp}
-                autoFocus
               />
               <button type="submit" disabled={lookingUp || !usnInput.trim()}>
                 {lookingUp ? (

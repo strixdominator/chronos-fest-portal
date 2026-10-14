@@ -37,19 +37,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const forwardedHost = request.headers.get('x-forwarded-host');
+    const host = forwardedHost || request.headers.get('host');
+    const proto = request.headers.get('x-forwarded-proto') || 'https';
+    const liveOrigin = (process.env.NEXT_PUBLIC_APP_URL || (host && !host.includes('localhost') && !host.includes('127.0.0.1') ? `${proto}://${host}` : 'https://milan202622.onrender.com')).replace(/\/$/, '');
+    const passUrl = `${liveOrigin}/ticket/${attendee.id}`;
+
     // Generate QR Data URL if not provided by client
     let finalQrDataUrl = qrDataUrl;
     if (!finalQrDataUrl) {
-      const qrPayload = `${request.nextUrl.origin}/ticket/${attendee.id}`;
-      finalQrDataUrl = await QRCode.toDataURL(qrPayload, {
+      finalQrDataUrl = await QRCode.toDataURL(passUrl, {
         width: 300,
         margin: 2,
         color: { dark: '#0a0a0a', light: '#ffffff' },
         errorCorrectionLevel: 'H',
       });
     }
-
-    const passUrl = `${request.nextUrl.origin}/ticket/${attendee.id}`;
 
     const result = await sendEmailPass({
       toEmail: targetEmail,

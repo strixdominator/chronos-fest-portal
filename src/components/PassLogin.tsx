@@ -297,7 +297,6 @@ export default function PassLogin({ initialUsn = '', settings, onUnlocked }: Pas
                 value={usn}
                 onChange={e => setUsn(e.target.value.toUpperCase())}
                 disabled={searching}
-                autoFocus
               />
               <button type="submit" disabled={searching || !usn.trim()}>
                 {searching ? (

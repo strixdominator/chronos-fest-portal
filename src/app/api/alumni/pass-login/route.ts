@@ -144,7 +144,11 @@ export async function POST(request: NextRequest) {
 
       // Security check passed! Automatically deliver pass to email
       if (attendee?.email) {
-        const passUrl = `${request.nextUrl.origin}/ticket/${attendee.id}`;
+        const forwardedHost = request.headers.get('x-forwarded-host');
+        const host = forwardedHost || request.headers.get('host');
+        const proto = request.headers.get('x-forwarded-proto') || 'https';
+        const liveOrigin = (process.env.NEXT_PUBLIC_APP_URL || (host && !host.includes('localhost') && !host.includes('127.0.0.1') ? `${proto}://${host}` : 'https://milan202622.onrender.com')).replace(/\/$/, '');
+        const passUrl = `${liveOrigin}/ticket/${attendee.id}`;
         QRCode.toDataURL(passUrl, {
           width: 300,
           margin: 2,

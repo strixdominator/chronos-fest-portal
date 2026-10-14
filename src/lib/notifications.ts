@@ -414,6 +414,19 @@ export async function sendEmailPass({
   const brevoKey = process.env.BREVO_API_KEY;
   const gmailRelayUrl = process.env.GMAIL_RELAY_URL || process.env.GMAIL_WEBHOOK_URL;
 
+  // Ensure production live URL for online pass button (never localhost)
+  const fallbackDomain = 'https://milan202622.onrender.com';
+  let effectivePassUrl = passUrl && !passUrl.includes('localhost') && !passUrl.includes('127.0.0.1')
+    ? passUrl
+    : (process.env.NEXT_PUBLIC_APP_URL || fallbackDomain).replace(/\/$/, '') + `/ticket/${ticketCode}`;
+  
+  if (effectivePassUrl.includes('localhost') || effectivePassUrl.includes('127.0.0.1')) {
+    effectivePassUrl = `${fallbackDomain}/ticket/${ticketCode}`;
+  }
+
+  // Use HTTPS QR server URL so Gmail and all mail clients load it reliably (Gmail strips base64 data URIs)
+  const onlineQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=${encodeURIComponent(effectivePassUrl)}`;
+
   const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -435,7 +448,7 @@ export async function sendEmailPass({
     .qr-img { display: block; width: 220px; height: 220px; margin: 0 auto; }
     .notice { font-size: 12px; color: #94A3B8; margin-top: 14px; line-height: 1.5; }
     .event-info { background: #1E3A8A; color: #FFFFFF; padding: 12px; border-radius: 6px; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; margin: 16px 0; }
-    .btn { display: inline-block; background: #F5B82E; color: #07152B; padding: 12px 28px; font-weight: 800; text-decoration: none; border-radius: 6px; font-size: 13px; letter-spacing: 1px; margin-top: 12px; }
+    .btn { display: inline-block; background: #F5B82E; color: #07152B; padding: 14px 28px; font-weight: 800; text-decoration: none; border-radius: 6px; font-size: 13px; letter-spacing: 1px; margin-top: 14px; }
     .footer { border-top: 1px solid #1E3A8A; padding: 18px; text-align: center; font-size: 11px; color: #64748B; background: #06101E; }
   </style>
 </head>
@@ -451,7 +464,7 @@ export async function sendEmailPass({
       <div class="usn">USN: ${usn}</div>
 
       <div class="qr-box">
-        <img src="${qrDataUrl}" alt="Milan 2026 QR Entry Pass" class="qr-img" />
+        <img src="${onlineQrUrl}" alt="Milan 2026 QR Entry Pass" class="qr-img" width="220" height="220" style="display:block;margin:0 auto;width:220px;height:220px;border:0;" />
       </div>
 
       <div class="event-info">
@@ -470,7 +483,11 @@ export async function sendEmailPass({
         ⚡ <strong>Gate Security Instruction:</strong> Present this QR Code directly from your smartphone or printout at the verification gate for immediate wristband issuance.
       </div>
 
-      ${passUrl ? `<a href="${passUrl}" class="btn" target="_blank">VIEW DIGITAL PASS ONLINE ↗</a>` : ''}
+      <div style="margin-top: 18px;">
+        <a href="${effectivePassUrl}" class="btn" target="_blank" style="display:inline-block;background:#F5B82E;color:#07152B;padding:14px 28px;font-weight:800;text-decoration:none;border-radius:6px;font-size:13px;letter-spacing:1px;">
+          CLICK HERE FOR ONLINE PASS ↗
+        </a>
+      </div>
     </div>
     <div class="footer">
       DBIT ALUMNI ASSOCIATION (R) · RECONNECTING RELATIONS<br>

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
+import jsPDF from 'jspdf';
 import { Attendee, EventSettings } from '@/lib/types';
 import { 
   CheckCircle2, 
@@ -11,7 +12,8 @@ import {
   Mail, 
   Loader2, 
   ShieldCheck, 
-  Users
+  Users,
+  FileText
 } from 'lucide-react';
 
 interface TicketCardProps {
@@ -25,7 +27,9 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSuccess, setEmailSuccess] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [pdfDownloaded, setPdfDownloaded] = useState(false);
   const autoEmailTriggeredRef = useRef(false);
+  const autoPdfDownloadedRef = useRef(false);
 
   // Automatically deliver pass to alumnus email upon approval
   useEffect(() => {
@@ -88,116 +92,135 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
     }
   }, [attendee]);
 
-  // Mandatory high-resolution digital pass download
-  const handleDownloadPass = () => {
-    if (!canvasRef.current) return;
+  // Generate and download official pass in PDF format
+  const handleDownloadPdfPass = () => {
     try {
-      const qrCanvas = canvasRef.current;
-      const width = 640;
-      const height = 940;
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('No 2d context');
+      const qrDataUrl = canvasRef.current ? canvasRef.current.toDataURL('image/png') : '';
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: [105, 148], // A6 Pass format
+      });
 
-      // Card Background
-      ctx.fillStyle = '#0A192F';
-      ctx.fillRect(0, 0, width, height);
+      // Background Navy
+      doc.setFillColor(10, 25, 47);
+      doc.rect(0, 0, 105, 148, 'F');
 
       // Gold Outer Border
-      ctx.strokeStyle = '#F5B82E';
-      ctx.lineWidth = 6;
-      ctx.strokeRect(14, 14, width - 28, height - 28);
+      doc.setDrawColor(245, 184, 46);
+      doc.setLineWidth(1.2);
+      doc.rect(4, 4, 97, 140);
 
-      // Header Box
-      ctx.fillStyle = '#07152B';
-      ctx.fillRect(20, 20, width - 40, 140);
-      ctx.strokeStyle = '#1E3A8A';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(20, 20, width - 40, 140);
+      // Header Banner Box
+      doc.setFillColor(7, 21, 43);
+      doc.rect(6, 6, 93, 24, 'F');
+      doc.setDrawColor(30, 58, 138);
+      doc.setLineWidth(0.4);
+      doc.rect(6, 6, 93, 24);
 
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 36px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('MILAN 2026', width / 2, 75);
+      // Header Text
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.text('MILAN 2026', 52.5, 13, { align: 'center' });
 
-      ctx.fillStyle = '#93C5FD';
-      ctx.font = 'bold 14px monospace';
-      ctx.fillText('DON BOSCO INSTITUTE OF TECHNOLOGY', width / 2, 106);
+      doc.setTextColor(147, 197, 253);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(6.5);
+      doc.text('DON BOSCO INSTITUTE OF TECHNOLOGY', 52.5, 17.5, { align: 'center' });
 
-      ctx.fillStyle = '#F5B82E';
-      ctx.font = 'bold 12px monospace';
-      ctx.fillText('OFFICIAL ALUMNI DIGITAL ENTRY PASS', width / 2, 134);
+      doc.setTextColor(245, 184, 46);
+      doc.setFont('courier', 'bold');
+      doc.setFontSize(6.5);
+      doc.text('OFFICIAL ALUMNI DIGITAL ENTRY PASS', 52.5, 22, { align: 'center' });
 
       // Attendee Info Box
-      ctx.fillStyle = '#112240';
-      ctx.fillRect(40, 185, width - 80, 135);
-      ctx.strokeStyle = '#1E3A8A';
-      ctx.strokeRect(40, 185, width - 80, 135);
+      doc.setFillColor(17, 34, 64);
+      doc.rect(8, 33, 89, 23, 'F');
+      doc.setDrawColor(30, 58, 138);
+      doc.rect(8, 33, 89, 23);
 
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 26px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(attendee.fullName.toUpperCase(), width / 2, 230);
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10.5);
+      doc.text(attendee.fullName.toUpperCase(), 52.5, 40, { align: 'center' });
 
-      ctx.fillStyle = '#F5B82E';
-      ctx.font = 'bold 20px monospace';
-      ctx.fillText(`USN: ${attendee.usn || attendee.rollNumber}`, width / 2, 266);
+      doc.setTextColor(245, 184, 46);
+      doc.setFont('courier', 'bold');
+      doc.setFontSize(9);
+      doc.text(`USN: ${attendee.usn || attendee.rollNumber}`, 52.5, 46, { align: 'center' });
 
-      ctx.fillStyle = '#CBD5E1';
-      ctx.font = '15px sans-serif';
-      ctx.fillText(`${attendee.department || 'Engineering'} · ${attendee.year || 'Alumni'}`, width / 2, 298);
+      doc.setTextColor(203, 213, 225);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.text(`${attendee.department || 'Engineering'} · ${attendee.year || 'Alumni'}`, 52.5, 51, { align: 'center' });
 
-      // QR Box
-      const qrBoxSize = 300;
-      const qrX = (width - qrBoxSize) / 2;
-      const qrY = 345;
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(qrX, qrY, qrBoxSize, qrBoxSize);
-      ctx.strokeStyle = '#F5B82E';
-      ctx.lineWidth = 4;
-      ctx.strokeRect(qrX, qrY, qrBoxSize, qrBoxSize);
+      // QR Code Box
+      const qrSize = 46;
+      const qrX = (105 - qrSize) / 2;
+      const qrY = 59;
+      doc.setFillColor(255, 255, 255);
+      doc.rect(qrX - 1.5, qrY - 1.5, qrSize + 3, qrSize + 3, 'F');
+      doc.setDrawColor(245, 184, 46);
+      doc.setLineWidth(0.8);
+      doc.rect(qrX - 1.5, qrY - 1.5, qrSize + 3, qrSize + 3);
 
-      ctx.drawImage(qrCanvas, qrX + 15, qrY + 15, qrBoxSize - 30, qrBoxSize - 30);
+      if (qrDataUrl) {
+        doc.addImage(qrDataUrl, 'PNG', qrX, qrY, qrSize, qrSize);
+      }
 
       // Security Details
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 18px monospace';
-      ctx.fillText(`CODE: ${attendee.ticketCode}`, width / 2, 680);
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('courier', 'bold');
+      doc.setFontSize(8);
+      doc.text(`CODE: ${attendee.ticketCode}`, 52.5, 110, { align: 'center' });
 
-      ctx.fillStyle = '#94A3B8';
-      ctx.font = '12px monospace';
-      ctx.fillText('PRESENT AT SECURITY GATE FOR WRISTBAND', width / 2, 706);
+      doc.setTextColor(148, 163, 184);
+      doc.setFontSize(5.5);
+      doc.text('PRESENT AT SECURITY GATE FOR WRISTBAND', 52.5, 114, { align: 'center' });
 
       // Event Info Box
-      ctx.fillStyle = '#1E3A8A';
-      ctx.fillRect(40, 735, width - 80, 85);
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 17px sans-serif';
-      ctx.fillText('📅 7 NOVEMBER 2026 · ⏰ 3:00 PM', width / 2, 770);
-      ctx.fillStyle = '#FCD34D';
-      ctx.font = 'bold 14px sans-serif';
-      ctx.fillText('📍 DBIT CRICKET GROUND, BANGALORE', width / 2, 800);
+      doc.setFillColor(30, 58, 138);
+      doc.rect(8, 117, 89, 13, 'F');
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7.5);
+      doc.text('7 NOVEMBER 2026 · 3:00 PM', 52.5, 122.5, { align: 'center' });
+
+      doc.setTextColor(252, 211, 77);
+      doc.setFontSize(6.5);
+      doc.text('DBIT CRICKET GROUND, BANGALORE', 52.5, 127, { align: 'center' });
 
       // Footer
-      ctx.fillStyle = '#64748B';
-      ctx.font = '11px monospace';
-      ctx.fillText('DBIT ALUMNI ASSOCIATION · RECONNECTING RELATIONS', width / 2, 865);
-      ctx.fillText('ONE IDENTITY · ONE VERIFIED PASS · NON-TRANSFERABLE', width / 2, 890);
+      doc.setTextColor(100, 116, 139);
+      doc.setFont('courier', 'normal');
+      doc.setFontSize(5);
+      doc.text('DBIT ALUMNI ASSOCIATION · RECONNECTING RELATIONS', 52.5, 135, { align: 'center' });
+      doc.text('ONE IDENTITY · ONE VERIFIED PASS · NON-TRANSFERABLE', 52.5, 138, { align: 'center' });
 
-      const link = document.createElement('a');
-      link.download = `MILAN2026_Pass_${attendee.usn || attendee.rollNumber}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
+      // Auto trigger save
+      doc.save(`MILAN2026_Pass_${attendee.usn || attendee.rollNumber}.pdf`);
+      setPdfDownloaded(true);
     } catch (e) {
-      if (canvasRef.current) {
-        const link = document.createElement('a');
-        link.download = `MILAN2026_Pass_${attendee.usn || attendee.rollNumber}.png`;
-        link.href = canvasRef.current.toDataURL('image/png');
-        link.click();
-      }
+      console.error('PDF generation error:', e);
     }
+  };
+
+  // Auto-download PDF pass upon pass approval/render
+  useEffect(() => {
+    if (attendee.status === 'APPROVED' && !autoPdfDownloadedRef.current) {
+      autoPdfDownloadedRef.current = true;
+      const timer = setTimeout(() => {
+        handleDownloadPdfPass();
+      }, 700);
+      return () => clearTimeout(timer);
+    }
+  }, [attendee.status, attendee.id]);
+
+  // Mandatory high-resolution digital pass download (fallback)
+  const handleDownloadPass = () => {
+    handleDownloadPdfPass();
   };
 
   // Deliver pass to alumnus email
@@ -477,7 +500,7 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
         }} className="no-print">
           <button
             type="button"
-            onClick={handleDownloadPass}
+            onClick={handleDownloadPdfPass}
             disabled={!isApproved}
             className="btn-neo-black"
             style={{ 
@@ -497,7 +520,7 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
             }}
           >
             <Download size={16} />
-            SAVE AS IMAGE (PNG) ↗
+            DOWNLOAD PDF PASS ↗
           </button>
           <button
             type="button"
@@ -532,6 +555,25 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
             )}
           </button>
         </div>
+
+        {/* PDF Auto Download Feedback */}
+        {pdfDownloaded && (
+          <div style={{ 
+            padding: '10px 16px', 
+            background: '#EFF6FF', 
+            borderTop: '1px solid #BFDBFE', 
+            color: '#1E40AF', 
+            fontFamily: 'var(--font-mono)', 
+            fontSize: '0.78rem', 
+            fontWeight: 700, 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 8 
+          }}>
+            <CheckCircle2 size={15} color="#2563EB" />
+            <span>Official entry pass automatically downloaded in PDF format!</span>
+          </div>
+        )}
 
         {/* Email delivery feedback */}
         {emailSuccess && (
