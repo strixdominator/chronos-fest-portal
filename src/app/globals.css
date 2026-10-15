@@ -1,25 +1,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
 :root {
-  /* MILAN 2026 DBIT Design System */
-  --bg-page: #F5F8FD;
-  --bg-hero: linear-gradient(180deg, #EAF0FB 0%, #F5F8FD 100%);
+  /* MILAN 2026 DBIT Design System - Dark & Gold Theme */
+  --bg-page: #07060A;
+  --bg-hero: #07060A;
   --bg-card: #FFFFFF;
   --bg-card-alt: #F5F8FD;
   
   --color-navy: #0E1F45;
-  --color-blue: #1E3FB8;
-  --color-blue-hover: #152d88;
-  --color-gold: #C9A24B;
+  --color-blue: #2563EB;
+  --color-blue-hover: #1D4ED8;
+  --color-gold: #F5B82E;
   
-  --text-main: #0E1F45;
-  --text-body: #3C4E73;
-  --text-muted: #5A6B8C;
+  --text-main: #FFFFFF;
+  --text-body: #CBD5E1;
+  --text-muted: #94A3B8;
   --text-light: #FFFFFF;
   
-  --border-color: #DCE4F2;
+  --border-color: rgba(255, 255, 255, 0.12);
   --border-input: #BFCBE3;
-  --border-focus: #1E3FB8;
+  --border-focus: #F5B82E;
   
   --radius-card: 16px;
   --radius-box: 12px;
@@ -186,8 +186,8 @@ input:focus, select:focus, textarea:focus {
    ========================================================================== */
 .dbit-header-banner-container {
   width: 100%;
-  background: #FFFDF7;
-  border-bottom: 1px solid var(--border-color);
+  background: #07060A;
+  border-bottom: none;
   padding: 0;
   margin: 0;
   display: block;
@@ -199,7 +199,7 @@ input:focus, select:focus, textarea:focus {
   max-width: 100%;
   border-radius: 0;
   overflow: hidden;
-  background: transparent;
+  background: #07060A;
   line-height: 0;
   margin: 0;
   padding: 0;
@@ -228,7 +228,7 @@ input:focus, select:focus, textarea:focus {
   flex-wrap: wrap;
   align-items: stretch;
   gap: 0;
-  background: var(--bg-hero);
+  background: #07060A;
   min-height: auto;
 }
 
@@ -251,15 +251,19 @@ input:focus, select:focus, textarea:focus {
 }
 
 .dbit-hero-assoc-logo {
-  width: 132px;
+  width: 108px;
   height: auto;
   display: block;
+  background: #FFFFFF;
+  padding: 6px 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 }
 
 .dbit-hero-meta {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .dbit-hero-tag {
@@ -267,7 +271,7 @@ input:focus, select:focus, textarea:focus {
   font-size: 15px;
   letter-spacing: 2px;
   font-weight: 700;
-  color: var(--color-blue);
+  color: #F5B82E;
   line-height: 1.2;
 }
 
@@ -275,7 +279,7 @@ input:focus, select:focus, textarea:focus {
   display: block;
   width: 56px;
   height: 3.5px;
-  background: var(--color-gold);
+  background: #F5B82E;
   border-radius: 2px;
 }
 
@@ -283,7 +287,7 @@ input:focus, select:focus, textarea:focus {
   font-family: var(--font-mono);
   font-size: 14.5px;
   letter-spacing: 1.2px;
-  color: var(--text-muted);
+  color: #94A3B8;
   font-weight: 700;
   line-height: 1.3;
 }
@@ -294,11 +298,11 @@ input:focus, select:focus, textarea:focus {
   line-height: 0.98;
   letter-spacing: -3px;
   font-weight: 700;
-  color: var(--color-navy);
+  color: #FFFFFF;
 }
 
 .dbit-hero-title-accent {
-  color: var(--color-blue);
+  color: #F5B82E;
 }
 
 .dbit-hero-description {
@@ -306,7 +310,7 @@ input:focus, select:focus, textarea:focus {
   max-width: 520px;
   font-size: 20px;
   line-height: 1.55;
-  color: var(--text-body);
+  color: #CBD5E1;
 }
 
 .dbit-hero-stats,
@@ -528,9 +532,9 @@ input:focus, select:focus, textarea:focus {
    EVENT AT A GLANCE BANNER (DATE, VENUE, TIME)
    ========================================================================== */
 .dbit-glance-section {
-  background: linear-gradient(90deg, #FFF4DC 0%, #FFFBF2 35%, #F1F7FF 100%);
-  border-top: 1px solid #E8DDBF;
-  border-bottom: 1px solid var(--border-color);
+  background: #0B0E17;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding: 36px 64px;
 }
 
@@ -557,18 +561,18 @@ input:focus, select:focus, textarea:focus {
 }
 
 .dbit-glance-icon-box.gold {
-  background: #FBE9BE;
-  color: #9A7210;
+  background: rgba(245, 184, 46, 0.15);
+  color: #F5B82E;
 }
 
 .dbit-glance-icon-box.blue {
-  background: #DCE7FC;
-  color: var(--color-blue);
+  background: rgba(56, 189, 248, 0.15);
+  color: #38BDF8;
 }
 
 .dbit-glance-icon-box.cyan {
-  background: #D4EEF3;
-  color: #16788E;
+  background: rgba(45, 212, 191, 0.15);
+  color: #2DD4BF;
 }
 
 .dbit-glance-text {
@@ -581,23 +585,23 @@ input:focus, select:focus, textarea:focus {
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 1.5px;
-  color: var(--text-muted);
+  color: #94A3B8;
   font-weight: 700;
 }
 
 .dbit-glance-value {
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-navy);
+  color: #FFFFFF;
 }
 
 /* ==========================================================================
    HOW IT WORKS SECTION
    ========================================================================== */
 .dbit-how-section {
-  background: #FFFFFF;
-  border-top: 1px solid var(--border-color);
-  border-bottom: 1px solid var(--border-color);
+  background: #07060A;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding: 56px 64px;
   display: flex;
   flex-direction: column;
@@ -614,7 +618,7 @@ input:focus, select:focus, textarea:focus {
   display: block;
   width: 32px;
   height: 3px;
-  background: var(--color-gold);
+  background: #F5B82E;
   border-radius: 2px;
 }
 
@@ -623,7 +627,7 @@ input:focus, select:focus, textarea:focus {
   font-size: 12px;
   letter-spacing: 2px;
   font-weight: 700;
-  color: var(--color-blue);
+  color: #F5B82E;
 }
 
 .dbit-how-grid {
@@ -637,8 +641,8 @@ input:focus, select:focus, textarea:focus {
   flex-direction: column;
   gap: 10px;
   padding: 24px;
-  background: var(--bg-page);
-  border: 1px solid var(--border-color);
+  background: #0E1626;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-box);
 }
 
@@ -646,7 +650,7 @@ input:focus, select:focus, textarea:focus {
   font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 700;
-  color: var(--color-blue);
+  color: #F5B82E;
 }
 
 .dbit-how-title {
@@ -654,14 +658,14 @@ input:focus, select:focus, textarea:focus {
   font-size: 22px;
   letter-spacing: -0.5px;
   font-weight: 700;
-  color: var(--color-navy);
+  color: #FFFFFF;
 }
 
 .dbit-how-desc {
   margin: 0;
   font-size: 16px;
   line-height: 1.5;
-  color: var(--text-body);
+  color: #94A3B8;
 }
 
 /* ==========================================================================
@@ -669,8 +673,8 @@ input:focus, select:focus, textarea:focus {
    ========================================================================== */
 .dbit-event-preview-section {
   display: block;
-  border-bottom: 1px solid var(--border-color);
-  background: #FFFFFF;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #07060A;
 }
 
 .dbit-event-preview-full {
@@ -680,7 +684,9 @@ input:focus, select:focus, textarea:focus {
   justify-content: center;
   align-items: flex-start;
   gap: 24px;
-  background: linear-gradient(135deg, #F0F5FD 0%, #E8F0FE 60%, #FFFFFF 100%);
+  background: linear-gradient(135deg, #0E1626 0%, #152238 60%, #07060A 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-card);
   width: 100%;
   max-width: 1240px;
   margin: 0 auto;
@@ -696,7 +702,7 @@ input:focus, select:focus, textarea:focus {
   font-weight: 700;
   letter-spacing: 1.2px;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: #F5B82E;
 }
 
 .dbit-event-title {
@@ -704,14 +710,14 @@ input:focus, select:focus, textarea:focus {
   font-weight: 700;
   line-height: 0.98;
   letter-spacing: -2px;
-  color: var(--color-navy);
+  color: #FFFFFF;
   margin: 20px 0 16px;
 }
 
 .dbit-event-desc {
   font-size: 18px;
   line-height: 1.55;
-  color: var(--text-body);
+  color: #CBD5E1;
   max-width: 600px;
   margin-bottom: 24px;
 }
@@ -722,16 +728,16 @@ input:focus, select:focus, textarea:focus {
   font-family: var(--font-mono);
   font-size: 12.5px;
   letter-spacing: 1.5px;
-  font-weight: 700;
-  color: #FFFFFF !important;
-  background: var(--color-navy);
+  font-weight: 800;
+  color: #07152B !important;
+  background: #F5B82E;
   border-radius: var(--radius-sm);
   text-decoration: none;
   transition: background 0.15s ease, transform 0.15s ease;
 }
 
 .dbit-claim-action-btn:hover {
-  background: var(--color-blue);
+  background: #E5A71E;
   transform: translateY(-1px);
 }
 
@@ -739,8 +745,8 @@ input:focus, select:focus, textarea:focus {
    FAQ SECTION (FROM MAIN.DC.HTML)
    ========================================================================== */
 .dbit-faq-section {
-  background: linear-gradient(180deg, #FFFFFF 0%, #EAF1FD 100%);
-  border-top: 1px solid var(--border-color);
+  background: #07060A;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding: 64px;
   display: flex;
   flex-wrap: wrap;
@@ -761,7 +767,7 @@ input:focus, select:focus, textarea:focus {
   letter-spacing: -1.5px;
   line-height: 1.05;
   font-weight: 700;
-  color: var(--color-navy);
+  color: #FFFFFF;
 }
 
 .dbit-faq-desc {
@@ -796,13 +802,13 @@ input:focus, select:focus, textarea:focus {
   font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.3px;
-  color: var(--color-navy);
+  color: #FFFFFF;
   cursor: pointer;
   transition: color 0.2s ease;
 }
 
 .dbit-faq-btn:hover {
-  color: var(--color-blue);
+  color: #F5B82E;
 }
 
 .dbit-faq-toggle-icon {
@@ -813,13 +819,13 @@ input:focus, select:focus, textarea:focus {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: #EAF0FB;
-  color: var(--color-blue);
+  background: rgba(255, 255, 255, 0.1);
+  color: #F5B82E;
   transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.3, 1), background 0.2s;
 }
 
 .dbit-faq-btn:hover .dbit-faq-toggle-icon {
-  background: #DCE7FC;
+  background: rgba(245, 184, 46, 0.25);
 }
 
 .dbit-faq-answer {
@@ -1504,10 +1510,12 @@ input:focus, select:focus, textarea:focus {
   }
 
   .dbit-hero-assoc-logo {
-    width: 64px;
-    height: 64px;
+    width: 68px;
+    height: auto;
     object-fit: contain;
     flex-shrink: 0;
+    padding: 4px 6px;
+    border-radius: 8px;
   }
 
   .dbit-hero-tag {
