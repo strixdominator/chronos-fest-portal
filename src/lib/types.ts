@@ -70,6 +70,7 @@ export interface EventSettings {
   tagline: string;
   eventDate: string;
   eventTime: string;
+  gatesOpenTime?: string;
   eventVenue: string;
   organizer: string;
   totalCapacity: number;

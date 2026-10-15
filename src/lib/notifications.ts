@@ -495,7 +495,7 @@ export async function sendEmailPass({
       </div>
 
       <div class="event-info">
-        📅 7 NOVEMBER 2026 · ⏰ 3:00 PM<br>
+        📅 7 NOVEMBER 2026 · ⏰ 2:30 PM (GATES OPEN: 2:00 PM)<br>
         📍 DBIT CRICKET GROUND, MYSORE ROAD, BANGALORE
       </div>
 
@@ -601,7 +601,7 @@ export async function sendEmailPass({
           to: toEmail,
           subject: `Your MILAN 2026 Official Entry Pass & QR Code (${usn})`,
           html: htmlContent,
-          text: `Hello ${recipientName},\nYour MILAN 2026 Entry Pass code is ${ticketCode} for USN ${usn}.\nDate: 7 November 2026 at DBIT Cricket Ground.\nView online: ${passUrl || 'https://milan2026.dbit.co.in'}`,
+          text: `Hello ${recipientName},\nYour MILAN 2026 Entry Pass code is ${ticketCode} for USN ${usn}.\nDate: 7 November 2026 at 2:30 PM (Gates open 2:00 PM) at DBIT Cricket Ground.\nView online: ${passUrl || 'https://milan2026.dbit.co.in'}`,
         }),
       });
       const data = await res.json();
@@ -640,7 +640,7 @@ export async function sendEmailPass({
         to: toEmail,
         subject: `Your MILAN 2026 Official Entry Pass & QR Code (${usn})`,
         html: htmlContent,
-        text: `Hello ${recipientName},\nYour MILAN 2026 Entry Pass code is ${ticketCode} for USN ${usn}.\nDate: 7 November 2026 at DBIT Cricket Ground.\nView pass: ${passUrl || ''}`,
+        text: `Hello ${recipientName},\nYour MILAN 2026 Entry Pass code is ${ticketCode} for USN ${usn}.\nDate: 7 November 2026 at 2:30 PM (Gates open 2:00 PM) at DBIT Cricket Ground.\nView pass: ${passUrl || ''}`,
       });
 
       console.log(`[REAL GMAIL SMTP PASS SENT] Successfully delivered pass to ${toEmail} for ${usn}`);

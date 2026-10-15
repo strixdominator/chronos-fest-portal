@@ -94,7 +94,7 @@ export default function HomePage() {
               </span>
               <span className="dbit-gold-divider" />
               <span className="dbit-hero-venue">
-                7 NOVEMBER 2026 · 3:00 PM · DBIT CRICKET GROUND, BANGALORE
+                7 NOVEMBER 2026 · 2:30 PM · GATES OPEN 2:00 PM · DBIT CRICKET GROUND, BANGALORE
               </span>
             </div>
           </div>
@@ -182,7 +182,7 @@ export default function HomePage() {
             </span>
             <div className="dbit-glance-text">
               <span className="dbit-glance-label">GATES OPEN</span>
-              <span className="dbit-glance-value">3:00 PM</span>
+              <span className="dbit-glance-value">2:00 PM</span>
             </div>
           </div>
         </div>

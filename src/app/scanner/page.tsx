@@ -395,7 +395,7 @@ export default function GateScannerPage() {
               Gate Scanner Terminal
             </h2>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#A9B8D8', letterSpacing: 1 }}>
-              7 NOVEMBER 2026 · 3:00 PM · DBIT CRICKET GROUND
+              7 NOVEMBER 2026 · 2:30 PM (GATES: 2:00 PM) · DBIT CRICKET GROUND
             </div>
           </div>
 
@@ -509,7 +509,7 @@ export default function GateScannerPage() {
             <span className="mono-tag" style={{ fontSize: 13, letterSpacing: 1.8 }}>ALUMNI MEET · MILAN 2026</span>
             <span style={{ display: 'block', width: 36, height: 3, background: 'var(--color-gold)', borderRadius: 2 }} />
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-muted)', fontWeight: 700 }}>
-              7 NOVEMBER 2026 · 3:00 PM · DBIT CRICKET GROUND, BANGALORE
+              7 NOVEMBER 2026 · 2:30 PM · GATES OPEN 2:00 PM · DBIT CRICKET GROUND, BANGALORE
             </span>
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.8rem, 3.2vw, 2.5rem)', fontWeight: 700, color: 'var(--color-navy)' }}>
