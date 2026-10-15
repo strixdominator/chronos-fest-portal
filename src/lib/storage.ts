@@ -30,15 +30,33 @@ function ensureWritableDir() {
 
 /**
  * Returns the best path to read from:
- * 1. If a modified copy was written to the writable directory, use that.
- * 2. Otherwise use the bundled file in process.cwd()/data.
+ * Inspects writable directory, /tmp directory, and bundled data directory.
+ * If multiple exist, chooses the newest modified file so updates are never lost.
  */
 export function getReadFilePath(filename: string): string {
-  const writablePath = path.join(WRITABLE_DATA_DIR, filename);
-  if (fs.existsSync(writablePath)) {
-    return writablePath;
+  const candidates = [
+    path.join(WRITABLE_DATA_DIR, filename),
+    path.join(os.tmpdir(), filename),
+    path.join(os.tmpdir(), 'milan_data', filename),
+    path.join(BUNDLED_DATA_DIR, filename),
+  ];
+
+  let newestPath: string | null = null;
+  let newestMtime = -1;
+
+  for (const candidate of candidates) {
+    try {
+      if (fs.existsSync(/*turbopackIgnore: true*/ candidate)) {
+        const stats = fs.statSync(/*turbopackIgnore: true*/ candidate);
+        if (stats.mtimeMs > newestMtime) {
+          newestMtime = stats.mtimeMs;
+          newestPath = candidate;
+        }
+      }
+    } catch {}
   }
-  return path.join(BUNDLED_DATA_DIR, filename);
+
+  return newestPath || path.join(BUNDLED_DATA_DIR, filename);
 }
 
 /**
@@ -68,23 +86,31 @@ export function safeReadJson<T>(filename: string, fallback: T): T {
 
 /**
  * Safely writes JSON to disk with zero crash risk. Never throws.
- * First tries the designated writable path (in /tmp on Vercel).
- * If that fails, falls back to os.tmpdir directly.
+ * Writes to designated writable path and synchronizes to tmp fallback.
  */
 export function safeWriteJson(filename: string, data: any): boolean {
+  const jsonStr = JSON.stringify(data, null, 2);
+  let wrote = false;
+
   try {
     const targetPath = getWriteFilePath(filename);
-    fs.writeFileSync(targetPath, JSON.stringify(data, null, 2), 'utf-8');
-    return true;
+    fs.writeFileSync(targetPath, jsonStr, 'utf-8');
+    wrote = true;
   } catch (err) {
     console.warn(`[STORAGE] Write failed at target path for ${filename}, attempting tmp fallback:`, err);
-    try {
-      const fallbackPath = path.join(os.tmpdir(), filename);
-      fs.writeFileSync(fallbackPath, JSON.stringify(data, null, 2), 'utf-8');
-      return true;
-    } catch (err2) {
+  }
+
+  try {
+    const fallbackPath = path.join(os.tmpdir(), filename);
+    if (fallbackPath !== getWriteFilePath(filename)) {
+      fs.writeFileSync(fallbackPath, jsonStr, 'utf-8');
+      wrote = true;
+    }
+  } catch (err2) {
+    if (!wrote) {
       console.error(`[STORAGE] Critical: Could not write ${filename} to disk:`, err2);
-      return false;
     }
   }
+
+  return wrote;
 }

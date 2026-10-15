@@ -40,10 +40,7 @@ export function updateSettings(newSettings: Partial<EventSettings>): EventSettin
 }
 
 export function getAttendees(): Attendee[] {
-  if (globalThis.__ATTENDEES__) {
-    return globalThis.__ATTENDEES__;
-  }
-  const loaded = safeReadJson<Attendee[]>('attendees.json', INITIAL_ATTENDEES);
+  const loaded = safeReadJson<Attendee[]>('attendees.json', globalThis.__ATTENDEES__ || INITIAL_ATTENDEES);
   globalThis.__ATTENDEES__ = loaded;
   return loaded;
 }

@@ -124,25 +124,11 @@ export async function sendEmailOtp({
           message: `Real verification email delivered to ${toEmail} via Resend Cloud API!`,
         };
       } else {
-        console.error('[RESEND API ERROR]', resData);
         const errMsg = resData.message || (resData.error && resData.error.message) || JSON.stringify(resData);
-        return {
-          success: false,
-          isReal: false,
-          provider: 'RESEND',
-          error: errMsg,
-          message: `Resend Error: ${errMsg}`,
-        };
+        console.warn(`[RESEND API NOTICE] ${errMsg} -> Falling back to Brevo/alternative delivery...`);
       }
     } catch (err: any) {
-      console.error('[RESEND FETCH EXCEPTION]', err.message);
-      return {
-        success: false,
-        isReal: false,
-        provider: 'RESEND',
-        error: err.message,
-        message: `Resend Network Error: ${err.message}`,
-      };
+      console.warn(`[RESEND FETCH NOTICE] ${err.message} -> Falling back to Brevo/alternative delivery...`);
     }
   }
 

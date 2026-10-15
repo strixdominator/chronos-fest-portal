@@ -65,7 +65,7 @@ export default function AdminPage() {
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
   const [isLiveSyncing, setIsLiveSyncing] = useState<boolean>(false);
 
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'CHECKED_IN' | 'REJECTED'>('PENDING');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'CHECKED_IN' | 'REJECTED'>('ALL');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -851,13 +851,6 @@ export default function AdminPage() {
             }}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 <button
-                  onClick={() => setStatusFilter('PENDING')}
-                  className={statusFilter === 'PENDING' ? 'btn-neo-black' : 'btn-neo-outline'}
-                  style={{ padding: '8px 14px', fontSize: '0.76rem' }}
-                >
-                  NEEDS REVIEW ({stats.pending})
-                </button>
-                <button
                   onClick={() => setStatusFilter('ALL')}
                   className={statusFilter === 'ALL' ? 'btn-neo-black' : 'btn-neo-outline'}
                   style={{ padding: '8px 14px', fontSize: '0.76rem' }}
@@ -870,6 +863,13 @@ export default function AdminPage() {
                   style={{ padding: '8px 14px', fontSize: '0.76rem' }}
                 >
                   APPROVED ({stats.approved})
+                </button>
+                <button
+                  onClick={() => setStatusFilter('PENDING')}
+                  className={statusFilter === 'PENDING' ? 'btn-neo-black' : 'btn-neo-outline'}
+                  style={{ padding: '8px 14px', fontSize: '0.76rem' }}
+                >
+                  NEEDS REVIEW ({stats.pending})
                 </button>
                 <button
                   onClick={() => setStatusFilter('CHECKED_IN')}
