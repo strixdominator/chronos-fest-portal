@@ -296,25 +296,62 @@ export async function sendSmsOtp({
   const tenDigitPhone = cleanPhone.slice(-10);
 
   // 1. FAST2SMS (India domestic SMS gateway)
-  const fast2SmsKey = process.env.FAST2SMS_API_KEY;
+  const fast2SmsKey = process.env.FAST2SMS_API_KEY?.trim();
   if (fast2SmsKey && tenDigitPhone.length === 10) {
+    let fast2SmsError = '';
+    // Method 1: Official Fast2SMS bulkV2 POST with authorization header
     try {
-      const response = await fetch(
-        `https://www.fast2sms.com/dev/bulkV2?authorization=${fast2SmsKey}&variables_values=${otp}&route=otp&numbers=${tenDigitPhone}`,
-        { method: 'GET' }
-      );
+      const response = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+        method: 'POST',
+        headers: {
+          'authorization': fast2SmsKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          route: 'otp',
+          variables_values: String(otp),
+          numbers: tenDigitPhone,
+        }),
+      });
       const data = await response.json();
       if (data.return) {
-        console.log(`[REAL FAST2SMS SENT] To: ${tenDigitPhone} | Code: ${otp}`);
+        const msg = Array.isArray(data.message) ? data.message.join(', ') : (data.message || 'Sent successfully');
+        console.log(`[REAL FAST2SMS SENT] To: ${tenDigitPhone} | Code: ${otp} | ${msg}`);
         return {
           success: true,
           isReal: true,
           provider: 'FAST2SMS',
-          message: `Real SMS delivered to +91 ${tenDigitPhone}`,
+          message: `Real SMS delivered to +91 ${tenDigitPhone} (${msg})`,
         };
+      } else {
+        fast2SmsError = Array.isArray(data.message) ? data.message.join(', ') : (data.message || JSON.stringify(data));
+        console.warn('[FAST2SMS POST ERROR]', fast2SmsError);
       }
     } catch (err: any) {
-      console.error('[FAST2SMS ERROR]', err);
+      fast2SmsError = err.message;
+      console.warn('[FAST2SMS POST EXCEPTION]', err.message);
+    }
+
+    // Method 2: Fast2SMS GET query fallback
+    try {
+      const getUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${encodeURIComponent(fast2SmsKey)}&variables_values=${encodeURIComponent(otp)}&route=otp&numbers=${tenDigitPhone}`;
+      const response = await fetch(getUrl, { method: 'GET' });
+      const data = await response.json();
+      if (data.return) {
+        const msg = Array.isArray(data.message) ? data.message.join(', ') : (data.message || 'Sent successfully');
+        console.log(`[REAL FAST2SMS GET SENT] To: ${tenDigitPhone} | Code: ${otp} | ${msg}`);
+        return {
+          success: true,
+          isReal: true,
+          provider: 'FAST2SMS',
+          message: `Real SMS delivered to +91 ${tenDigitPhone} (${msg})`,
+        };
+      } else {
+        fast2SmsError = Array.isArray(data.message) ? data.message.join(', ') : (data.message || JSON.stringify(data));
+        console.error('[FAST2SMS GET ERROR]', fast2SmsError);
+      }
+    } catch (err: any) {
+      console.error('[FAST2SMS GET EXCEPTION]', err.message);
     }
   }
 
