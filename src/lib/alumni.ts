@@ -15,6 +15,14 @@ const DATA_DIR = path.join(process.cwd(), 'data');
 
 const INITIAL_ALUMNI_MASTER: AlumniRecord[] = [
   {
+    usn: "1DB23CS095",
+    fullName: "Prakhyat Kumar",
+    officialEmail: "prakhyatkumar8@gmail.com",
+    phone: "",
+    department: "CSE",
+    batchYear: "Batch of 2027"
+  },
+  {
     usn: "1MS20CS042",
     fullName: "Aarav Sharma",
     officialEmail: "aarav.sharma@alumni.college.edu",
