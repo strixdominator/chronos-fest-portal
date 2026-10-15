@@ -871,6 +871,18 @@ input:focus, select:focus, textarea:focus {
   display: block;
 }
 
+.dbit-footer-logo-badge {
+  background: #FFFFFF;
+  padding: 10px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+  line-height: 0;
+}
+
 .dbit-footer-text-group {
   display: flex;
   flex-direction: column;
@@ -1575,6 +1587,11 @@ input:focus, select:focus, textarea:focus {
   .dbit-footer-brand-logo {
     width: 48px;
     height: 48px;
+  }
+
+  .dbit-footer-logo-badge {
+    padding: 6px;
+    border-radius: 10px;
   }
 
   .dbit-footer-college {

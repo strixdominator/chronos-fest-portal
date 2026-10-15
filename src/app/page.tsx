@@ -328,11 +328,13 @@ export default function HomePage() {
             </span>
           </div>
 
-          <img
-            src="/assets/1662177580bae749e245f3973661f37f.png"
-            alt="DBIT Alumni Association logo"
-            className="dbit-footer-brand-logo"
-          />
+          <div className="dbit-footer-logo-badge">
+            <img
+              src="/assets/1662177580bae749e245f3973661f37f.png"
+              alt="DBIT Alumni Association logo"
+              className="dbit-footer-brand-logo"
+            />
+          </div>
         </div>
 
         <div className="dbit-footer-content">
