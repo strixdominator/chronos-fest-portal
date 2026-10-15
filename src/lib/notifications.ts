@@ -297,8 +297,8 @@ export async function sendSmsOtp({
 
   // 1. FAST2SMS (India domestic SMS gateway)
   const fast2SmsKey = process.env.FAST2SMS_API_KEY?.trim();
+  let fast2SmsError = '';
   if (fast2SmsKey && tenDigitPhone.length === 10) {
-    let fast2SmsError = '';
     // Method 1: Official Fast2SMS bulkV2 POST with authorization header
     try {
       const response = await fetch('https://www.fast2sms.com/dev/bulkV2', {
@@ -397,13 +397,17 @@ export async function sendSmsOtp({
     }
   }
 
-  // Fallback to simulation if no SMS credentials set
+  // Fallback to simulation if no SMS credentials set or if Fast2SMS returned a portal notice
   console.log(`[SMS OTP SIMULATION] To: ${toPhone} | Code: ${otp} | Alumnus: ${recipientName} (${usn})`);
   return {
     success: true,
     isReal: false,
     provider: 'SIMULATION',
-    message: 'SMS Simulation Mode. Configure FAST2SMS_API_KEY or TWILIO credentials in .env.local for real SMS.',
+    simulationCode: otp,
+    error: fast2SmsError || undefined,
+    message: fast2SmsError 
+      ? `Fast2SMS notice: ${fast2SmsError}. (Testing code: ${otp})`
+      : 'SMS Simulation Mode. Configure FAST2SMS_API_KEY or TWILIO credentials in .env.local for real SMS.',
   };
 }
 
