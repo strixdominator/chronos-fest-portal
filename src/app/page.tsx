@@ -311,29 +311,31 @@ export default function HomePage() {
 
       {/* FOOTER & CONTACT US */}
       <footer id="contact" className="dbit-footer no-print">
-        <div className="dbit-footer-content">
-          <div className="dbit-footer-branding">
-            <div className="dbit-footer-logos-box">
-              <img
-                src="/assets/66eff0e624600df79e9f69030275731c.png"
-                alt="Don Bosco Institute of Technology emblem"
-                className="dbit-footer-emblem"
-              />
-              <img
-                src="/assets/1662177580bae749e245f3973661f37f.png"
-                alt="DBIT Alumni Association logo"
-                className="dbit-footer-assoc"
-              />
-            </div>
-            <div className="dbit-footer-text-group">
-              <span className="dbit-footer-college">
-                Don Bosco Institute of Technology, Bangalore
-              </span>
-              <span className="dbit-footer-sub">
-                DBIT ALUMNI ASSOCIATION (R) · RECONNECTING RELATIONS
-              </span>
-            </div>
+        {/* Full-width Branding Header Row */}
+        <div className="dbit-footer-header-container">
+          <img
+            src="/assets/66eff0e624600df79e9f69030275731c.png"
+            alt="Don Bosco Institute of Technology emblem"
+            className="dbit-footer-brand-logo"
+          />
+
+          <div className="dbit-footer-text-group">
+            <span className="dbit-footer-college">
+              Don Bosco Institute of Technology, Bangalore
+            </span>
+            <span className="dbit-footer-sub">
+              DBIT ALUMNI ASSOCIATION (R) · RECONNECTING RELATIONS
+            </span>
           </div>
+
+          <img
+            src="/assets/1662177580bae749e245f3973661f37f.png"
+            alt="DBIT Alumni Association logo"
+            className="dbit-footer-brand-logo"
+          />
+        </div>
+
+        <div className="dbit-footer-content">
 
           {/* CONTACT US */}
           <div className="dbit-footer-contact">
