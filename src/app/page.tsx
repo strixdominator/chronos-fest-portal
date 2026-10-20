@@ -70,7 +70,7 @@ export default function HomePage() {
       <div className="dbit-header-banner-container no-print">
         <div className="dbit-header-banner-inner">
           <img
-            src="/header-banner.jpg"
+            src="/header-banner.png"
             alt="Milan 2026 DBIT Alumni Grand Reunion"
             className="dbit-header-banner-img"
           />

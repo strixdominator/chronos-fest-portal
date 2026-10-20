@@ -13,16 +13,16 @@ interface PageProps {
 
 export default async function TicketDetailsPage({ params }: PageProps) {
   const { id } = await params;
-  let attendee = getAttendeeById(id);
+  let attendee = await getAttendeeById(id);
   if (!attendee) {
-    attendee = getAttendeeByTicketCode(id);
+    attendee = await getAttendeeByTicketCode(id);
   }
 
   if (!attendee) {
     notFound();
   }
 
-  const settings = getSettings();
+  const settings = await getSettings();
 
   return (
     <div style={{ maxWidth: 680, margin: '0 auto', padding: '30px 20px 80px' }}>

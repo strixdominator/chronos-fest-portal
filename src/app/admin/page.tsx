@@ -111,9 +111,11 @@ export default function AdminPage() {
     }
   }, []);
 
-  const fetchAttendees = async (silent: boolean = false) => {
+  const fetchAttendees = async (silent: boolean = false, overridePasscode?: string) => {
     if (!silent) setLoading(true);
     else setIsLiveSyncing(true);
+
+    const effectivePasscode = overridePasscode ?? adminPasscode;
 
     try {
       const queryParams = new URLSearchParams();
@@ -126,7 +128,7 @@ export default function AdminPage() {
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
-          'x-admin-passcode': adminPasscode,
+          'x-admin-passcode': effectivePasscode,
         },
       });
       const data = await res.json();
@@ -167,27 +169,27 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && adminPasscode) {
       if (activeSection === 'ATTENDEES') {
-        fetchAttendees();
+        fetchAttendees(false, adminPasscode);
       } else {
         fetchAlumniMaster();
       }
     }
-  }, [isAuthenticated, activeSection, statusFilter, search]);
+  }, [isAuthenticated, adminPasscode, activeSection, statusFilter, search]);
 
   // Real-time automatic polling every 3 seconds to sync live DB changes
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || !adminPasscode) return;
 
     const interval = setInterval(() => {
       if (activeSection === 'ATTENDEES') {
-        fetchAttendees(true); // silent background fetch
+        fetchAttendees(true, adminPasscode); // silent background fetch
       }
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [isAuthenticated, activeSection, statusFilter, search]);
+  }, [isAuthenticated, adminPasscode, activeSection, statusFilter, search]);
 
   const handleAuth = (e: React.FormEvent) => {
     e.preventDefault();

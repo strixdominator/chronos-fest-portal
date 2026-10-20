@@ -17,9 +17,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let attendee = getAttendeeById(attendeeId);
+    let attendee = await getAttendeeById(attendeeId);
     if (!attendee) {
-      attendee = getAttendeeByTicketCode(attendeeId);
+      attendee = await getAttendeeByTicketCode(attendeeId);
     }
 
     if (!attendee) {

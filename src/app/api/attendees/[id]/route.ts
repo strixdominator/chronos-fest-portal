@@ -12,10 +12,10 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    let attendee = getAttendeeById(id);
+    let attendee = await getAttendeeById(id);
 
     if (!attendee) {
-      attendee = getAttendeeByTicketCode(id);
+      attendee = await getAttendeeByTicketCode(id);
     }
 
     if (!attendee) {
@@ -25,10 +25,7 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      attendee,
-    });
+    return NextResponse.json({ success: true, attendee });
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message || 'Server error' },
@@ -51,7 +48,7 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const result = deleteAttendee(id);
+    const result = await deleteAttendee(id);
 
     if (!result.success) {
       return NextResponse.json(
@@ -62,7 +59,7 @@ export async function DELETE(
 
     const deleted = result.deletedAttendee;
     if (deleted) {
-      clearAlumniSession(deleted.usn || deleted.rollNumber);
+      await clearAlumniSession(deleted.usn || deleted.rollNumber);
     }
 
     return NextResponse.json({

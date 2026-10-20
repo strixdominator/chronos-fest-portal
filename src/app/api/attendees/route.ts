@@ -13,8 +13,8 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') || 'ALL';
     const isAdmin = verifyAdminPasscode(getAdminPasscodeFromRequest(request));
 
-    const allAttendees = getAttendees();
-    const settings = getSettings();
+    const allAttendees = await getAttendees();
+    const settings = await getSettings();
 
     let filtered = allAttendees;
 
@@ -89,8 +89,8 @@ export async function DELETE(request: NextRequest) {
     const { ids, resetAll } = body;
 
     if (resetAll === true) {
-      const result = deleteAllAttendees();
-      clearAlumniSession(); // Clear all active sessions and OTPs
+      const result = await deleteAllAttendees();
+      await clearAlumniSession();
       return NextResponse.json({
         success: true,
         count: result.count,
@@ -99,9 +99,9 @@ export async function DELETE(request: NextRequest) {
     }
 
     if (Array.isArray(ids) && ids.length > 0) {
-      const result = deleteSelectedAttendees(ids);
+      const result = await deleteSelectedAttendees(ids);
       for (const id of ids) {
-        clearAlumniSession(id);
+        await clearAlumniSession(id);
       }
       return NextResponse.json({
         success: true,

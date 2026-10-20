@@ -27,8 +27,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if already registered
-    const existing = getAttendees().find(
+    const allAttendees = await getAttendees();
+    const existing = allAttendees.find(
       a => (a.usn || a.rollNumber).trim().toUpperCase() === cleanedUsn
     );
     if (existing) {
@@ -38,8 +38,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create a PENDING attendee with updated contact details flag and professional info
-    const result = createAttendee({
+    const result = await createAttendee({
       fullName: alumnus.fullName,
       email: newEmail.trim().toLowerCase(),
       phone: newPhone.trim(),

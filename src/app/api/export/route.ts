@@ -15,27 +15,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const attendees = getAttendees();
+    const attendees = await getAttendees();
 
-    // CSV header with full registration form responses
     const headers = [
-      'Pass ID',
-      'Full Name',
-      'USN / Seat No',
-      'Department',
-      'Batch Year',
-      'Current Organisation',
-      'Designation / Role',
-      'Email',
-      'Phone',
-      'Ticket Code',
-      'Verification Method',
-      'Approval Status',
-      'Gate Admitted',
-      'Check-in Timestamp',
-      'Gate Checkpoint',
-      'Wristband',
-      'Registration Time',
+      'Pass ID', 'Full Name', 'USN / Seat No', 'Department', 'Batch Year',
+      'Current Organisation', 'Designation / Role', 'Email', 'Phone',
+      'Ticket Code', 'Verification Method', 'Approval Status', 'Gate Admitted',
+      'Check-in Timestamp', 'Gate Checkpoint', 'Wristband', 'Registration Time',
       'Review Reason / Notes'
     ];
 

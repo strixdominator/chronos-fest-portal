@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if this USN has already claimed their pass
-    const attendees = getAttendees();
+    const attendees = await getAttendees();
     const existing = attendees.find(
       a => (a.usn || a.rollNumber).trim().toUpperCase() === cleanedUsn
     );

@@ -20,7 +20,7 @@ export async function POST(
     const { action, status, rejectionReason, wristbandColor } = body;
 
     if (action === 'RESET_CHECKIN') {
-      const updated = resetCheckIn(id);
+      const updated = await resetCheckIn(id);
       if (!updated) {
         return NextResponse.json({ success: false, error: 'Attendee not found' }, { status: 404 });
       }
@@ -31,15 +31,12 @@ export async function POST(
       return NextResponse.json({ success: false, error: 'Invalid status' }, { status: 400 });
     }
 
-    const updated = updateAttendeeStatus(id, status, rejectionReason, wristbandColor);
+    const updated = await updateAttendeeStatus(id, status, rejectionReason, wristbandColor);
     if (!updated) {
       return NextResponse.json({ success: false, error: 'Attendee not found' }, { status: 404 });
     }
 
-    return NextResponse.json({
-      success: true,
-      attendee: updated,
-    });
+    return NextResponse.json({ success: true, attendee: updated });
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message || 'Failed to update attendee' },

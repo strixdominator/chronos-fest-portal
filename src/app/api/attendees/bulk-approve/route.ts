@@ -17,11 +17,11 @@ export async function POST(request: NextRequest) {
 
     if (!ids || ids.length === 0) {
       // If no IDs provided, approve ALL pending
-      const pending = getAttendees().filter(a => a.status === 'PENDING');
+      const pending = (await getAttendees()).filter(a => a.status === 'PENDING');
       ids = pending.map(a => a.id);
     }
 
-    const count = bulkApproveAttendees(ids);
+    const count = await bulkApproveAttendees(ids);
 
     return NextResponse.json({
       success: true,

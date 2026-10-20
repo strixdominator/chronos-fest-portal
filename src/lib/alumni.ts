@@ -4,11 +4,10 @@ import crypto from 'crypto';
 import * as XLSX from 'xlsx';
 import { AlumniRecord, OtpRecord } from './types';
 import { safeReadJson, safeWriteJson } from './storage';
+import { supabase } from './supabase';
 
 declare global {
   var __ALUMNI_MASTER__: AlumniRecord[] | undefined;
-  var __ACTIVE_OTPS__: Record<string, OtpRecord> | undefined;
-  var __VERIFIED_SESSIONS__: Record<string, any> | undefined;
 }
 
 const DATA_DIR = path.join(process.cwd(), 'data');
@@ -487,94 +486,85 @@ export function verifyStatelessOtpToken(
   }
 }
 
-function getActiveOtps(): Record<string, OtpRecord> {
-  const disk = safeReadJson<Record<string, OtpRecord>>('active_otps.json', {});
-  const memory = globalThis.__ACTIVE_OTPS__ || {};
-  return { ...disk, ...memory };
+// ─── OTP STORAGE (Supabase-backed with stateless token fallback) ─────────────
+
+async function getActiveOtpFromDb(usn: string): Promise<OtpRecord | null> {
+  const { data } = await supabase
+    .from('active_otps')
+    .select('*')
+    .eq('usn', usn.trim().toUpperCase())
+    .maybeSingle();
+  if (!data) return null;
+  return {
+    usn: data.usn,
+    code: data.code,
+    channel: data.channel as 'EMAIL' | 'PHONE',
+    target: data.target,
+    expiresAt: data.expires_at,
+  };
 }
 
-function saveActiveOtps(otps: Record<string, OtpRecord>): void {
-  globalThis.__ACTIVE_OTPS__ = otps;
-  safeWriteJson('active_otps.json', otps);
+async function saveOtpToDb(usn: string, record: OtpRecord): Promise<void> {
+  await supabase.from('active_otps').upsert({
+    usn: record.usn,
+    code: record.code,
+    channel: record.channel,
+    target: record.target,
+    expires_at: record.expiresAt,
+  });
 }
 
-// In-Memory & File-Backed OTP Store with Stateless HMAC fallback
-export function createOtp(
+async function deleteOtpFromDb(usn: string): Promise<void> {
+  await supabase.from('active_otps').delete().eq('usn', usn.trim().toUpperCase());
+}
+
+// In-Memory with Supabase fallback + Stateless HMAC token
+export async function createOtp(
   usn: string, 
   channel: 'EMAIL' | 'PHONE',
   customTarget?: string
-): { otp: string; target: string; maskedTarget: string; statelessToken: string } | null {
+): Promise<{ otp: string; target: string; maskedTarget: string; statelessToken: string } | null> {
   const alumnus = findAlumnusByUsn(usn);
   const target = customTarget || (channel === 'EMAIL' ? alumnus?.officialEmail : alumnus?.phone);
   if (!target) return null;
 
-  const otps = getActiveOtps();
   const cleanedUsn = usn.trim().toUpperCase();
-
-  // Generate 6-digit OTP
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   const maskedTarget = channel === 'EMAIL' ? maskEmail(target) : maskPhone(target);
-  const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+  const expiresAt = Date.now() + 10 * 60 * 1000;
 
-  otps[cleanedUsn] = {
-    usn: cleanedUsn,
-    code,
-    channel,
-    target,
-    expiresAt,
-  };
+  await saveOtpToDb(cleanedUsn, { usn: cleanedUsn, code, channel, target, expiresAt });
 
-  saveActiveOtps(otps);
   const statelessToken = createStatelessOtpToken(cleanedUsn, code, target, channel, expiresAt);
-
   return { otp: code, target, maskedTarget, statelessToken };
 }
 
-export function verifyOtp(
+export async function verifyOtp(
   usn: string, 
   inputCode: string,
   statelessToken?: string
-): { 
-  valid: boolean; 
-  error?: string; 
-  target?: string; 
-  channel?: 'EMAIL' | 'PHONE' 
-} {
+): Promise<{ valid: boolean; error?: string; target?: string; channel?: 'EMAIL' | 'PHONE' }> {
   const cleanedUsn = usn.trim().toUpperCase();
   const cleanCode = inputCode.trim();
-  const otps = getActiveOtps();
 
-  const record = otps[cleanedUsn];
-
-  // 1. Primary Check: In-memory & disk active OTP store
+  // 1. Primary: Supabase DB OTP
+  const record = await getActiveOtpFromDb(cleanedUsn);
   if (record) {
     if (Date.now() > record.expiresAt) {
-      delete otps[cleanedUsn];
-      saveActiveOtps(otps);
+      await deleteOtpFromDb(cleanedUsn);
       return { valid: false, error: 'OTP has expired (valid for 10 minutes). Please request a new one.' };
     }
-
     if (record.code.trim() !== cleanCode) {
       return { valid: false, error: 'Incorrect OTP. Please enter the 6-digit code received.' };
     }
-
-    const target = record.target;
-    const channel = record.channel;
-
-    // Consume OTP
-    delete otps[cleanedUsn];
-    saveActiveOtps(otps);
-
-    return { valid: true, target, channel };
+    await deleteOtpFromDb(cleanedUsn); // consume OTP
+    return { valid: true, target: record.target, channel: record.channel };
   }
 
-  // 2. Secondary Resilient Check: Cryptographic Stateless Token
-  // Protects against Render container rebuilds and Vercel multi-lambda cold starts
+  // 2. Fallback: Stateless HMAC token (protects against cold starts)
   if (statelessToken) {
     const statelessResult = verifyStatelessOtpToken(cleanedUsn, cleanCode, statelessToken);
-    if (statelessResult.valid) {
-      return { valid: true, target: statelessResult.target, channel: statelessResult.channel };
-    }
+    if (statelessResult.valid) return { valid: true, target: statelessResult.target, channel: statelessResult.channel };
     if (statelessResult.error && !statelessResult.error.includes('Invalid verification token')) {
       return { valid: false, error: statelessResult.error };
     }
@@ -583,66 +573,50 @@ export function verifyOtp(
   return { valid: false, error: 'No active OTP found for this USN. Please request one.' };
 }
 
-export function createVerifiedSession(usn: string, contactInfo?: { email?: string; phone?: string }): string {
-  const sessions = {
-    ...safeReadJson<Record<string, any>>('verified_sessions.json', {}),
-    ...(globalThis.__VERIFIED_SESSIONS__ || {})
-  };
-
+export async function createVerifiedSession(usn: string, contactInfo?: { email?: string; phone?: string }): Promise<string> {
   const token = `VTOK_${Math.random().toString(36).substring(2, 8).toUpperCase()}_${Date.now()}`;
-  sessions[token] = {
-    usn: usn.trim().toUpperCase(),
-    email: contactInfo?.email,
-    phone: contactInfo?.phone,
-    expiresAt: Date.now() + 20 * 60 * 1000, // 20 minutes to complete registration
-  };
+  const expiresAt = Date.now() + 20 * 60 * 1000;
 
-  globalThis.__VERIFIED_SESSIONS__ = sessions;
-  safeWriteJson('verified_sessions.json', sessions);
+  await supabase.from('verified_sessions').upsert({
+    token,
+    usn: usn.trim().toUpperCase(),
+    email: contactInfo?.email ?? null,
+    phone: contactInfo?.phone ?? null,
+    expires_at: expiresAt,
+  });
+
   return token;
 }
 
-export function getSessionData(token: string): { usn: string; email?: string; phone?: string } | null {
-  const sessions = {
-    ...safeReadJson<Record<string, any>>('verified_sessions.json', {}),
-    ...(globalThis.__VERIFIED_SESSIONS__ || {})
-  };
-  const record = sessions[token];
-  if (!record) return null;
-  if (Date.now() > record.expiresAt) return null;
-  return record;
+export async function getSessionData(token: string): Promise<{ usn: string; email?: string; phone?: string } | null> {
+  const { data } = await supabase
+    .from('verified_sessions')
+    .select('*')
+    .eq('token', token)
+    .maybeSingle();
+
+  if (!data) return null;
+  if (Date.now() > data.expires_at) {
+    await supabase.from('verified_sessions').delete().eq('token', token);
+    return null;
+  }
+  return { usn: data.usn, email: data.email ?? undefined, phone: data.phone ?? undefined };
 }
 
-export function verifySessionToken(usn: string, token: string): boolean {
-  const session = getSessionData(token);
+export async function verifySessionToken(usn: string, token: string): Promise<boolean> {
+  const session = await getSessionData(token);
   if (!session) return false;
   return session.usn.toUpperCase() === usn.trim().toUpperCase();
 }
 
-export function clearAlumniSession(usn?: string): void {
-  const otps = getActiveOtps();
-  if (usn) {
-    delete otps[usn.trim().toUpperCase()];
-  } else {
-    for (const key of Object.keys(otps)) delete otps[key];
-  }
-  saveActiveOtps(otps);
-
-  const sessions = {
-    ...safeReadJson<Record<string, any>>('verified_sessions.json', {}),
-    ...(globalThis.__VERIFIED_SESSIONS__ || {})
-  };
+export async function clearAlumniSession(usn?: string): Promise<void> {
   if (usn) {
     const cleanedUsn = usn.trim().toUpperCase();
-    for (const token of Object.keys(sessions)) {
-      if (sessions[token]?.usn?.toUpperCase() === cleanedUsn) {
-        delete sessions[token];
-      }
-    }
+    await supabase.from('active_otps').delete().eq('usn', cleanedUsn);
+    await supabase.from('verified_sessions').delete().eq('usn', cleanedUsn);
   } else {
-    for (const key of Object.keys(sessions)) delete sessions[key];
+    await supabase.from('active_otps').delete().neq('usn', '');
+    await supabase.from('verified_sessions').delete().neq('token', '');
   }
-  globalThis.__VERIFIED_SESSIONS__ = sessions;
-  safeWriteJson('verified_sessions.json', sessions);
 }
 

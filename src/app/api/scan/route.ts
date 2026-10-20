@@ -13,7 +13,6 @@ export async function POST(request: NextRequest) {
       pin
     } = body;
 
-    // Security Gate Authorization PIN Check
     const providedPin = getScannerPinFromRequest(request, pin);
     if (!verifyScannerPin(providedPin)) {
       return NextResponse.json(
@@ -29,7 +28,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Clean input and normalize code (handles raw ticketCode, attendee ID, USN, full URL, or query strings)
     code = normalizeScanCode(code);
 
     if (!code) {
@@ -39,9 +37,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ACTION: PREVIEW (Check quota and registered members before admitting)
     if (action === 'PREVIEW') {
-      const preview = getScanPreview(code);
+      const preview = await getScanPreview(code);
       return NextResponse.json({
         success: preview.status === 'READY',
         status: preview.status,
@@ -53,9 +50,8 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // ACTION: CHECKIN (Execute partial or full quota admission)
     const count = admittingCount !== undefined ? Number(admittingCount) : undefined;
-    const result = checkInAttendee(code, volunteerName, count);
+    const result = await checkInAttendee(code, volunteerName, count);
 
     return NextResponse.json({
       success: result.status === 'SUCCESS' || result.status === 'PARTIAL_ENTRY',

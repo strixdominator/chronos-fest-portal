@@ -9,7 +9,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { usn, channel = 'EMAIL', customTarget, website } = body;
 
-    // Bot Honeypot: Automated spam bots autofill hidden fields like 'website'
     if (website) {
       return NextResponse.json({ success: false, error: 'Suspicious bot activity detected.' }, { status: 400 });
     }
@@ -21,30 +20,27 @@ export async function POST(request: NextRequest) {
     const cleanedUsn = usn.trim().toUpperCase();
     const clientIp = getClientIp(request);
 
-    // Check if USN is temporarily locked due to brute-force attempts
     const lockCheck = checkOtpVerifyAttempts(cleanedUsn);
     if (!lockCheck.allowed) {
       return NextResponse.json({ success: false, error: lockCheck.error }, { status: 429 });
     }
 
-    // Rate Limiting: 60s cooldown, max 5/hr per USN, max 10/10min per IP
     const rateCheck = checkOtpDispatchLimits(cleanedUsn, clientIp);
     if (!rateCheck.allowed) {
       return NextResponse.json(
         { success: false, error: rateCheck.error, retryAfter: rateCheck.retryAfterSec },
-        { 
-          status: 429,
-          headers: { 'Retry-After': String(rateCheck.retryAfterSec || 60) }
-        }
+        { status: 429, headers: { 'Retry-After': String(rateCheck.retryAfterSec || 60) } }
       );
     }
+
     const alumnus = findAlumnusByUsn(cleanedUsn);
     if (!alumnus) {
       return NextResponse.json({ success: false, error: 'Graduate record not found.' }, { status: 404 });
     }
 
     // Check if already registered
-    const existing = getAttendees().find(
+    const allAttendees = await getAttendees();
+    const existing = allAttendees.find(
       a => (a.usn || a.rollNumber).trim().toUpperCase() === cleanedUsn
     );
     if (existing) {
@@ -54,9 +50,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Strictly retrieve target contact from official directory record to prevent identity theft / forgery
     const targetContact = channel === 'PHONE' ? alumnus.phone?.trim() : alumnus.officialEmail?.trim();
-
     if (!targetContact) {
       return NextResponse.json({
         success: false,
@@ -64,49 +58,33 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const otpData = createOtp(cleanedUsn, channel === 'PHONE' ? 'PHONE' : 'EMAIL', targetContact);
+    const otpData = await createOtp(cleanedUsn, channel === 'PHONE' ? 'PHONE' : 'EMAIL', targetContact);
     if (!otpData) {
       return NextResponse.json({ success: false, error: 'Failed to generate verification code. Please try again.' }, { status: 500 });
     }
 
-    // Dispatch real email or SMS notification
     let dispatchResult;
     try {
       if (channel === 'PHONE') {
-        dispatchResult = await sendSmsOtp({
-          toPhone: otpData.target,
-          otp: otpData.otp,
-          recipientName: alumnus.fullName,
-          usn: alumnus.usn,
-        });
+        dispatchResult = await sendSmsOtp({ toPhone: otpData.target, otp: otpData.otp, recipientName: alumnus.fullName, usn: alumnus.usn });
       } else {
-        dispatchResult = await sendEmailOtp({
-          toEmail: otpData.target,
-          otp: otpData.otp,
-          recipientName: alumnus.fullName,
-          usn: alumnus.usn,
-        });
+        dispatchResult = await sendEmailOtp({ toEmail: otpData.target, otp: otpData.otp, recipientName: alumnus.fullName, usn: alumnus.usn });
       }
     } catch (dispatchErr: any) {
       console.error('[DISPATCH ERROR]', dispatchErr);
     }
 
-    // If real delivery failed, report error so UI does not falsely pretend it succeeded
     if (dispatchResult && !dispatchResult.success && dispatchResult.provider !== 'SIMULATION') {
       return NextResponse.json({
         success: false,
-        error: dispatchResult.error 
-          ? `Email delivery failed: ${dispatchResult.error}`
-          : 'Could not deliver email to registered contact. Please check credentials or request committee manual review.',
+        error: dispatchResult.error ? `Email delivery failed: ${dispatchResult.error}` : 'Could not deliver email to registered contact.',
         dispatchError: dispatchResult.error,
       }, { status: 502 });
     }
 
     const response = NextResponse.json({
       success: true,
-      message: dispatchResult?.isReal 
-        ? `Real verification code sent to ${otpData.maskedTarget}!`
-        : `Simulation Mode: Verification code is ${otpData.otp}`,
+      message: dispatchResult?.isReal ? `Real verification code sent to ${otpData.maskedTarget}!` : `Simulation Mode: Verification code is ${otpData.otp}`,
       maskedTarget: otpData.maskedTarget,
       channel: channel === 'PHONE' ? 'SMS' : 'Email',
       isRealDelivery: dispatchResult?.isReal || false,
@@ -119,10 +97,7 @@ export async function POST(request: NextRequest) {
 
     if (otpData.statelessToken) {
       response.cookies.set('milan_otp_token', otpData.statelessToken, {
-        path: '/',
-        httpOnly: true,
-        sameSite: 'lax',
-        maxAge: 600, // 10 minutes
+        path: '/', httpOnly: true, sameSite: 'lax', maxAge: 600,
       });
     }
 

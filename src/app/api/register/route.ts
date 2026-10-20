@@ -5,7 +5,6 @@ import { getClientIp, checkRateLimit } from '@/lib/rateLimit';
 export async function POST(request: NextRequest) {
   try {
     const clientIp = getClientIp(request);
-    // Rate limit: max 5 registrations per 10 minutes per IP
     const ipCheck = checkRateLimit(`ip_register:${clientIp}`, 5, 10 * 60 * 1000);
     if (!ipCheck.allowed) {
       return NextResponse.json(
@@ -14,7 +13,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const settings = getSettings();
+    const settings = await getSettings();
     if (!settings.isRegistrationOpen) {
       return NextResponse.json(
         { success: false, error: 'Registration is currently closed by the event organizers.' },
@@ -25,7 +24,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { fullName, email, phone, rollNumber, department, year, idCardUrl, website } = body;
 
-    // Bot honeypot check
     if (website) {
       return NextResponse.json({ success: false, error: 'Suspicious bot submission detected.' }, { status: 400 });
     }
@@ -37,7 +35,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
@@ -46,7 +43,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = createAttendee({
+    const result = await createAttendee({
       fullName: fullName.trim(),
       email: email.trim().toLowerCase(),
       phone: phone.trim(),
