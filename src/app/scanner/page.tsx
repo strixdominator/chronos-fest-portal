@@ -38,7 +38,7 @@ interface ScanPreviewData {
 
 export default function GateScannerPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [pin, setPin] = useState('milan#entry');
+  const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState('');
   const [volunteerName, setVolunteerName] = useState('Gate Security');
 
@@ -47,9 +47,6 @@ export default function GateScannerPage() {
     if (savedPin) {
       setPin(savedPin.trim().replace(/^["']|["']$/g, ''));
       setIsAuthenticated(true);
-    } else {
-      // Default to standard pass for seamless access
-      setPin('milan#entry');
     }
   }, []);
 
@@ -140,7 +137,7 @@ export default function GateScannerPage() {
       setPinError('');
       sessionStorage.setItem('dbit_scanner_pin', cleanedPin);
     } else {
-      setPinError('Access Denied: Invalid Gate Authorization PIN. (Default: milan#entry)');
+      setPinError('Access Denied: Invalid Gate Authorization PIN.');
     }
   };
 
@@ -239,7 +236,7 @@ export default function GateScannerPage() {
     setScanResult(null);
     setScanPreview(null);
 
-    const activePin = (pin || sessionStorage.getItem('dbit_scanner_pin') || 'milan#entry').trim().replace(/^["']|["']$/g, '');
+    const activePin = (pin || sessionStorage.getItem('dbit_scanner_pin') || '').trim().replace(/^["']|["']$/g, '');
 
     try {
       const res = await fetch('/api/scan', {
@@ -307,7 +304,7 @@ export default function GateScannerPage() {
     if (!scanPreview || admitting) return;
     setAdmitting(true);
 
-    const activePin = (pin || sessionStorage.getItem('dbit_scanner_pin') || 'milan#entry').trim().replace(/^["']|["']$/g, '');
+    const activePin = (pin || sessionStorage.getItem('dbit_scanner_pin') || '').trim().replace(/^["']|["']$/g, '');
 
     try {
       const res = await fetch('/api/scan', {

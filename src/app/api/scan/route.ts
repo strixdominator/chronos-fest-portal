@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
         { 
           success: false, 
           status: 'UNAUTHORIZED', 
-          message: 'Access Denied: Invalid or missing Gate Authorization PIN. Enter "milan#entry" to authorize.',
+          message: 'Access Denied: Invalid or missing Gate Authorization PIN.',
           error: 'Access Denied: Invalid or missing Gate Authorization PIN.' 
         },
         { status: 401 }
