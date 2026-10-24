@@ -201,6 +201,44 @@ export async function getAttendeeByTicketCode(code: string): Promise<Attendee | 
   return data ? rowToAttendee(data) : undefined;
 }
 
+async function getNextAttendeeIdAndTicket(): Promise<{ id: string; ticketCode: string }> {
+  const { data } = await supabase.from('attendees').select('id, ticket_code');
+  const existingIds = new Set((data || []).map(r => r.id));
+  const existingTickets = new Set((data || []).map(r => r.ticket_code));
+
+  let maxNum = 1000;
+  for (const row of data || []) {
+    if (typeof row.id === 'string' && row.id.startsWith('ATT-')) {
+      const num = parseInt(row.id.replace('ATT-', ''), 10);
+      if (!isNaN(num) && num > maxNum) {
+        maxNum = num;
+      }
+    }
+  }
+
+  let nextSeq = maxNum + 1;
+  while (existingIds.has(`ATT-${nextSeq}`)) {
+    nextSeq++;
+  }
+
+  const id = `ATT-${nextSeq}`;
+
+  let ticketCode = '';
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const candidate = `TKT-CHRONOS-${randomSuffix}${Math.floor(1000 + Math.random() * 9000)}`;
+    if (!existingTickets.has(candidate)) {
+      ticketCode = candidate;
+      break;
+    }
+  }
+  if (!ticketCode) {
+    ticketCode = `TKT-CHRONOS-${Date.now().toString(36).toUpperCase()}`;
+  }
+
+  return { id, ticketCode };
+}
+
 export async function createAttendee(
   data: Omit<Attendee, 'id' | 'ticketCode' | 'status' | 'checkedIn' | 'registeredAt'> & {
     isVerifiedOtp?: boolean;
@@ -213,7 +251,7 @@ export async function createAttendee(
   // Check for duplicate USN or email
   const { data: existing } = await supabase
     .from('attendees')
-    .select('id')
+    .select('id, full_name, ticket_code')
     .or(`usn.ilike.${usnKey},email.ilike.${data.email.trim()}`)
     .maybeSingle();
 
@@ -224,44 +262,53 @@ export async function createAttendee(
     };
   }
 
-  // Generate unique ID & ticket code
-  const { count } = await supabase.from('attendees').select('*', { count: 'exact', head: true });
-  const seqNum = (count || 0) + 1001;
-  const id = `ATT-${seqNum}`;
-  const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
-  const ticketCode = `TKT-CHRONOS-${randomSuffix}${Math.floor(1000 + Math.random() * 9000)}`;
-
   const isApproved = Boolean(data.isVerifiedOtp);
+  const cleanYear = (data.year || '').replace(/^Batch of\s*/i, '').trim() || data.year || 'Alumni';
 
-  const newAttendee: Attendee = {
-    ...(data as any),
-    usn: usnKey,
-    rollNumber: usnKey,
-    id,
-    ticketCode,
-    status: isApproved ? 'APPROVED' : 'PENDING',
-    approvedAt: isApproved ? new Date().toISOString() : undefined,
-    verificationMethod: isApproved ? 'OTP_VERIFIED' : 'MANUAL_REVIEW_REQUEST',
-    checkedIn: false,
-    registeredAt: new Date().toISOString(),
-    wristbandColor: 'Neon Cyan (General)',
-    organization: data.organization ? String(data.organization).trim() : undefined,
-    designation: data.designation ? String(data.designation).trim() : undefined,
-    familyCount: 0,
-    familyMembers: [],
-    totalQuota: 1,
-    admittedCount: 0,
-    checkInLogs: [],
-  };
+  let lastError: any = null;
+  // Retry loop up to 5 attempts to guarantee zero primary key collisions
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const { id, ticketCode } = await getNextAttendeeIdAndTicket();
 
-  const { error } = await supabase.from('attendees').insert(attendeeToRow(newAttendee));
+    const newAttendee: Attendee = {
+      ...(data as any),
+      usn: usnKey,
+      rollNumber: usnKey,
+      year: cleanYear,
+      id,
+      ticketCode,
+      status: isApproved ? 'APPROVED' : 'PENDING',
+      approvedAt: isApproved ? new Date().toISOString() : undefined,
+      verificationMethod: isApproved ? 'OTP_VERIFIED' : 'MANUAL_REVIEW_REQUEST',
+      checkedIn: false,
+      registeredAt: new Date().toISOString(),
+      wristbandColor: 'Neon Cyan (General)',
+      organization: data.organization ? String(data.organization).trim() : undefined,
+      designation: data.designation ? String(data.designation).trim() : undefined,
+      familyCount: 0,
+      familyMembers: [],
+      totalQuota: 1,
+      admittedCount: 0,
+      checkInLogs: [],
+    };
 
-  if (error) {
-    console.error('[DB] createAttendee error:', error.message);
-    return { success: false, error: 'Database error: ' + error.message };
+    const { error } = await supabase.from('attendees').insert(attendeeToRow(newAttendee));
+
+    if (!error) {
+      return { success: true, attendee: newAttendee };
+    }
+
+    lastError = error;
+    console.error(`[DB] createAttendee attempt ${attempt + 1} error:`, error.message);
+
+    if (!error.message.includes('unique constraint') && !error.message.includes('duplicate key')) {
+      break;
+    }
+
+    await new Promise(r => setTimeout(r, 100));
   }
 
-  return { success: true, attendee: newAttendee };
+  return { success: false, error: 'Database error: ' + (lastError?.message || 'Failed to save attendee record.') };
 }
 
 export async function updateAttendeeStatus(

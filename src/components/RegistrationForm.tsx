@@ -1289,7 +1289,7 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
                 {alumnus.fullName}
               </div>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: 4 }}>
-                {alumnus.department} • Batch of {alumnus.batchYear}
+                {alumnus.department} • {alumnus.batchYear?.startsWith('Batch of') ? alumnus.batchYear : `Batch of ${alumnus.batchYear}`}
               </div>
             </div>
             <div style={{ textAlign: 'right' }}>
