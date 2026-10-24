@@ -408,14 +408,52 @@ export function normalizeScanCode(rawCode: string): string {
 }
 
 async function findAttendeeByQuery(query: string): Promise<Attendee | undefined> {
-  const q = query.toLowerCase().trim();
-  const { data } = await supabase
+  const q = query.trim();
+  if (!q) return undefined;
+
+  // 1. Direct ID match (e.g. ATT-1001, ATT-1002)
+  const { data: byId } = await supabase
     .from('attendees')
     .select('*')
-    .or(`ticket_code.ilike.${q},id.ilike.${q},usn.ilike.${q},roll_number.ilike.${q}`)
+    .ilike('id', q)
     .maybeSingle();
+  if (byId) return rowToAttendee(byId);
 
-  return data ? rowToAttendee(data) : undefined;
+  // 2. Direct ticket code match (e.g. TKT-CHRONOS-...)
+  const { data: byTicket } = await supabase
+    .from('attendees')
+    .select('*')
+    .ilike('ticket_code', q)
+    .maybeSingle();
+  if (byTicket) return rowToAttendee(byTicket);
+
+  // 3. Direct USN / Roll number match
+  const { data: byUsn } = await supabase
+    .from('attendees')
+    .select('*')
+    .ilike('usn', q)
+    .maybeSingle();
+  if (byUsn) return rowToAttendee(byUsn);
+
+  const { data: byRoll } = await supabase
+    .from('attendees')
+    .select('*')
+    .ilike('roll_number', q)
+    .maybeSingle();
+  if (byRoll) return rowToAttendee(byRoll);
+
+  // 4. Case-insensitive search if clean alphanumeric
+  const cleanAlpha = q.replace(/[^a-zA-Z0-9_-]/g, '');
+  if (cleanAlpha && cleanAlpha !== q) {
+    const { data: fallback } = await supabase
+      .from('attendees')
+      .select('*')
+      .or(`id.ilike.${cleanAlpha},ticket_code.ilike.${cleanAlpha},usn.ilike.${cleanAlpha}`)
+      .maybeSingle();
+    if (fallback) return rowToAttendee(fallback);
+  }
+
+  return undefined;
 }
 
 export async function getScanPreview(ticketOrId: string): Promise<{

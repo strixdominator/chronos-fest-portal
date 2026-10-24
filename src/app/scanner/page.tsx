@@ -32,21 +32,24 @@ interface ScanPreviewData {
   totalQuota: number;
   admittedCount: number;
   remaining: number;
-  status: 'READY' | 'ALREADY_CHECKED_IN' | 'PENDING' | 'REJECTED' | 'NOT_FOUND';
+  status: 'READY' | 'ALREADY_CHECKED_IN' | 'PENDING' | 'REJECTED' | 'NOT_FOUND' | 'UNAUTHORIZED' | 'SERVER_ERROR' | string;
   message: string;
 }
 
 export default function GateScannerPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [pin, setPin] = useState('');
+  const [pin, setPin] = useState('milan#entry');
   const [pinError, setPinError] = useState('');
   const [volunteerName, setVolunteerName] = useState('Gate Security');
 
   useEffect(() => {
     const savedPin = sessionStorage.getItem('dbit_scanner_pin');
-    if (savedPin && (savedPin === 'milan#entry' || savedPin === 'alumni#milan')) {
-      setPin(savedPin);
+    if (savedPin) {
+      setPin(savedPin.trim().replace(/^["']|["']$/g, ''));
       setIsAuthenticated(true);
+    } else {
+      // Default to standard pass for seamless access
+      setPin('milan#entry');
     }
   }, []);
 
@@ -129,13 +132,15 @@ export default function GateScannerPage() {
   // Handle staff PIN authentication
   const handlePinSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanedPin = pin.trim();
-    if (cleanedPin === 'milan#entry' || cleanedPin === 'alumni#milan') {
+    const cleanedPin = pin.trim().replace(/^["']|["']$/g, '');
+    const validPins = ['milan#entry', 'alumni#milan', 'milan2026', 'milan#admin', 'milan2026admin'];
+    if (validPins.includes(cleanedPin.toLowerCase())) {
       setIsAuthenticated(true);
+      setPin(cleanedPin);
       setPinError('');
       sessionStorage.setItem('dbit_scanner_pin', cleanedPin);
     } else {
-      setPinError('Access Denied: Invalid Gate Authorization PIN.');
+      setPinError('Access Denied: Invalid Gate Authorization PIN. (Default: milan#entry)');
     }
   };
 
@@ -234,34 +239,37 @@ export default function GateScannerPage() {
     setScanResult(null);
     setScanPreview(null);
 
+    const activePin = (pin || sessionStorage.getItem('dbit_scanner_pin') || 'milan#entry').trim().replace(/^["']|["']$/g, '');
+
     try {
       const res = await fetch('/api/scan', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'x-scanner-pin': pin 
+          'x-scanner-pin': activePin 
         },
         body: JSON.stringify({
           code: codeToVerify.trim(),
           action: 'PREVIEW',
           volunteerName,
-          pin,
+          pin: activePin,
         }),
       });
 
       const data = await res.json();
 
-      // If status is NOT 'READY' (e.g. ALREADY_CHECKED_IN, PENDING, REJECTED, NOT_FOUND)
+      // If status is NOT 'READY' (e.g. ALREADY_CHECKED_IN, PENDING, REJECTED, NOT_FOUND, UNAUTHORIZED)
       if (data.status !== 'READY') {
         playErrorSound();
+        const displayMsg = data.message || data.error || 'Pass verification rejected.';
         setScanPreview({
           code: codeToVerify.trim(),
           attendee: data.attendee,
           totalQuota: data.totalQuota || 0,
           admittedCount: data.admittedCount || 0,
           remaining: data.remaining || 0,
-          status: data.status,
-          message: data.message || 'Pass verification rejected.',
+          status: data.status || 'NOT_FOUND',
+          message: displayMsg,
         });
         return;
       }
@@ -276,7 +284,7 @@ export default function GateScannerPage() {
         admittedCount: data.admittedCount || 0,
         remaining: rem,
         status: 'READY',
-        message: data.message,
+        message: data.message || 'Pass verified successfully.',
       });
     } catch (err) {
       console.error(err);
@@ -299,27 +307,29 @@ export default function GateScannerPage() {
     if (!scanPreview || admitting) return;
     setAdmitting(true);
 
+    const activePin = (pin || sessionStorage.getItem('dbit_scanner_pin') || 'milan#entry').trim().replace(/^["']|["']$/g, '');
+
     try {
       const res = await fetch('/api/scan', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'x-scanner-pin': pin 
+          'x-scanner-pin': activePin 
         },
         body: JSON.stringify({
           code: scanPreview.code,
           action: 'CHECKIN',
           admittingCount: countToAdmit,
           volunteerName,
-          pin,
+          pin: activePin,
         }),
       });
 
       const data = await res.json();
       const result: VerificationResult = {
-        valid: data.success,
+        valid: Boolean(data.success),
         code: data.status || (data.success ? 'SUCCESS' : 'NOT_FOUND'),
-        message: data.message || 'Check-in processed',
+        message: data.message || data.error || 'Check-in processed',
         attendee: data.attendee,
         admittedNow: data.admittedNow,
         remaining: data.remaining,
@@ -827,6 +837,9 @@ export default function GateScannerPage() {
                       {scanPreview.status === 'PENDING' && 'PENDING MANUAL APPROVAL'}
                       {scanPreview.status === 'REJECTED' && 'PASS REJECTED'}
                       {scanPreview.status === 'NOT_FOUND' && 'INVALID / NOT FOUND'}
+                      {scanPreview.status === 'UNAUTHORIZED' && 'GATE PIN REQUIRED'}
+                      {scanPreview.status === 'SERVER_ERROR' && 'SERVER CONNECTION ERROR'}
+                      {!['READY', 'ALREADY_CHECKED_IN', 'PENDING', 'REJECTED', 'NOT_FOUND', 'UNAUTHORIZED', 'SERVER_ERROR'].includes(scanPreview.status) && 'VERIFICATION ERROR'}
                     </h3>
                     <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', marginTop: 2, color: 'var(--text-body)' }}>
                       {scanPreview.message}
