@@ -115,64 +115,86 @@ export default function ContributionModal({ isOpen, onClose }: ContributionModal
           Join fellow alumni in empowering DBIT students, supporting merit scholarships, and upgrading campus technical infrastructure for the next generation of engineers.
         </p>
 
-        {/* Vibrant Contribute Button */}
-        <a
-          href="https://alumni.dbit.co.in/funds.dz"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 10,
-            width: '100%',
-            padding: '16px 24px',
-            background: 'linear-gradient(135deg, #FFB800 0%, #FF8A00 50%, #E66A00 100%)',
-            color: '#07152B',
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.95rem',
-            fontWeight: 800,
-            letterSpacing: '1px',
-            textTransform: 'uppercase',
-            textDecoration: 'none',
-            borderRadius: 10,
-            boxShadow: '0 8px 24px rgba(255, 138, 0, 0.45)',
-            transition: 'all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1)',
-            cursor: 'pointer',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 12px 30px rgba(255, 138, 0, 0.6)';
-            e.currentTarget.style.filter = 'brightness(1.06)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 8px 24px rgba(255, 138, 0, 0.45)';
-            e.currentTarget.style.filter = 'none';
-          }}
-        >
-          <Heart size={18} fill="#07152B" />
-          CONTRIBUTE NOW ↗
-        </a>
+        {/* Button Actions */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginTop: 4 }}>
+          {/* Vibrant Contribute Button - 25% more compact */}
+          <a
+            href="https://alumni.dbit.co.in/funds.dz"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              width: '85%',
+              maxWidth: 340,
+              padding: '12px 20px',
+              background: 'linear-gradient(135deg, #FFB800 0%, #FF8A00 50%, #E66A00 100%)',
+              color: '#07152B',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.85rem',
+              fontWeight: 800,
+              letterSpacing: '0.8px',
+              textTransform: 'uppercase',
+              textDecoration: 'none',
+              borderRadius: 8,
+              boxShadow: '0 6px 18px rgba(255, 138, 0, 0.4)',
+              transition: 'all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 10px 24px rgba(255, 138, 0, 0.55)';
+              e.currentTarget.style.filter = 'brightness(1.06)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 6px 18px rgba(255, 138, 0, 0.4)';
+              e.currentTarget.style.filter = 'none';
+            }}
+          >
+            <Heart size={16} fill="#07152B" />
+            CONTRIBUTE NOW ↗
+          </a>
 
-        {/* Secondary dismiss */}
-        <button
-          type="button"
-          onClick={onClose}
-          style={{
-            marginTop: 14,
-            background: 'none',
-            border: 'none',
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.8rem',
-            color: '#6B7280',
-            cursor: 'pointer',
-            padding: '8px 12px',
-            textDecoration: 'underline',
-          }}
-        >
-          Continue to View My Entry Pass
-        </button>
+          {/* No Thanks Button - 25% smaller than the previous button */}
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '65%',
+              maxWidth: 255,
+              padding: '9px 15px',
+              background: '#F3F4F6',
+              border: '1px solid #D1D5DB',
+              color: '#4B5563',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              letterSpacing: '0.5px',
+              textTransform: 'uppercase',
+              borderRadius: 8,
+              cursor: 'pointer',
+              transition: 'all 0.18s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#E5E7EB';
+              e.currentTarget.style.color = '#111827';
+              e.currentTarget.style.borderColor = '#9CA3AF';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#F3F4F6';
+              e.currentTarget.style.color = '#4B5563';
+              e.currentTarget.style.borderColor = '#D1D5DB';
+            }}
+          >
+            NO THANKS
+          </button>
+        </div>
       </div>
 
       <style jsx global>{`
