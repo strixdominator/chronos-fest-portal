@@ -69,11 +69,19 @@ export default function HomePage() {
       {/* HEADER BANNER POSTER */}
       <div className="dbit-header-banner-container no-print">
         <div className="dbit-header-banner-inner">
-          <img
-            src="/header-banner.png"
-            alt="Milan 2026 DBIT Alumni Grand Reunion"
-            className="dbit-header-banner-img"
-          />
+          <picture>
+            <source srcSet="/header-banner.webp" type="image/webp" />
+            <source srcSet="/header-banner.jpg" type="image/jpeg" />
+            <img
+              src="/header-banner.webp"
+              alt="Milan 2026 DBIT Alumni Grand Reunion"
+              className="dbit-header-banner-img"
+              loading="eager"
+              decoding="async"
+              width={2048}
+              height={768}
+            />
+          </picture>
         </div>
       </div>
 

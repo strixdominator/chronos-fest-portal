@@ -1,26 +1,26 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Users, 
-  CheckCircle2, 
-  Clock, 
-  XCircle, 
-  QrCode, 
-  Download, 
-  Search, 
-  Check, 
-  X, 
-  Eye, 
-  Settings, 
-  Lock, 
-  RefreshCw, 
-  ShieldCheck, 
-  AlertTriangle, 
-  RotateCcw, 
-  Upload, 
-  KeyRound, 
-  FileSpreadsheet, 
+import {
+  Users,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  QrCode,
+  Download,
+  Search,
+  Check,
+  X,
+  Eye,
+  Settings,
+  Lock,
+  RefreshCw,
+  ShieldCheck,
+  AlertTriangle,
+  RotateCcw,
+  Upload,
+  KeyRound,
+  FileSpreadsheet,
   ExternalLink,
   GraduationCap,
   Mail,
@@ -209,9 +209,9 @@ export default function AdminPage() {
     try {
       const res = await fetch(`/api/attendees/${id}/status`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'x-admin-passcode': adminPasscode 
+          'x-admin-passcode': adminPasscode
         },
         body: JSON.stringify({ status, rejectionReason: reason }),
       });
@@ -236,9 +236,9 @@ export default function AdminPage() {
     try {
       const res = await fetch(`/api/attendees/${id}/status`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'x-admin-passcode': adminPasscode 
+          'x-admin-passcode': adminPasscode
         },
         body: JSON.stringify({ action: 'RESET_CHECKIN' }),
       });
@@ -266,9 +266,9 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/attendees/bulk-approve', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'x-admin-passcode': adminPasscode 
+          'x-admin-passcode': adminPasscode
         },
         body: JSON.stringify({}),
       });
@@ -386,9 +386,9 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/alumni/master?action=syncDataDir', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'x-admin-passcode': adminPasscode 
+          'x-admin-passcode': adminPasscode
         },
       });
       const data = await res.json();
@@ -435,9 +435,9 @@ export default function AdminPage() {
 
       const res = await fetch('/api/alumni/master', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'x-admin-passcode': adminPasscode 
+          'x-admin-passcode': adminPasscode
         },
         body: JSON.stringify({ records }),
       });
@@ -462,9 +462,9 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/settings', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'x-admin-passcode': adminPasscode 
+          'x-admin-passcode': adminPasscode
         },
         body: JSON.stringify(settingsForm),
       });
@@ -517,9 +517,9 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/admin/test-notification', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'x-admin-passcode': adminPasscode 
+          'x-admin-passcode': adminPasscode
         },
         body: JSON.stringify({ type: testType, target: testTarget.trim() }),
       });
@@ -540,10 +540,10 @@ export default function AdminPage() {
           {/* Header */}
           <div className="dbit-auth-header">
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
-              <img 
-                src="/assets/66eff0e624600df79e9f69030275731c.png" 
-                alt="Don Bosco Institute of Technology emblem" 
-                style={{ width: 48, height: 'auto', display: 'block' }} 
+              <img
+                src="/assets/66eff0e624600df79e9f69030275731c.png"
+                alt="Don Bosco Institute of Technology emblem"
+                style={{ width: 48, height: 'auto', display: 'block' }}
               />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.5px', lineHeight: 1 }}>
@@ -615,10 +615,10 @@ export default function AdminPage() {
       {/* HUB NAVIGATOR STRIP */}
       <div className="dbit-top-hub">
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <img 
-            src="/assets/66eff0e624600df79e9f69030275731c.png" 
-            alt="Don Bosco Institute of Technology emblem" 
-            style={{ width: 38, height: 'auto', display: 'block' }} 
+          <img
+            src="/assets/66eff0e624600df79e9f69030275731c.png"
+            alt="Don Bosco Institute of Technology emblem"
+            style={{ width: 38, height: 'auto', display: 'block' }}
           />
           <div>
             <div style={{ fontSize: 17, fontWeight: 700, lineHeight: 1 }}>
@@ -1223,22 +1223,22 @@ export default function AdminPage() {
                 const count = dept.id === 'ALL'
                   ? alumniList.length
                   : (departmentCounts[dept.id] || alumniList.filter(a => {
-                      const d = (a.department || '').toLowerCase();
-                      const target = dept.id.toLowerCase();
-                      if (d === target) return true;
-                      if (dept.id === 'CSE') return d.includes('cse') || d.includes('computer');
-                      if (dept.id === 'ISE') return d.includes('ise') || d.includes('info') || d === 'is';
-                      if (dept.id === 'AI & DS') return d.includes('data') || d.includes('aids') || d.includes('ai&ds') || d.includes('ai & ds') || d === 'ad';
-                      if (dept.id === 'AI & ML') return d.includes('machine') || d.includes('aiml') || d.includes('ai&ml') || d.includes('ai & ml') || d === 'am';
-                      if (dept.id === 'ECE') return d.includes('ece') || d.includes('electron') || d === 'ec';
-                      if (dept.id === 'Mechanical') return d.includes('mech') || d === 'me';
-                      if (dept.id === 'Civil') return d.includes('civil') || d === 'cv';
-                      if (dept.id === 'EEE') return d.includes('eee') || d.includes('electrical') || d === 'ee';
-                      if (dept.id === 'TCE') return d.includes('tce') || d.includes('telecom') || d === 'te' || d === 'tc';
-                      if (dept.id === 'MBA') return d.includes('mba') || d.includes('business');
-                      if (dept.id === 'M.Tech') return d.includes('mtech') || d.includes('m.tech') || d === 'scs';
-                      return false;
-                    }).length);
+                    const d = (a.department || '').toLowerCase();
+                    const target = dept.id.toLowerCase();
+                    if (d === target) return true;
+                    if (dept.id === 'CSE') return d.includes('cse') || d.includes('computer');
+                    if (dept.id === 'ISE') return d.includes('ise') || d.includes('info') || d === 'is';
+                    if (dept.id === 'AI & DS') return d.includes('data') || d.includes('aids') || d.includes('ai&ds') || d.includes('ai & ds') || d === 'ad';
+                    if (dept.id === 'AI & ML') return d.includes('machine') || d.includes('aiml') || d.includes('ai&ml') || d.includes('ai & ml') || d === 'am';
+                    if (dept.id === 'ECE') return d.includes('ece') || d.includes('electron') || d === 'ec';
+                    if (dept.id === 'Mechanical') return d.includes('mech') || d === 'me';
+                    if (dept.id === 'Civil') return d.includes('civil') || d === 'cv';
+                    if (dept.id === 'EEE') return d.includes('eee') || d.includes('electrical') || d === 'ee';
+                    if (dept.id === 'TCE') return d.includes('tce') || d.includes('telecom') || d === 'te' || d === 'tc';
+                    if (dept.id === 'MBA') return d.includes('mba') || d.includes('business');
+                    if (dept.id === 'M.Tech') return d.includes('mtech') || d.includes('m.tech') || d === 'scs';
+                    return false;
+                  }).length);
                 const isActive = selectedDeptFilter === dept.id;
                 return (
                   <button

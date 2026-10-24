@@ -205,9 +205,16 @@ input:focus, select:focus, textarea:focus {
   padding: 0;
 }
 
+.dbit-header-banner-inner picture {
+  display: block;
+  width: 100%;
+  line-height: 0;
+}
+
 .dbit-header-banner-img {
   width: 100%;
   height: auto;
+  aspect-ratio: 2048 / 768;
   display: block;
   object-fit: cover;
   image-rendering: -webkit-optimize-contrast;
