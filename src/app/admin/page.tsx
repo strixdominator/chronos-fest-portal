@@ -546,24 +546,24 @@ export default function AdminPage() {
                 style={{ width: 48, height: 'auto', display: 'block' }}
               />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.5px', lineHeight: 1 }}>
-                  MILAN<span style={{ color: '#93c5fd' }}>2026</span>
+                <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.5px', lineHeight: 1, color: '#FFFFFF' }}>
+                  MILAN<span style={{ color: 'var(--champagne)' }}>2026</span>
                 </span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: 1.4, color: '#A9B8D8' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: 1.4, color: 'var(--champagne)' }}>
                   DBIT ALUMNI ASSOCIATION
                 </span>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-              <span className="mono-tag" style={{ color: '#93c5fd', fontSize: 11, letterSpacing: 1.5 }}>
+              <span className="mono-tag" style={{ color: 'var(--champagne)', fontSize: 11, letterSpacing: 1.5 }}>
                 COMMAND AUTHORIZATION
               </span>
               <span style={{ width: 24, height: 2, background: 'var(--color-gold)', borderRadius: 2 }} />
             </div>
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, margin: '2px 0 4px' }}>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, margin: '2px 0 4px', color: '#FFFFFF' }}>
               Admin Command Center
             </h2>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#A9B8D8', letterSpacing: 1 }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--champagne)', letterSpacing: 1 }}>
               7 NOVEMBER 2026 · 2:30 PM (GATES: 2:00 PM) · DBIT CRICKET GROUND
             </div>
           </div>
@@ -621,15 +621,15 @@ export default function AdminPage() {
             style={{ width: 38, height: 'auto', display: 'block' }}
           />
           <div>
-            <div style={{ fontSize: 17, fontWeight: 700, lineHeight: 1 }}>
-              MILAN<span style={{ color: 'var(--color-blue)' }}>2026</span>
+            <div style={{ fontSize: 17, fontWeight: 700, lineHeight: 1, color: '#FFFFFF' }}>
+              MILAN<span style={{ color: 'var(--champagne)' }}>2026</span>
             </div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9.5, letterSpacing: 1.2, color: 'var(--text-muted)' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9.5, letterSpacing: 1.2, color: 'var(--champagne)' }}>
               DBIT ALUMNI ASSOCIATION
             </div>
           </div>
-          <span style={{ height: 20, width: 1, background: 'var(--border-color)', margin: '0 4px' }} />
-          <span className="mono-tag" style={{ color: 'var(--color-blue)', fontSize: 11 }}>
+          <span style={{ height: 20, width: 1, background: 'rgba(178, 139, 76, 0.3)', margin: '0 4px' }} />
+          <span className="mono-tag" style={{ color: 'var(--champagne)', fontSize: 11 }}>
             COMMAND CENTER
           </span>
         </div>
@@ -675,16 +675,16 @@ export default function AdminPage() {
       <div className="dbit-dashboard-header">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
-            <span className="mono-tag" style={{ fontSize: 13, letterSpacing: 1.8 }}>ALUMNI MEET · MILAN 2026</span>
+            <span className="mono-tag" style={{ fontSize: 13, letterSpacing: 1.8, color: 'var(--champagne)' }}>ALUMNI MEET · MILAN 2026</span>
             <span style={{ display: 'block', width: 36, height: 3, background: 'var(--color-gold)', borderRadius: 2 }} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-muted)', fontWeight: 700 }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--champagne)', fontWeight: 700 }}>
               7 NOVEMBER 2026 · 2:30 PM · GATES OPEN 2:00 PM · DBIT CRICKET GROUND, BANGALORE
             </span>
           </div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', fontWeight: 700, color: 'var(--color-navy)' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', fontWeight: 700, color: '#FFFFFF' }}>
             Organizer Command Center
           </h1>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--text-body)', marginTop: 4 }}>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--soft-beige)', marginTop: 4 }}>
             {settings?.eventName || "MILAN 2026"} · {alumniList.length} Verified Master Alumni Records on File
           </p>
         </div>
@@ -763,7 +763,7 @@ export default function AdminPage() {
       <div className="dbit-stat-grid">
         <div className="neo-stat-card">
           <span className="mono-label">TOTAL REGISTRATIONS</span>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 700, margin: '8px 0 2px', color: 'var(--color-navy)' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 700, margin: '8px 0 2px', color: 'var(--espresso)' }}>
             {stats.total} <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>/ {stats.capacity} max</span>
           </div>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>
@@ -773,7 +773,7 @@ export default function AdminPage() {
 
         <div className="neo-stat-card">
           <span className="mono-label">ACTIVE PASSES ISSUED</span>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 700, margin: '8px 0 2px', color: 'var(--color-blue)' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 700, margin: '8px 0 2px', color: '#8A6426' }}>
             {stats.approved}
           </div>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)' }}>

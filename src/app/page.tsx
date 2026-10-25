@@ -70,21 +70,21 @@ export default function HomePage() {
     <div className="dbit-page-wrapper">
       {/* POSTER LIGHTBOX MODAL */}
       {showPosterModal && (
-        <div 
-          className="neo-modal-backdrop" 
+        <div
+          className="neo-modal-backdrop"
           onClick={() => setShowPosterModal(false)}
           style={{ background: 'rgba(9, 9, 9, 0.92)', zIndex: 9999 }}
         >
-          <div 
-            style={{ 
-              position: 'relative', 
-              maxWidth: '1000px', 
-              width: '94%', 
-              background: '#171310', 
-              border: '1.5px solid #B08A46', 
-              borderRadius: 14, 
-              padding: 16, 
-              boxShadow: '0 25px 80px rgba(0,0,0,0.9), 0 0 50px rgba(176,138,70,0.3)' 
+          <div
+            style={{
+              position: 'relative',
+              maxWidth: '1000px',
+              width: '94%',
+              background: '#171310',
+              border: '1.5px solid #B08A46',
+              borderRadius: 14,
+              padding: 16,
+              boxShadow: '0 25px 80px rgba(0,0,0,0.9), 0 0 50px rgba(176,138,70,0.3)'
             }}
             onClick={e => e.stopPropagation()}
           >
@@ -341,7 +341,7 @@ export default function HomePage() {
 
           <div>
             <h2 className="dbit-event-title">
-              Two Decades. <span>One Brotherhood.</span>
+              Back to <span>Where It Began.</span>
             </h2>
             <p className="dbit-event-desc">
               Milan 2026 is the annual return to campus — reuniting professors, classmates, and thousands of Don Bosco graduates under the floodlights of the DBIT Cricket Ground. Relive your stories, celebrate achievements, and walk through the corridors where it all began.
@@ -448,22 +448,29 @@ export default function HomePage() {
       <footer id="contact" className="dbit-footer no-print">
         {/* Full-width Branding Header Row */}
         <div className="dbit-footer-header-container">
-          <img
-            src="/assets/66eff0e624600df79e9f69030275731c.png"
-            alt="Don Bosco Institute of Technology emblem"
-            className="dbit-footer-brand-logo"
-          />
+          <div className="dbit-footer-logo-box">
+            <img
+              src="/assets/66eff0e624600df79e9f69030275731c.png"
+              alt="Don Bosco Institute of Technology emblem"
+              className="dbit-footer-brand-logo"
+            />
+          </div>
 
           <div className="dbit-footer-text-group">
             <span className="dbit-footer-college">
               Don Bosco Institute of Technology, Bangalore
             </span>
-            <span className="dbit-footer-sub">
-              DBIT ALUMNI ASSOCIATION (R) · RECONNECTING RELATIONS
+            <div className="dbit-footer-event-badge">
+              <span className="dbit-footer-event-name">MILAN 2026</span>
+              <span className="dbit-footer-event-dot">·</span>
+              <span className="dbit-footer-event-sub">ALUMNI MEET</span>
+            </div>
+            <span className="dbit-footer-script-tag">
+              Reconnecting Relations
             </span>
           </div>
 
-          <div className="dbit-footer-logo-badge">
+          <div className="dbit-footer-logo-box">
             <img
               src="/assets/1662177580bae749e245f3973661f37f.png"
               alt="DBIT Alumni Association logo"
@@ -473,7 +480,6 @@ export default function HomePage() {
         </div>
 
         <div className="dbit-footer-content">
-
           {/* CONTACT US */}
           <div className="dbit-footer-contact">
             <div className="dbit-contact-header">
@@ -483,21 +489,21 @@ export default function HomePage() {
 
             <div className="dbit-contact-list">
               <div className="dbit-contact-item">
-                <Phone size={19} className="dbit-contact-icon" />
+                <Phone size={18} className="dbit-contact-icon" />
                 <a href="tel:9606236236" className="dbit-contact-link">
                   +9606236236
                 </a>
               </div>
 
               <div className="dbit-contact-item">
-                <Mail size={19} className="dbit-contact-icon" />
+                <Mail size={18} className="dbit-contact-icon" />
                 <a href="mailto:alumni.relations@dbit.co.in" className="dbit-contact-link">
                   alumni.relations@dbit.co.in
                 </a>
               </div>
 
               <div className="dbit-contact-item">
-                <MapPin size={19} className="dbit-contact-icon" />
+                <MapPin size={18} className="dbit-contact-icon" />
                 <div className="dbit-contact-address">
                   <span>Don Bosco Institute of Technology</span>
                   <span>Kumbalagodu, Mysore Road</span>
@@ -510,7 +516,7 @@ export default function HomePage() {
           {/* CONNECT US ON */}
           <div className="dbit-footer-connect">
             <div className="dbit-contact-header">
-              <h3 className="dbit-contact-title">Connect us on</h3>
+              <h3 className="dbit-contact-title">Connect With Us</h3>
               <span className="dbit-contact-gold-bar" />
             </div>
 
@@ -524,7 +530,7 @@ export default function HomePage() {
                 title="Facebook"
                 className="dbit-social-circle dbit-social-facebook"
               >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="#FFFFFF">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF">
                   <path d="M13.397 20.997v-8.196h2.765l.411-3.209h-3.176V7.548c0-.926.258-1.56 1.587-1.56h1.684V3.127A22.336 22.336 0 0 0 14.201 3c-2.444 0-4.122 1.492-4.122 4.231v2.355H7.332v3.209h2.753v8.202h3.312z" />
                 </svg>
               </a>
@@ -538,7 +544,7 @@ export default function HomePage() {
                 title="X (formerly Twitter)"
                 className="dbit-social-circle dbit-social-x"
               >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFFFFF">
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                 </svg>
               </a>
@@ -552,8 +558,8 @@ export default function HomePage() {
                 title="Instagram"
                 className="dbit-social-circle dbit-social-instagram"
               >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="#FFFFFF">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
                 </svg>
               </a>
 
@@ -566,8 +572,8 @@ export default function HomePage() {
                 title="LinkedIn"
                 className="dbit-social-circle dbit-social-linkedin"
               >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF">
-                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452z"/>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFFFFF">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452z" />
                 </svg>
               </a>
 
@@ -580,19 +586,25 @@ export default function HomePage() {
                 title="YouTube"
                 className="dbit-social-circle dbit-social-youtube"
               >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="#FFFFFF">
-                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF">
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
                 </svg>
               </a>
             </div>
           </div>
         </div>
 
-        <div className="dbit-footer-bottom">
-          <span className="dbit-footer-meet-tag">MILAN 2026 · ALUMNI MEET</span>
-          <span className="dbit-footer-copy">
-            © 2026 Don Bosco Institute of Technology Alumni Association (R). All rights reserved.
-          </span>
+        {/* Footer Closing Strip & Centered Developer Credit */}
+        <div className="dbit-footer-bottom-wrap">
+          <div className="dbit-footer-bottom">
+            <span className="dbit-footer-meet-tag">MILAN 2026 · ALUMNI MEET</span>
+            <span className="dbit-footer-copy">
+              © 2026 Don Bosco Institute of Technology Alumni Association (R). All rights reserved.
+            </span>
+          </div>
+          <div className="dbit-footer-developer">
+            Made with ❤️ by Kishan
+          </div>
         </div>
       </footer>
     </div>

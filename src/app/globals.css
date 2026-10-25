@@ -81,6 +81,8 @@
 html {
   scroll-behavior: smooth;
   background-color: var(--espresso);
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
 }
 
 body {
@@ -92,6 +94,8 @@ body {
   line-height: 1.6;
   margin: 0;
   padding: 0;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
 }
 
 main {
@@ -113,10 +117,19 @@ a:hover {
 button {
   font-family: var(--font-body);
   cursor: pointer;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
 }
 
 input, select, textarea {
   font-family: var(--font-mono);
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
+}
+
+table, th, td {
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
 }
 
 /* ==========================================================================
@@ -172,9 +185,10 @@ input, select, textarea {
 
 .dbit-accent-blue {
   color: var(--champagne);
-  font-style: italic;
+  font-style: normal;
   font-family: var(--font-display);
   margin-left: 4px;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .dbit-header-subtitle {
@@ -190,11 +204,11 @@ input, select, textarea {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 12px;
 }
 
 .dbit-nav-link {
-  padding: 8px 14px;
+  padding: 8px 16px;
   font-family: var(--font-body);
   font-size: 12.5px;
   letter-spacing: 0.8px;
@@ -206,7 +220,7 @@ input, select, textarea {
 }
 
 .dbit-nav-link:hover {
-  background: rgba(178, 139, 76, 0.12);
+  background: rgba(178, 139, 76, 0.14);
   color: var(--champagne);
 }
 
@@ -1244,62 +1258,55 @@ input, select, textarea {
 }
 
 /* ==========================================================================
-   FOOTER & CONTACT US (MIDNIGHT NAVY PRESTIGE INSTITUTIONAL FOOTER)
+   FOOTER & CONTACT US (WARM BRONZE & ESPRESSO INSTITUTIONAL FOOTER)
    ========================================================================== */
 .dbit-footer {
-  background: var(--midnight-navy);
-  border-top: 1px solid rgba(178, 139, 76, 0.3);
+  background: radial-gradient(ellipse at 50% 0%, rgba(178, 139, 76, 0.14) 0%, transparent 68%), #17130F;
+  border-top: 1px solid rgba(178, 139, 76, 0.28);
   color: var(--ivory);
-  padding: 64px 48px 32px;
+  padding: 56px 48px 28px;
   position: relative;
   width: 100%;
 }
 
-.dbit-footer-content {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 48px;
-  padding-bottom: 40px;
-  border-bottom: 1px solid rgba(178, 139, 76, 0.25);
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-/* Full-width Branding Header Row */
 .dbit-footer-header-container {
   width: 100%;
   max-width: 1200px;
-  margin: 0 auto 40px;
+  margin: 0 auto 36px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 28px;
-  padding-bottom: 32px;
-  border-bottom: 1px solid rgba(178, 139, 76, 0.25);
+  gap: 24px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid rgba(178, 139, 76, 0.2);
   background: transparent;
 }
 
-.dbit-footer-brand-logo {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-  flex-shrink: 0;
-  display: block;
-  filter: drop-shadow(0 2px 8px rgba(178, 139, 76, 0.3));
-}
-
-.dbit-footer-logo-badge {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(178, 139, 76, 0.3);
-  padding: 6px;
-  border-radius: 50%;
+.dbit-footer-logo-box {
+  background: rgba(245, 239, 227, 0.08);
+  border: 1px solid rgba(178, 139, 76, 0.28);
+  border-radius: 12px;
+  padding: 8px 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  line-height: 0;
+  backdrop-filter: blur(4px);
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.dbit-footer-logo-box:hover {
+  background: rgba(245, 239, 227, 0.12);
+  border-color: var(--champagne);
+  transform: translateY(-1px);
+}
+
+.dbit-footer-brand-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: block;
 }
 
 .dbit-footer-text-group {
@@ -1314,7 +1321,7 @@ input, select, textarea {
 
 .dbit-footer-college {
   font-family: var(--font-display);
-  font-size: 25px;
+  font-size: 24px;
   font-weight: 600;
   color: #FFFFFF;
   letter-spacing: 0.3px;
@@ -1322,14 +1329,40 @@ input, select, textarea {
   text-align: center;
 }
 
-.dbit-footer-sub {
+.dbit-footer-event-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--font-body);
   font-size: 11px;
   letter-spacing: 1.8px;
   color: var(--champagne);
-  line-height: 1.4;
-  text-align: center;
   text-transform: uppercase;
+  font-weight: 700;
+}
+
+.dbit-footer-event-dot {
+  color: var(--gold-antique);
+}
+
+.dbit-footer-script-tag {
+  font-family: var(--font-script);
+  font-size: 26px;
+  color: var(--champagne);
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.dbit-footer-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 40px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid rgba(178, 139, 76, 0.2);
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 /* CONTACT US SECTION */
@@ -1385,6 +1418,7 @@ input, select, textarea {
   text-decoration: none;
   transition: color 0.2s ease;
   line-height: 1.4;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .dbit-contact-link:hover {
@@ -1399,6 +1433,7 @@ input, select, textarea {
   font-size: 14.5px;
   line-height: 1.5;
   color: var(--soft-beige);
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 /* CONNECT US ON (SOCIAL LINKS) */
@@ -1443,10 +1478,16 @@ input, select, textarea {
   box-shadow: 0 6px 20px rgba(178, 139, 76, 0.3);
 }
 
-.dbit-footer-bottom {
+.dbit-footer-bottom-wrap {
   max-width: 1200px;
   margin: 0 auto;
-  padding-top: 24px;
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dbit-footer-bottom {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1460,6 +1501,8 @@ input, select, textarea {
   letter-spacing: 1.8px;
   color: var(--champagne);
   text-transform: uppercase;
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .dbit-footer-copy {
@@ -1467,6 +1510,19 @@ input, select, textarea {
   font-size: 12px;
   letter-spacing: 0.3px;
   color: var(--text-muted);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.dbit-footer-developer {
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  letter-spacing: 0.8px;
+  font-weight: 500;
+  color: var(--champagne);
+  padding-top: 14px;
+  border-top: 1px solid rgba(178, 139, 76, 0.16);
+  width: 100%;
 }
 
 /* ==========================================================================
@@ -1511,44 +1567,48 @@ input, select, textarea {
 .dbit-auth-card {
   max-width: 460px;
   width: 100%;
-  background: #FFFFFF;
-  border: 1px solid var(--border-color);
+  background: #1A1511;
+  border: 1.5px solid rgba(178, 139, 76, 0.35);
   border-radius: var(--radius-card);
-  box-shadow: 0 24px 60px -24px rgba(14, 31, 69, 0.28);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 35px rgba(178, 139, 76, 0.15);
   overflow: hidden;
 }
 
 .dbit-auth-header {
   padding: 28px 32px;
-  background: var(--color-navy);
+  background: #14100D;
   color: #FFFFFF;
+  border-bottom: 1px solid rgba(178, 139, 76, 0.25);
 }
 
 .dbit-auth-body {
   padding: 32px;
-  background: #FFFFFF;
+  background: #1A1511;
+  color: var(--soft-beige);
 }
 
 .dbit-top-hub {
-  background: #FFFFFF;
-  border-bottom: 1px solid var(--border-color);
+  background: #17130F;
+  border-bottom: 1px solid rgba(178, 139, 76, 0.25);
   padding: 12px 32px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  color: var(--ivory);
 }
 
 .dbit-dashboard-header {
   padding: 32px 32px 24px;
-  border-bottom: 1px solid var(--border-color);
-  background: linear-gradient(180deg, #EAF0FB 0%, #F5F8FD 100%);
+  border-bottom: 1px solid rgba(178, 139, 76, 0.22);
+  background: linear-gradient(180deg, #1E1914 0%, #17130F 100%);
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: flex-end;
   gap: 20px;
+  color: var(--ivory);
 }
 
 .dbit-stat-grid {
@@ -1559,24 +1619,27 @@ input, select, textarea {
 }
 
 .neo-stat-card {
-  background: #FFFFFF;
-  border: 1px solid var(--border-color);
+  background: #FAF7F2;
+  border: 1px solid rgba(178, 139, 76, 0.32);
   border-radius: var(--radius-box);
   padding: 20px 24px;
-  box-shadow: 0 2px 8px rgba(14, 31, 69, 0.04);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .neo-stat-card:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(14, 31, 69, 0.08);
+  border-color: rgba(178, 139, 76, 0.55);
+  box-shadow: 0 6px 16px rgba(178, 139, 76, 0.12);
 }
 
 .neo-box {
   background: #FFFFFF;
-  border: 1px solid rgba(176, 138, 70, 0.3);
+  border: 1px solid rgba(178, 139, 76, 0.3);
   border-radius: var(--radius-box);
   overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
 }
 
 .badge-onfile {
@@ -1589,6 +1652,7 @@ input, select, textarea {
   border: 1px solid #10B981;
   padding: 2px 8px;
   border-radius: 4px;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .badge-missing {
@@ -1601,13 +1665,14 @@ input, select, textarea {
   border: 1px solid #EF4444;
   padding: 2px 8px;
   border-radius: 4px;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .neo-tabs-header {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid rgba(178, 139, 76, 0.25);
   margin-bottom: 24px;
 }
 
@@ -1617,24 +1682,25 @@ input, select, textarea {
   font-size: 12px;
   letter-spacing: 1.2px;
   font-weight: 700;
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(178, 139, 76, 0.25);
   border-bottom: none;
   border-radius: 8px 8px 0 0;
-  background: #FFFFFF;
-  color: var(--color-navy);
+  background: #FAF7F2;
+  color: var(--espresso);
   cursor: pointer;
   transition: all 0.15s ease;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .neo-tab-btn.active {
-  background: var(--color-navy);
-  color: #FFFFFF;
-  border-color: var(--color-navy);
+  background: var(--espresso);
+  color: var(--champagne);
+  border-color: var(--espresso);
 }
 
 .neo-tab-btn:not(.active):hover {
-  background: var(--bg-page);
-  color: var(--color-blue);
+  background: #EFE8DC;
+  color: var(--gold-antique);
 }
 
 /* Data Table */
@@ -1642,16 +1708,17 @@ input, select, textarea {
   width: 100%;
   border-collapse: collapse;
   background: #FFFFFF;
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(178, 139, 76, 0.25);
   font-family: var(--font-body);
   font-size: 0.88rem;
   border-radius: var(--radius-box);
   overflow: hidden;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .neo-table th {
-  background: var(--color-navy);
-  color: #FFFFFF;
+  background: #17130F;
+  color: var(--champagne);
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 700;
@@ -1659,18 +1726,21 @@ input, select, textarea {
   letter-spacing: 1px;
   padding: 14px 16px;
   text-align: left;
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  border-right: 1px solid rgba(178, 139, 76, 0.2);
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .neo-table td {
   padding: 14px 16px;
-  border-bottom: 1px solid var(--border-color);
-  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid rgba(178, 139, 76, 0.18);
+  border-right: 1px solid rgba(178, 139, 76, 0.15);
   vertical-align: middle;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: #2B231D;
 }
 
 .neo-table tr:hover td {
-  background: #F0F4FA;
+  background: #FDF9F3;
 }
 
 /* Status Badges */
@@ -1686,9 +1756,10 @@ input, select, textarea {
   align-items: center;
   gap: 5px;
   border: 1px solid transparent;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
-.neo-badge-approved { background: #EAF0FB; color: var(--color-blue); border-color: #C4D5F6; }
+.neo-badge-approved { background: rgba(178, 139, 76, 0.16); color: #8A6426; border-color: rgba(178, 139, 76, 0.4); }
 .neo-badge-pending { background: #FEF3C7; color: #92400E; border-color: #FCD34D; }
 .neo-badge-rejected { background: #FEE2E2; color: #991B1B; border-color: #FCA5A5; }
 .neo-badge-checkedin { background: #D1FAE5; color: #065F46; border-color: #A7F3D0; }
@@ -1697,8 +1768,8 @@ input, select, textarea {
 .neo-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(14, 31, 69, 0.6);
-  backdrop-filter: blur(4px);
+  background: rgba(23, 19, 15, 0.75);
+  backdrop-filter: blur(6px);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -1707,10 +1778,10 @@ input, select, textarea {
 }
 
 .neo-modal {
-  background: #FFFFFF;
-  border: 1px solid var(--border-color);
+  background: #FAF7F2;
+  border: 1px solid rgba(178, 139, 76, 0.35);
   border-radius: var(--radius-card);
-  box-shadow: 0 24px 60px -20px rgba(14, 31, 69, 0.35);
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.4);
   width: 100%;
   max-width: 640px;
   max-height: 90vh;
@@ -1719,13 +1790,13 @@ input, select, textarea {
 }
 
 .neo-modal-header {
-  background: var(--color-navy);
-  color: #FFFFFF;
+  background: #17130F;
+  color: var(--champagne);
   padding: 20px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid rgba(178, 139, 76, 0.25);
 }
 
 /* Gate Scanner Camera & Controls */
@@ -1735,8 +1806,8 @@ input, select, textarea {
   max-width: 480px;
   height: 320px;
   margin: 0 auto;
-  background: var(--color-navy);
-  border: 2px solid var(--border-color);
+  background: #17130F;
+  border: 2px solid rgba(178, 139, 76, 0.4);
   border-radius: var(--radius-box);
   overflow: hidden;
   display: flex;
@@ -1749,8 +1820,8 @@ input, select, textarea {
   left: 6%;
   right: 6%;
   height: 3px;
-  background: #38BDF8;
-  box-shadow: 0 0 14px 3px #38BDF8;
+  background: var(--champagne);
+  box-shadow: 0 0 14px 3px var(--gold-antique);
   animation: scannerLaserSweep 2.2s ease-in-out infinite;
   z-index: 10;
   pointer-events: none;
@@ -1766,10 +1837,10 @@ input, select, textarea {
 .neo-stepper-btn {
   width: 44px;
   height: 44px;
-  background: #FFFFFF;
-  border: 1px solid var(--border-color);
+  background: #FAF7F2;
+  border: 1px solid rgba(178, 139, 76, 0.35);
   border-radius: 8px;
-  color: var(--color-navy);
+  color: var(--espresso);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1777,59 +1848,62 @@ input, select, textarea {
   font-family: var(--font-mono);
   font-weight: 700;
   transition: all 0.15s ease;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .neo-stepper-btn:hover:not(:disabled) {
-  background: var(--color-navy);
-  color: #FFFFFF;
-  border-color: var(--color-navy);
+  background: var(--espresso);
+  color: var(--champagne);
+  border-color: var(--espresso);
 }
 
 .neo-stepper-btn:disabled {
   opacity: 0.35;
   cursor: not-allowed;
-  background: #F1F5F9;
+  background: #EFE8DC;
 }
 
 .neo-stepper-val {
   min-width: 64px;
   height: 44px;
-  background: var(--bg-page);
-  border: 1px solid var(--border-color);
+  background: #FAF7F2;
+  border: 1px solid rgba(178, 139, 76, 0.35);
   border-radius: 8px;
   font-family: var(--font-mono);
   font-size: 1.4rem;
   font-weight: 800;
-  color: var(--color-navy);
+  color: var(--espresso);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0 14px;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .neo-chip-btn {
   padding: 8px 16px;
-  background: #FFFFFF;
-  border: 1px solid var(--border-color);
+  background: #FAF7F2;
+  border: 1px solid rgba(178, 139, 76, 0.35);
   border-radius: 20px;
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 700;
-  color: var(--color-navy);
+  color: var(--espresso);
   cursor: pointer;
   transition: all 0.15s ease;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .neo-chip-btn:hover {
-  background: var(--bg-page);
-  border-color: var(--color-blue);
-  color: var(--color-blue);
+  background: #EFE8DC;
+  border-color: var(--gold-antique);
+  color: var(--gold-antique);
 }
 
 .neo-chip-btn.active {
-  background: var(--color-navy);
-  color: #FFFFFF;
-  border-color: var(--color-navy);
+  background: var(--espresso);
+  color: var(--champagne);
+  border-color: var(--espresso);
 }
 
 /* Animations */
@@ -1850,8 +1924,16 @@ input, select, textarea {
     padding: 12px 24px;
   }
 
+  .dbit-header-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   .dbit-header-nav .dbit-nav-link {
-    display: none;
+    display: inline-flex;
+    padding: 7px 12px;
+    font-size: 11.5px;
   }
 
   .dbit-hero-section {
@@ -1887,9 +1969,10 @@ input, select, textarea {
 
 @media (max-width: 640px) {
   .dbit-header {
-    padding: 12px 18px;
-    flex-wrap: nowrap;
-    gap: 12px;
+    padding: 10px 16px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px;
   }
 
   .dbit-header-brand {
@@ -1910,25 +1993,25 @@ input, select, textarea {
   }
 
   .dbit-header-logo {
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
     flex-shrink: 0;
   }
 
   .dbit-header-nav {
-    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
   }
 
   .dbit-header-nav .dbit-nav-link {
-    display: none;
-  }
-
-  .dbit-nav-cta {
-    padding: 9px 14px;
+    display: inline-flex;
+    padding: 6px 10px;
     font-size: 11px;
-    letter-spacing: 1px;
-    white-space: nowrap;
-    flex-shrink: 0;
+    letter-spacing: 0.5px;
   }
 
   .dbit-hero-section {
@@ -2037,18 +2120,25 @@ input, select, textarea {
   }
 
   .dbit-footer {
-    padding: 40px 18px 28px;
+    padding: 36px 18px 24px;
   }
 
   .dbit-footer-header-container {
-    gap: 14px;
+    gap: 16px;
     padding-bottom: 24px;
-    margin-bottom: 32px;
+    margin-bottom: 28px;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .dbit-footer-logo-box {
+    padding: 6px 10px;
   }
 
   .dbit-footer-brand-logo {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
   }
 
   .dbit-footer-college {
@@ -2056,20 +2146,28 @@ input, select, textarea {
     line-height: 1.3;
   }
 
-  .dbit-footer-sub {
-    font-size: 9.5px;
-    letter-spacing: 1.2px;
-  }
-
   .dbit-footer-content {
     flex-direction: column;
-    gap: 36px;
-    padding-bottom: 32px;
+    gap: 32px;
+    padding-bottom: 28px;
+  }
+
+  .dbit-footer-bottom-wrap {
+    padding-top: 16px;
+    gap: 14px;
   }
 
   .dbit-footer-bottom {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+  }
+
+  .dbit-footer-developer {
+    text-align: center;
+    padding-top: 12px;
+    font-size: 12px;
+    margin: 0 auto;
   }
 }

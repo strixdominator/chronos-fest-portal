@@ -7,19 +7,6 @@ import { usePathname } from 'next/navigation';
 export default function Navbar() {
   const pathname = usePathname();
   const hideNav = pathname?.startsWith('/admin') || pathname?.startsWith('/scanner');
-  const handleGeneratePassClick = () => {
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('generate-fresh-pass'));
-      if (pathname === '/') {
-        const claimEl = document.getElementById('claim');
-        if (claimEl) {
-          claimEl.scrollIntoView({ behavior: 'smooth' });
-        }
-      } else {
-        window.location.href = '/#claim';
-      }
-    }
-  };
 
   return (
     <header className="dbit-header no-print">
@@ -45,17 +32,11 @@ export default function Navbar() {
 
       {!hideNav && (
         <nav className="dbit-header-nav">
-          <a href="#invitation" className="dbit-nav-link">
-            INVITATION
-          </a>
           <a href="#claim" className="dbit-nav-link">
             REGISTRATION
           </a>
           <a href="#how" className="dbit-nav-link">
             HOW IT WORKS
-          </a>
-          <a href="#atmosphere" className="dbit-nav-link">
-            ATMOSPHERE
           </a>
           <a href="#faq" className="dbit-nav-link">
             FAQ
@@ -63,14 +44,6 @@ export default function Navbar() {
           <a href="#contact" className="dbit-nav-link">
             CONTACT
           </a>
-          <button
-            type="button"
-            onClick={handleGeneratePassClick}
-            className="dbit-nav-cta"
-            aria-label="Generate fresh pass"
-          >
-            CLAIM PASS ↗
-          </button>
         </nav>
       )}
     </header>

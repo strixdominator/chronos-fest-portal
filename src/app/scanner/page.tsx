@@ -342,7 +342,7 @@ export default function GateScannerPage() {
           particleCount: 60,
           spread: 70,
           origin: { y: 0.6 },
-          colors: ['#1d4ed8', '#0a192f', '#93c5fd', '#ffffff']
+          colors: ['#B28B4C', '#E5D2A5', '#F5EFE3', '#C59D5B']
         });
       } else {
         playErrorSound();
@@ -384,24 +384,24 @@ export default function GateScannerPage() {
                 style={{ width: 48, height: 'auto', display: 'block' }} 
               />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.5px', lineHeight: 1 }}>
-                  MILAN<span style={{ color: '#93c5fd' }}>2026</span>
+                <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.5px', lineHeight: 1, color: '#FFFFFF' }}>
+                  MILAN<span style={{ color: 'var(--champagne)' }}>2026</span>
                 </span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: 1.4, color: '#A9B8D8' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: 1.4, color: 'var(--champagne)' }}>
                   DBIT ALUMNI ASSOCIATION
                 </span>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-              <span className="mono-tag" style={{ color: '#93c5fd', fontSize: 11, letterSpacing: 1.5 }}>
+              <span className="mono-tag" style={{ color: 'var(--champagne)', fontSize: 11, letterSpacing: 1.5 }}>
                 VOLUNTEER STATION GATEWAY
               </span>
               <span style={{ width: 24, height: 2, background: 'var(--color-gold)', borderRadius: 2 }} />
             </div>
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, margin: '2px 0 4px' }}>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 700, margin: '2px 0 4px', color: '#FFFFFF' }}>
               Gate Scanner Terminal
             </h2>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: '#A9B8D8', letterSpacing: 1 }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--champagne)', letterSpacing: 1 }}>
               7 NOVEMBER 2026 · 2:30 PM (GATES: 2:00 PM) · DBIT CRICKET GROUND
             </div>
           </div>
@@ -459,15 +459,15 @@ export default function GateScannerPage() {
             style={{ width: 38, height: 'auto', display: 'block' }} 
           />
           <div>
-            <div style={{ fontSize: 17, fontWeight: 700, lineHeight: 1 }}>
-              MILAN<span style={{ color: 'var(--color-blue)' }}>2026</span>
+            <div style={{ fontSize: 17, fontWeight: 700, lineHeight: 1, color: '#FFFFFF' }}>
+              MILAN<span style={{ color: 'var(--champagne)' }}>2026</span>
             </div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9.5, letterSpacing: 1.2, color: 'var(--text-muted)' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9.5, letterSpacing: 1.2, color: 'var(--champagne)' }}>
               DBIT ALUMNI ASSOCIATION
             </div>
           </div>
-          <span style={{ height: 20, width: 1, background: 'var(--border-color)', margin: '0 4px' }} />
-          <span className="mono-tag" style={{ color: 'var(--color-blue)', fontSize: 11 }}>
+          <span style={{ height: 20, width: 1, background: 'rgba(178, 139, 76, 0.3)', margin: '0 4px' }} />
+          <span className="mono-tag" style={{ color: 'var(--champagne)', fontSize: 11 }}>
             GATE SCANNER
           </span>
         </div>
@@ -513,17 +513,17 @@ export default function GateScannerPage() {
       <div className="dbit-dashboard-header">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
-            <span className="mono-tag" style={{ fontSize: 13, letterSpacing: 1.8 }}>ALUMNI MEET · MILAN 2026</span>
+            <span className="mono-tag" style={{ fontSize: 13, letterSpacing: 1.8, color: 'var(--champagne)' }}>ALUMNI MEET · MILAN 2026</span>
             <span style={{ display: 'block', width: 36, height: 3, background: 'var(--color-gold)', borderRadius: 2 }} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-muted)', fontWeight: 700 }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--champagne)', fontWeight: 700 }}>
               7 NOVEMBER 2026 · 2:30 PM · GATES OPEN 2:00 PM · DBIT CRICKET GROUND, BANGALORE
             </span>
           </div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.8rem, 3.2vw, 2.5rem)', fontWeight: 700, color: 'var(--color-navy)' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.8rem, 3.2vw, 2.5rem)', fontWeight: 700, color: '#FFFFFF' }}>
             Gate Entry & Wristband Terminal
           </h1>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: 'var(--text-body)', marginTop: 4 }}>
-            Station: <strong style={{ color: 'var(--color-navy)' }}>{volunteerName.toUpperCase()}</strong> · Optical pass validation with automatic family split-quota tracking.
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: 'var(--soft-beige)', marginTop: 4 }}>
+            Station: <strong style={{ color: 'var(--champagne)' }}>{volunteerName.toUpperCase()}</strong> · Optical pass validation with automatic family split-quota tracking.
           </p>
         </div>
 
@@ -576,28 +576,28 @@ export default function GateScannerPage() {
       <div style={{ maxWidth: 1000, margin: '16px auto 0', padding: '0 24px', display: 'flex', flexDirection: 'column', gap: 24 }}>
         
         {/* CARD 1: CAMERA SCANNER */}
-        <div className="neo-box" style={{ boxShadow: '0 4px 16px rgba(14, 31, 69, 0.06)' }}>
+        <div className="neo-box" style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.25)', border: '1px solid rgba(178, 139, 76, 0.3)' }}>
           <div style={{
             padding: '16px 24px',
-            borderBottom: '1px solid var(--border-color)',
-            background: 'var(--color-navy)',
+            borderBottom: '1px solid rgba(178, 139, 76, 0.25)',
+            background: '#17130F',
             color: '#ffffff',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Camera size={18} style={{ color: '#93c5fd' }} />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.06em' }}>
+              <Camera size={18} style={{ color: 'var(--champagne)' }} />
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.06em', color: 'var(--champagne)' }}>
                 01 • OPTICAL QR CAMERA VIEW
               </span>
             </div>
-            <span className="neo-badge" style={{ background: scanning ? '#d1fae5' : 'rgba(255, 255, 255, 0.15)', color: scanning ? '#065f46' : '#ffffff' }}>
+            <span className="neo-badge" style={{ background: scanning ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)', color: scanning ? '#6EE7B7' : '#ffffff', border: '1px solid ' + (scanning ? 'rgba(16, 185, 129, 0.4)' : 'rgba(255, 255, 255, 0.2)') }}>
               {scanning ? '● LIVE SCANNING' : '○ SENSOR OFF'}
             </span>
           </div>
 
-          <div style={{ padding: '28px 24px', textAlign: 'center' }}>
+          <div style={{ padding: '28px 24px', textAlign: 'center', background: '#1A1511' }}>
             <div className="scanner-camera-frame">
               <div id="qr-reader" style={{ width: '100%', height: '100%' }} />
               {scanning && <div className="scanner-laser-line" />}
@@ -609,12 +609,12 @@ export default function GateScannerPage() {
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#94a3b8',
+                  color: 'var(--champagne)',
                   gap: 12,
                   padding: 20
                 }}>
-                  <Camera size={44} style={{ color: '#93c5fd' }} />
-                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: '#cbd5e1', maxWidth: 300, lineHeight: 1.5 }}>
+                  <Camera size={44} style={{ color: 'var(--champagne)' }} />
+                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--soft-beige)', maxWidth: 300, lineHeight: 1.5 }}>
                     Optical sensor is in standby mode. Click below to activate front or rear camera.
                   </p>
                 </div>
@@ -784,7 +784,7 @@ export default function GateScannerPage() {
           <div className="neo-modal" style={{ maxWidth: 580 }}>
             <div className="neo-modal-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span className="mono-tag" style={{ color: '#93c5fd', fontSize: 11 }}>
+                <span className="mono-tag" style={{ color: 'var(--champagne)', fontSize: 11 }}>
                   GATE DISPATCH PROTOCOL
                 </span>
               </div>
@@ -804,7 +804,7 @@ export default function GateScannerPage() {
                 border: '1px solid var(--border-color)',
                 borderRadius: 8,
                 background: scanPreview.status === 'READY'
-                  ? (scanPreview.admittedCount > 0 ? '#EAF0FB' : '#d1fae5')
+                  ? (scanPreview.admittedCount > 0 ? 'rgba(178, 139, 76, 0.15)' : '#d1fae5')
                   : scanPreview.status === 'ALREADY_CHECKED_IN'
                   ? '#fef3c7'
                   : '#fee2e2',
@@ -930,8 +930,8 @@ export default function GateScannerPage() {
 
               {/* ACTION SECTION FOR VOLUNTEER */}
               {scanPreview.status === 'READY' && (
-                <div style={{ border: '1px solid var(--border-color)', borderRadius: 8, padding: '20px', background: 'linear-gradient(180deg, #EAF0FB 0%, #F5F8FD 100%)', marginBottom: 20 }}>
-                  <label className="mono-label" style={{ display: 'block', marginBottom: 12, textAlign: 'center', color: 'var(--color-navy)' }}>
+                <div style={{ border: '1px solid rgba(178, 139, 76, 0.35)', borderRadius: 8, padding: '20px', background: '#FAF7F2', marginBottom: 20 }}>
+                  <label className="mono-label" style={{ display: 'block', marginBottom: 12, textAlign: 'center', color: 'var(--espresso)' }}>
                     MEMBERS PRESENT AT GATE RIGHT NOW:
                   </label>
 
@@ -1076,22 +1076,22 @@ export default function GateScannerPage() {
 
               {/* Big Wristband instruction box */}
               <div style={{
-                background: '#EAF0FB',
-                border: '1px solid #93c5fd',
+                background: 'rgba(178, 139, 76, 0.12)',
+                border: '1.5px solid var(--gold-antique)',
                 borderRadius: 12,
-                boxShadow: '0 8px 24px -8px rgba(30, 63, 184, 0.2)',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
                 padding: '22px',
                 textAlign: 'center',
                 marginBottom: 20
               }}>
-                <span className="mono-label" style={{ display: 'block', color: 'var(--color-blue)', marginBottom: 6 }}>
+                <span className="mono-label" style={{ display: 'block', color: 'var(--gold-dark)', marginBottom: 6 }}>
                   ACTION FOR GATE VOLUNTEER:
                 </span>
                 <span style={{
                   fontFamily: 'var(--font-display)',
                   fontSize: '1.35rem',
                   fontWeight: 700,
-                  color: 'var(--color-navy)',
+                  color: 'var(--espresso)',
                   display: 'block'
                 }}>
                   ATTACH {scanResult.admittedNow || 1} × {scanResult.attendee?.wristbandColor || 'ROYAL BLUE'} WRISTBAND(S) NOW

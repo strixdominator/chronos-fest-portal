@@ -276,7 +276,7 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
         <div className="ticket-neo-header">
           <div>
             <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.4rem', letterSpacing: '0.5px' }}>
-              MILAN <span style={{ color: 'var(--gold-champagne, #E8D2A0)', fontStyle: 'italic' }}>2026</span>
+              MILAN <span style={{ color: 'var(--gold-champagne, #E8D2A0)', fontStyle: 'normal' }}>2026</span>
             </div>
             <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.7rem', color: 'var(--gold-champagne, #E8D2A0)', letterSpacing: '1.8px', marginTop: 2, textTransform: 'uppercase' }}>
               OFFICIAL ALUMNI ADMISSION CREDENTIAL
@@ -567,9 +567,9 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
         {pdfDownloaded && (
           <div style={{ 
             padding: '10px 16px', 
-            background: '#EFF6FF', 
-            borderTop: '1px solid #BFDBFE', 
-            color: '#1E40AF', 
+            background: 'rgba(178, 139, 76, 0.15)', 
+            borderTop: '1px solid rgba(178, 139, 76, 0.35)', 
+            color: 'var(--champagne)', 
             fontFamily: 'var(--font-mono)', 
             fontSize: '0.78rem', 
             fontWeight: 700, 
@@ -577,7 +577,7 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
             alignItems: 'center', 
             gap: 8 
           }}>
-            <CheckCircle2 size={15} color="#2563EB" />
+            <CheckCircle2 size={15} color="var(--champagne)" />
             <span>Official entry pass automatically downloaded in PDF format!</span>
           </div>
         )}
