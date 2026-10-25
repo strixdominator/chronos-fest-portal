@@ -46,7 +46,10 @@ export default function Navbar() {
       {!hideNav && (
         <nav className="dbit-header-nav">
           <a href="#invitation" className="dbit-nav-link">
-            THE INVITATION
+            INVITATION
+          </a>
+          <a href="#claim" className="dbit-nav-link">
+            REGISTRATION
           </a>
           <a href="#how" className="dbit-nav-link">
             HOW IT WORKS

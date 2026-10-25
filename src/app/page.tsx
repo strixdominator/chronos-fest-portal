@@ -122,10 +122,9 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* EDITORIAL HERO SECTION */}
+      {/* SECTION B: CINEMATIC ESPRESSO HERO */}
       <section id="invitation" className="dbit-hero-section">
-        {/* Hero Left Column (The Grand Invitation) */}
-        <div className="dbit-hero-left">
+        <div className="dbit-hero-container">
           {/* Logo & Meta Badge Row */}
           <div className="dbit-hero-badge-wrap">
             <img
@@ -142,7 +141,6 @@ export default function HomePage() {
               <span className="dbit-hero-tag">
                 ALUMNI MEET · MILAN 2026
               </span>
-              <span className="dbit-gold-divider" />
               <span className="dbit-hero-venue">
                 DBIT CRICKET GROUND, BENGALURU
               </span>
@@ -169,68 +167,24 @@ export default function HomePage() {
             An invitation back to where it began. Celebrating 20 years of Don Bosco Institute of Technology graduates — from the pioneers of 2005 to the fresh alumni of 2025. Every pass is verified against official records.
           </p>
 
-          {/* Batches & Schedule Pill */}
+          {/* Batches Pill */}
           <div className="dbit-hero-batches-pill">
             <span className="dbit-hero-batches-label">GRADUATING BATCHES</span>
             <span className="dbit-hero-batches-val">2005 – 2025</span>
           </div>
 
-          {/* Dual Action CTA Buttons */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginTop: 12 }}>
-            <a
-              href="#claim"
-              className="dbit-claim-action-btn"
-              style={{ margin: 0 }}
-            >
+          {/* Dual Action CTAs */}
+          <div className="dbit-hero-actions">
+            <a href="#claim" className="dbit-hero-primary-btn">
               CLAIM YOUR PASS ↓
             </a>
             <button
               type="button"
               onClick={() => setShowPosterModal(true)}
-              className="btn-neo-outline"
-              style={{
-                background: 'rgba(23, 19, 16, 0.7)',
-                color: 'var(--gold-champagne)',
-                borderColor: 'var(--gold-border)',
-                padding: '14px 22px',
-                borderRadius: 'var(--radius-sm)',
-                letterSpacing: '1.2px'
-              }}
+              className="dbit-hero-outline-btn"
             >
               VIEW OFFICIAL POSTER ↗
             </button>
-          </div>
-        </div>
-
-        {/* Hero Right Column (Claim & Find Portal Card) */}
-        <div id="claim" className="dbit-hero-right">
-          <div className="dbit-portal-card">
-            {/* Top Switcher Tabs */}
-            <div className="dbit-portal-tabs">
-              <button
-                type="button"
-                onClick={() => setActiveTab('register')}
-                className={`dbit-tab-button ${activeTab === 'register' ? 'active' : ''}`}
-              >
-                01 · CLAIM A PASS
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('lookup')}
-                className={`dbit-tab-button ${activeTab === 'lookup' ? 'active' : ''}`}
-              >
-                02 · FIND MY PASS
-              </button>
-            </div>
-
-            {/* Portal Body (Registration / Verification / Pass Lookup) */}
-            <div className="dbit-portal-content">
-              {activeTab === 'register' ? (
-                <RegistrationForm onSwitchToLookup={() => setActiveTab('lookup')} />
-              ) : (
-                <PassLogin settings={settings || undefined} />
-              )}
-            </div>
           </div>
         </div>
       </section>
@@ -239,7 +193,7 @@ export default function HomePage() {
       <section className="dbit-glance-section">
         <div className="dbit-glance-grid">
           <div className="dbit-glance-item">
-            <span className="dbit-glance-icon-box gold">
+            <span className="dbit-glance-icon-box">
               <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3.5" y="5" width="17" height="15" rx="2.5" />
                 <path d="M3.5 10h17M8 3v4M16 3v4" />
@@ -252,7 +206,7 @@ export default function HomePage() {
           </div>
 
           <div className="dbit-glance-item">
-            <span className="dbit-glance-icon-box blue">
+            <span className="dbit-glance-icon-box">
               <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="9" />
                 <path d="M12 7v5l3 2" />
@@ -265,7 +219,7 @@ export default function HomePage() {
           </div>
 
           <div className="dbit-glance-item">
-            <span className="dbit-glance-icon-box cyan">
+            <span className="dbit-glance-icon-box">
               <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z" />
                 <circle cx="12" cy="10" r="2.5" />
@@ -279,53 +233,97 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* HOW IT WORKS SECTION */}
-      <section id="how" className="dbit-how-section">
-        <div className="dbit-section-tag-wrap">
-          <span className="dbit-gold-divider-small" />
-          <span className="dbit-section-tag">HOW IT WORKS</span>
-        </div>
-
-        <div className="dbit-how-header-row">
-          <h2 className="dbit-how-section-title">
-            A Seamless Return in Three Steps.
+      {/* SECTION C: WARM IVORY REGISTRATION SECTION */}
+      <section id="claim" className="dbit-registration-section">
+        <div className="dbit-registration-header">
+          <span className="dbit-desk-tag">OFFICIAL REGISTRATION DESK</span>
+          <h2 className="dbit-desk-title">
+            Claim Your Milan 2026 Pass.
           </h2>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--gold-antique)', letterSpacing: '1px' }}>
-            OFFICIAL ALUMNI CREDENTIALS
-          </span>
+          <p className="dbit-desk-desc">
+            Enter your University Seat Number to locate your verified record, authenticate via OTP, and receive your personalized admission pass.
+          </p>
         </div>
 
-        <div className="dbit-how-grid">
-          {/* Step 1 */}
-          <div className="dbit-how-card">
-            <span className="dbit-how-step-num">01</span>
-            <h3 className="dbit-how-title">Enter your USN</h3>
-            <p className="dbit-how-desc">
-              Look yourself up using your University Seat Number from your college years.
-            </p>
+        <div className="dbit-portal-card">
+          {/* Top Switcher Tabs */}
+          <div className="dbit-portal-tabs">
+            <button
+              type="button"
+              onClick={() => setActiveTab('register')}
+              className={`dbit-tab-button ${activeTab === 'register' ? 'active' : ''}`}
+            >
+              01 · CLAIM A PASS
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('lookup')}
+              className={`dbit-tab-button ${activeTab === 'lookup' ? 'active' : ''}`}
+            >
+              02 · FIND MY PASS
+            </button>
           </div>
 
-          {/* Step 2 */}
-          <div className="dbit-how-card">
-            <span className="dbit-how-step-num">02</span>
-            <h3 className="dbit-how-title">Confirm your record</h3>
-            <p className="dbit-how-desc">
-              We verify you against the official university directory. One identity, one verified pass.
-            </p>
-          </div>
-
-          {/* Step 3 */}
-          <div className="dbit-how-card">
-            <span className="dbit-how-step-num">03</span>
-            <h3 className="dbit-how-title">Get your QR pass</h3>
-            <p className="dbit-how-desc">
-              Receive your personalized digital credential with live security stamp for instant gate check-in.
-            </p>
+          {/* Portal Body (Registration / Verification / Pass Lookup) */}
+          <div className="dbit-portal-content">
+            {activeTab === 'register' ? (
+              <RegistrationForm onSwitchToLookup={() => setActiveTab('lookup')} />
+            ) : (
+              <PassLogin settings={settings || undefined} />
+            )}
           </div>
         </div>
       </section>
 
-      {/* EVENT ATMOSPHERE / GALA SECTION */}
+      {/* SECTION D: LIGHT EDITORIAL HOW IT WORKS SECTION */}
+      <section id="how" className="dbit-how-section">
+        <div className="dbit-how-inner">
+          <div className="dbit-section-tag-wrap">
+            <span className="dbit-gold-divider-small" />
+            <span className="dbit-section-tag">HOW IT WORKS</span>
+          </div>
+
+          <div className="dbit-how-header-row">
+            <h2 className="dbit-how-section-title">
+              A Seamless Return in Three Steps.
+            </h2>
+            <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, color: 'var(--gold-antique)', letterSpacing: '1.2px', textTransform: 'uppercase' }}>
+              OFFICIAL ALUMNI CREDENTIALS
+            </span>
+          </div>
+
+          <div className="dbit-how-grid">
+            {/* Step 1 */}
+            <div className="dbit-how-card">
+              <span className="dbit-how-step-num">01</span>
+              <h3 className="dbit-how-title">Enter your USN</h3>
+              <p className="dbit-how-desc">
+                Look yourself up using your University Seat Number from your college years.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="dbit-how-card">
+              <span className="dbit-how-step-num">02</span>
+              <h3 className="dbit-how-title">Confirm your record</h3>
+              <p className="dbit-how-desc">
+                We verify you against the official university directory. One identity, one verified pass.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="dbit-how-card">
+              <span className="dbit-how-step-num">03</span>
+              <h3 className="dbit-how-title">Get your QR pass</h3>
+              <p className="dbit-how-desc">
+                Receive your personalized digital credential with live security stamp for instant gate check-in.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION E: EVENT ATMOSPHERE / GALA SECTION */}
       <section id="atmosphere" className="dbit-event-preview-section">
         <div className="dbit-event-preview-full">
           <div className="dbit-event-meta-top">
@@ -369,15 +367,7 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => setShowPosterModal(true)}
-              className="btn-neo-outline"
-              style={{
-                background: 'rgba(23, 19, 16, 0.7)',
-                color: 'var(--gold-champagne)',
-                borderColor: 'var(--gold-border)',
-                padding: '14px 22px',
-                borderRadius: 'var(--radius-sm)',
-                letterSpacing: '1.2px'
-              }}
+              className="dbit-hero-outline-btn"
             >
               VIEW EVENT POSTER ↗
             </button>
@@ -385,63 +375,64 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FAQ SECTION */}
+      {/* SECTION F: REFINED FAQ SECTION (WARM IVORY) */}
       <section id="faq" className="dbit-faq-section">
-        <div className="dbit-faq-left">
-          <div className="dbit-hero-meta">
-            <span className="dbit-hero-tag">FAQ</span>
-            <span className="dbit-gold-divider" />
-            <span className="dbit-hero-venue">HELP & GUIDELINES</span>
+        <div className="dbit-faq-inner">
+          <div className="dbit-faq-left">
+            <div className="dbit-section-tag-wrap" style={{ marginBottom: 4 }}>
+              <span className="dbit-gold-divider-small" />
+              <span className="dbit-section-tag">FAQ · HELP & GUIDELINES</span>
+            </div>
+            <h2 className="dbit-faq-title">Good to know.</h2>
+            <p className="dbit-faq-desc">
+              Quick answers before you claim your pass. Still stuck? Write to us at{' '}
+              <a href="mailto:alumni.relations@dbit.co.in" style={{ color: 'var(--midnight-navy)', fontWeight: 700, textDecoration: 'underline' }}>
+                alumni.relations@dbit.co.in
+              </a>
+              .
+            </p>
           </div>
-          <h2 className="dbit-faq-title">Good to know.</h2>
-          <p className="dbit-faq-desc">
-            Quick answers before you claim your pass. Still stuck? Write to us at{' '}
-            <a href="mailto:alumni.relations@dbit.co.in" style={{ color: 'var(--color-blue)', textDecoration: 'underline' }}>
-              alumni.relations@dbit.co.in
-            </a>
-            .
-          </p>
-        </div>
 
-        <div className="dbit-faq-right">
-          {FAQS.map((faq, index) => {
-            const isOpen = openFaq === index;
-            return (
-              <div key={index} className="dbit-faq-item">
-                <button
-                  type="button"
-                  className="dbit-faq-btn"
-                  onClick={() => setOpenFaq(isOpen ? null : index)}
-                  aria-expanded={isOpen}
-                >
-                  <span>{faq.q}</span>
-                  <span
-                    className="dbit-faq-toggle-icon"
-                    style={{ transform: isOpen ? 'rotate(45deg)' : 'none' }}
+          <div className="dbit-faq-right">
+            {FAQS.map((faq, index) => {
+              const isOpen = openFaq === index;
+              return (
+                <div key={index} className="dbit-faq-item">
+                  <button
+                    type="button"
+                    className="dbit-faq-btn"
+                    onClick={() => setOpenFaq(isOpen ? null : index)}
+                    aria-expanded={isOpen}
                   >
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                    <span>{faq.q}</span>
+                    <span
+                      className="dbit-faq-toggle-icon"
+                      style={{ transform: isOpen ? 'rotate(45deg)' : 'none' }}
                     >
-                      <line x1="12" y1="5" x2="12" y2="19" />
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                    </svg>
-                  </span>
-                </button>
-                {isOpen && (
-                  <p className="dbit-faq-answer">
-                    {faq.a}
-                  </p>
-                )}
-              </div>
-            );
-          })}
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                    </span>
+                  </button>
+                  {isOpen && (
+                    <p className="dbit-faq-answer">
+                      {faq.a}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </section>
 

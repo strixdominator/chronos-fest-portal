@@ -566,23 +566,23 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
       <div className="animate-fade-in">
         {/* Header Strip */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', letterSpacing: '1.8px', fontWeight: 700, color: 'var(--color-blue)' }}>
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: '11.5px', letterSpacing: '1.5px', fontWeight: 700, color: 'var(--gold-antique)', textTransform: 'uppercase' }}>
             OFFICIAL ALUMNI PORTAL
           </span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', color: 'var(--text-muted)' }}>
-            01/03
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: '11.5px', fontWeight: 600, color: 'var(--text-dark-muted)' }}>
+            01 / 03
           </span>
         </div>
 
         {/* Big Title */}
-        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '38px', letterSpacing: '-1.2px', lineHeight: 1.05, fontWeight: 700, color: 'var(--color-navy)', marginBottom: 20 }}>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '34px', letterSpacing: '0', lineHeight: 1.1, fontWeight: 600, color: 'var(--espresso)', marginBottom: 18 }}>
           Find your record.
         </h2>
 
         {/* Search Form */}
         <form onSubmit={handleLookupUsn}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <label htmlFor="usn" style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', letterSpacing: '1.5px', fontWeight: 700, color: 'var(--text-body)' }}>
+            <label htmlFor="usn" style={{ fontFamily: 'var(--font-body)', fontSize: '11.5px', letterSpacing: '1.2px', fontWeight: 700, color: 'var(--text-dark-body)', textTransform: 'uppercase' }}>
               UNIVERSITY SEAT NUMBER
             </label>
             <div className="neo-input-group">
@@ -606,7 +606,7 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
                 )}
               </button>
             </div>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', lineHeight: 1.5, color: 'var(--text-muted)' }}>
+            <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', lineHeight: 1.5, color: 'var(--text-dark-muted)' }}>
               We match your USN against the university alumni directory.
             </span>
           </div>
@@ -646,7 +646,7 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
           </span>
         </div>
 
-        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2.1rem', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.05, marginBottom: 20 }}>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2.1rem', fontWeight: 600, letterSpacing: '0', lineHeight: 1.1, color: 'var(--espresso)', marginBottom: 20 }}>
           Pass already claimed.
         </h2>
 
@@ -904,7 +904,7 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
           </span>
         </div>
 
-        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2.2rem', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.05, marginBottom: 20 }}>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2.2rem', fontWeight: 600, letterSpacing: '0', lineHeight: 1.1, color: 'var(--espresso)', marginBottom: 20 }}>
           Verify your identity.
         </h2>
 
