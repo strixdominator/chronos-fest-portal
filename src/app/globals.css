@@ -1,32 +1,65 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600;1,700&family=Manrope:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
 
 :root {
-  /* MILAN 2026 DBIT Design System */
-  --bg-page: #F0F4FA;
-  --bg-hero: linear-gradient(180deg, #EAF0FB 0%, #F0F4FA 100%);
-  --bg-card: #FFFFFF;
-  --bg-card-alt: #F5F8FD;
-  
-  --color-navy: #0E1F45;
-  --color-blue: #1E3FB8;
-  --color-blue-hover: #152d88;
-  --color-gold: #C9A24B;
-  
-  --text-main: #0E1F45;
-  --text-body: #3C4E73;
-  --text-muted: #5A6B8C;
+  /* ==========================================================================
+     MILAN 2026 OFFICIAL EDITORIAL PALETTE & TOKENS
+     ========================================================================== */
+  --bg-obsidian: #090909;
+  --bg-espresso: #171310;
+  --bg-espresso-card: #1F1A16;
+  --bg-espresso-light: #2A231E;
+  --bg-ivory: #F5F0E7;
+  --bg-ivory-card: #FDFBF7;
+
+  --gold-antique: #B08A46;
+  --gold-champagne: #E8D2A0;
+  --gold-amber: #C99B4B;
+  --gold-dark: #8E6D32;
+  --gold-glow: rgba(176, 138, 70, 0.35);
+  --gold-border: rgba(176, 138, 70, 0.32);
+  --gold-border-subtle: rgba(232, 210, 160, 0.18);
+  --gold-border-hover: rgba(232, 210, 160, 0.45);
+
+  /* Fallback aliases mapped to the luxury system */
+  --bg-page: var(--bg-obsidian);
+  --bg-hero: radial-gradient(ellipse at 80% 20%, rgba(176, 138, 70, 0.12) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(23, 19, 16, 0.95) 0%, transparent 70%), var(--bg-obsidian);
+  --bg-card: var(--bg-ivory);
+  --bg-card-alt: var(--bg-ivory-card);
+
+  --color-navy: #171310;
+  --color-blue: #B08A46;
+  --color-blue-hover: #C99B4B;
+  --color-gold: #E8D2A0;
+
+  --text-main: #F5F0E7;
+  --text-body: #D4CCC1;
+  --text-muted: #9E9486;
   --text-light: #FFFFFF;
-  
-  --border-color: #DCE4F2;
-  --border-input: #BFCBE3;
-  --border-focus: #1E3FB8;
-  
+  --text-dark: #171310;
+  --text-dark-body: #4A423A;
+  --text-dark-muted: #786E63;
+
+  --border-color: rgba(176, 138, 70, 0.28);
+  --border-input: #D9CFC4;
+  --border-focus: #B08A46;
+  --border-black: rgba(176, 138, 70, 0.35);
+
+  --bg-black: #171310;
+  --text-secondary: #786E63;
+  --accent-coral: #B08A46;
+  --accent-sage: rgba(16, 185, 129, 0.12);
+  --accent-ochre: rgba(245, 158, 11, 0.12);
+  --accent-blue: #B08A46;
+  --accent-cyan: #E8D2A0;
+  --card-blue-1: #FAF7F2;
+
   --radius-card: 16px;
   --radius-box: 12px;
   --radius-sm: 8px;
-  
-  --font-display: 'Space Grotesk', system-ui, -apple-system, sans-serif;
-  --font-body: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+
+  --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-script: 'Alex Brush', cursive;
+  --font-body: 'Manrope', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-mono: 'Space Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 }
 
@@ -39,15 +72,16 @@
 
 html {
   scroll-behavior: smooth;
+  background-color: var(--bg-obsidian);
 }
 
 body {
-  background-color: var(--bg-page);
+  background-color: var(--bg-obsidian);
   color: var(--text-main);
   font-family: var(--font-body);
   min-height: 100vh;
   overflow-x: hidden;
-  line-height: 1.5;
+  line-height: 1.6;
   margin: 0;
   padding: 0;
 }
@@ -59,17 +93,17 @@ main {
 }
 
 a {
-  color: var(--color-blue);
+  color: var(--gold-champagne);
   text-decoration: none;
-  transition: color 0.15s ease;
+  transition: color 0.2s ease;
 }
 
 a:hover {
-  color: var(--color-navy);
+  color: #FFFFFF;
 }
 
 button {
-  font-family: inherit;
+  font-family: var(--font-body);
   cursor: pointer;
 }
 
@@ -77,26 +111,24 @@ input, select, textarea {
   font-family: var(--font-mono);
 }
 
-input:focus, select:focus, textarea:focus {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 0;
-}
-
 /* ==========================================================================
-   HEADER (DBIT NAV)
+   HEADER (MILAN 2026 EVENT NAVIGATION)
    ========================================================================== */
 .dbit-header {
-  background: #FFFFFF;
-  border-bottom: 1px solid var(--border-color);
+  background: rgba(9, 9, 9, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--gold-border-subtle);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 12px 48px;
+  padding: 14px 48px;
   position: sticky;
   top: 0;
   z-index: 100;
+  transition: border-color 0.25s ease, background 0.25s ease;
 }
 
 .dbit-header-brand {
@@ -104,13 +136,15 @@ input:focus, select:focus, textarea:focus {
   align-items: center;
   gap: 14px;
   text-decoration: none;
-  color: var(--color-navy);
+  color: var(--text-main);
 }
 
 .dbit-header-logo {
-  width: 52px;
-  height: auto;
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
   display: block;
+  filter: drop-shadow(0 2px 8px rgba(176, 138, 70, 0.35));
 }
 
 .dbit-header-titles {
@@ -120,23 +154,28 @@ input:focus, select:focus, textarea:focus {
 }
 
 .dbit-header-name {
-  font-size: 22px;
+  font-family: var(--font-display);
+  font-size: 24px;
   font-weight: 700;
-  letter-spacing: -0.5px;
+  letter-spacing: 0.5px;
   line-height: 1;
-  color: var(--color-navy);
+  color: #FFFFFF;
 }
 
 .dbit-accent-blue {
-  color: var(--color-blue);
+  color: var(--gold-champagne);
+  font-style: italic;
+  font-family: var(--font-display);
+  margin-left: 4px;
 }
 
 .dbit-header-subtitle {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 1.4px;
-  color: var(--text-muted);
-  font-weight: 700;
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 1.8px;
+  color: var(--gold-antique);
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .dbit-header-nav {
@@ -147,188 +186,227 @@ input:focus, select:focus, textarea:focus {
 }
 
 .dbit-nav-link {
-  padding: 11px 18px;
-  font-family: var(--font-mono);
+  padding: 10px 16px;
+  font-family: var(--font-body);
   font-size: 12px;
   letter-spacing: 1.5px;
-  font-weight: 700;
-  color: var(--color-navy);
+  font-weight: 600;
+  color: var(--text-body);
   border-radius: var(--radius-sm);
   text-decoration: none;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: color 0.2s ease, background 0.2s ease;
 }
 
 .dbit-nav-link:hover {
-  background: var(--bg-page);
-  color: var(--color-blue);
+  background: rgba(176, 138, 70, 0.12);
+  color: var(--gold-champagne);
 }
 
 .dbit-nav-cta {
-  padding: 12px 22px;
-  font-family: var(--font-mono);
-  font-size: 12px;
+  padding: 11px 22px;
+  font-family: var(--font-body);
+  font-size: 11.5px;
   letter-spacing: 1.5px;
   font-weight: 700;
-  color: #FFFFFF !important;
-  background: var(--color-navy);
+  color: #090909 !important;
+  background: linear-gradient(135deg, #E8D2A0 0%, #B08A46 100%);
+  border: 1px solid rgba(232, 210, 160, 0.4);
   border-radius: var(--radius-sm);
   text-decoration: none;
-  transition: background 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 4px 18px rgba(176, 138, 70, 0.25);
+  transition: all 0.22s ease;
+  cursor: pointer;
 }
 
 .dbit-nav-cta:hover {
-  background: var(--color-blue);
+  background: linear-gradient(135deg, #FFF3D6 0%, #C99B4B 100%);
+  box-shadow: 0 6px 24px rgba(176, 138, 70, 0.4);
   transform: translateY(-1px);
 }
 
 /* ==========================================================================
-   HEADER BANNER POSTER (FULL WIDTH EDGE-TO-EDGE)
-   ========================================================================== */
-.dbit-header-banner-container {
-  width: 100%;
-  background: #000000;
-  border-bottom: 1px solid var(--border-color);
-  padding: 0;
-  margin: 0;
-  display: block;
-  line-height: 0;
-}
-
-.dbit-header-banner-inner {
-  width: 100%;
-  max-width: 100%;
-  border-radius: 0;
-  overflow: hidden;
-  background: transparent;
-  line-height: 0;
-  margin: 0;
-  padding: 0;
-}
-
-.dbit-header-banner-inner picture {
-  display: block;
-  width: 100%;
-  line-height: 0;
-}
-
-.dbit-header-banner-img {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 2048 / 768;
-  display: block;
-  object-fit: cover;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: high-quality;
-}
-
-/* ==========================================================================
-   HERO SECTION
+   PAGE WRAPPER & EDITORIAL HERO SECTION
    ========================================================================== */
 .dbit-page-wrapper {
   width: 100%;
   display: flex;
   flex-direction: column;
+  background-color: var(--bg-obsidian);
+  color: var(--text-main);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Ambient Gold Atmosphere Background */
+.dbit-page-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 900px;
+  background: 
+    radial-gradient(circle at 15% 15%, rgba(176, 138, 70, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 85% 30%, rgba(232, 210, 160, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 50% 60%, rgba(23, 19, 16, 0.8) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .dbit-hero-section {
   display: flex;
   flex-wrap: wrap;
-  align-items: stretch;
-  gap: 0;
-  background: var(--bg-hero);
-  min-height: auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  min-height: calc(100vh - 75px);
+  padding: 48px 64px 64px;
+  position: relative;
+  z-index: 1;
 }
 
 .dbit-hero-left {
-  flex: 1 1 520px;
+  flex: 1 1 540px;
   min-width: 0;
   box-sizing: border-box;
-  padding: 32px 48px 28px 64px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 18px;
   justify-content: center;
 }
 
 .dbit-hero-badge-wrap {
   display: flex;
   align-items: center;
-  gap: 20px;
-  margin: 0;
+  gap: 18px;
+  margin-bottom: 6px;
 }
 
 .dbit-hero-assoc-logo {
-  width: 120px;
-  height: auto;
+  width: 68px;
+  height: 68px;
+  object-fit: contain;
   display: block;
+  filter: drop-shadow(0 4px 16px rgba(176, 138, 70, 0.4));
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 4px;
+  border: 1px solid var(--gold-border);
 }
 
 .dbit-hero-meta {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .dbit-hero-tag {
-  font-family: var(--font-mono);
-  font-size: 15px;
-  letter-spacing: 2px;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  letter-spacing: 2.5px;
   font-weight: 700;
-  color: var(--color-blue);
-  line-height: 1.2;
+  color: var(--gold-champagne);
+  text-transform: uppercase;
 }
 
 .dbit-gold-divider {
   display: block;
-  width: 56px;
-  height: 3.5px;
-  background: var(--color-gold);
-  border-radius: 2px;
+  width: 48px;
+  height: 1.5px;
+  background: linear-gradient(90deg, #E8D2A0, #B08A46, transparent);
 }
 
 .dbit-hero-venue {
-  font-family: var(--font-mono);
-  font-size: 14.5px;
+  font-family: var(--font-body);
+  font-size: 12.5px;
   letter-spacing: 1.2px;
   color: var(--text-muted);
-  font-weight: 700;
-  line-height: 1.3;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.dbit-hero-eyebrow {
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: 3px;
+  color: var(--gold-champagne);
+  text-transform: uppercase;
+  font-weight: 500;
 }
 
 .dbit-hero-title {
-  margin: 2px 0 4px 0;
-  font-size: clamp(3.2rem, 5.5vw, 5.2rem);
-  line-height: 0.98;
-  letter-spacing: -3px;
-  font-weight: 700;
-  color: var(--color-navy);
+  margin: 4px 0 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(3.8rem, 6.2vw, 5.8rem);
+  line-height: 0.95;
+  letter-spacing: -1px;
+  font-weight: 600;
+  color: #FFFFFF;
 }
 
 .dbit-hero-title-accent {
-  color: var(--color-blue);
+  background: linear-gradient(135deg, #FFF3D6 0%, #E8D2A0 40%, #B08A46 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  font-weight: 700;
+}
+
+.dbit-hero-script {
+  font-family: var(--font-script);
+  font-size: clamp(2.4rem, 4vw, 3.4rem);
+  line-height: 1.1;
+  color: var(--gold-champagne);
+  font-weight: 400;
+  display: block;
+  margin-top: 2px;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 14px rgba(232, 210, 160, 0.3);
 }
 
 .dbit-hero-description {
   margin: 0;
-  max-width: 520px;
-  font-size: 20px;
-  line-height: 1.55;
+  max-width: 540px;
+  font-size: 17px;
+  line-height: 1.65;
   color: var(--text-body);
+  font-weight: 400;
 }
 
-.dbit-hero-stats,
-.dbit-stat-card {
-  display: none !important;
+.dbit-hero-batches-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 18px;
+  border-radius: 30px;
+  background: rgba(23, 19, 16, 0.8);
+  border: 1px solid var(--gold-border);
+  width: fit-content;
+  margin-top: 6px;
+}
+
+.dbit-hero-batches-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--gold-antique);
+}
+
+.dbit-hero-batches-val {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 1px;
 }
 
 /* ==========================================================================
-   HERO RIGHT: CLAIM PORTAL CARD
+   HERO RIGHT: REGISTRATION PORTAL CARD
    ========================================================================== */
 .dbit-hero-right {
-  flex: 1 1 440px;
+  flex: 1 1 480px;
   min-width: 0;
   box-sizing: border-box;
-  padding: 64px 64px 56px 24px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -337,51 +415,68 @@ input:focus, select:focus, textarea:focus {
 .dbit-portal-card {
   width: 100%;
   max-width: 560px;
-  background: #FFFFFF;
-  border: 1px solid var(--border-color);
+  background: var(--bg-ivory);
+  color: var(--text-dark);
+  border: 1px solid rgba(176, 138, 70, 0.45);
   border-radius: var(--radius-card);
-  box-shadow: 0 24px 60px -24px rgba(14, 31, 69, 0.28);
+  box-shadow: 
+    0 24px 60px -12px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(232, 210, 160, 0.15),
+    0 0 35px rgba(176, 138, 70, 0.18);
   overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.dbit-portal-card:hover {
+  box-shadow: 
+    0 28px 70px -12px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(232, 210, 160, 0.28),
+    0 0 45px rgba(176, 138, 70, 0.25);
 }
 
 .dbit-portal-tabs {
   display: flex;
-  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-espresso);
+  border-bottom: 1px solid rgba(176, 138, 70, 0.3);
 }
 
 .dbit-tab-button {
   flex: 1;
-  padding: 18px 12px;
+  padding: 16px 14px;
   border: 0;
-  font-family: var(--font-mono);
-  font-size: 12px;
+  font-family: var(--font-body);
+  font-size: 11.5px;
   letter-spacing: 1.5px;
   font-weight: 700;
-  background: #FFFFFF;
-  color: var(--color-navy);
-  transition: all 0.15s ease;
+  background: var(--bg-espresso);
+  color: var(--text-muted);
+  transition: all 0.2s ease;
   cursor: pointer;
+  position: relative;
 }
 
 .dbit-tab-button.active {
-  background: var(--color-navy);
-  color: #FFFFFF;
+  background: var(--bg-ivory);
+  color: var(--text-dark);
+  box-shadow: 0 -2px 0 var(--gold-antique) inset;
 }
 
 .dbit-tab-button:not(.active):hover {
-  background: var(--bg-page);
-  color: var(--color-blue);
+  background: var(--bg-espresso-light);
+  color: var(--gold-champagne);
 }
 
 .dbit-portal-content {
-  padding: 32px 36px 36px;
+  padding: 34px 36px 36px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  background: var(--bg-ivory);
+  color: var(--text-dark);
 }
 
 /* ==========================================================================
-   INPUTS & BUTTONS (EXACT SPEC MATCH)
+   INPUTS & BUTTONS (WARM IVORY / LUXURY REGISTRATION SURFACE)
    ========================================================================== */
 .neo-input-group {
   display: flex;
@@ -396,17 +491,24 @@ input:focus, select:focus, textarea:focus {
   height: 52px;
   padding: 0 16px;
   font-size: 15px;
-  color: var(--color-navy);
-  background: var(--bg-page);
-  border: 1px solid var(--border-input);
+  color: var(--text-dark);
+  background: #FFFFFF;
+  border: 1px solid #D6CBC0;
   border-radius: var(--radius-sm);
   font-family: var(--font-mono);
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.neo-input-group input:focus {
+  outline: none;
+  border-color: var(--gold-antique);
+  box-shadow: 0 0 0 3px rgba(176, 138, 70, 0.25);
 }
 
 .neo-input-group input::placeholder {
-  color: #94a3b8;
+  color: #9E9486;
   font-weight: 500;
 }
 
@@ -416,26 +518,31 @@ input:focus, select:focus, textarea:focus {
   padding: 0 24px;
   border: 0;
   border-radius: var(--radius-sm);
-  background: var(--color-blue);
-  color: #FFFFFF;
-  font-family: var(--font-mono);
-  font-size: 12.5px;
+  background: linear-gradient(135deg, #171310 0%, #2A231E 100%);
+  color: var(--gold-champagne);
+  border: 1px solid var(--gold-antique);
+  font-family: var(--font-body);
+  font-size: 12px;
   letter-spacing: 1.5px;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .neo-input-group button:hover:not(:disabled) {
-  background: var(--color-navy);
+  background: linear-gradient(135deg, #B08A46 0%, #8E6D32 100%);
+  color: #FFFFFF;
+  border-color: #E8D2A0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(176, 138, 70, 0.3);
 }
 
 .neo-input-group button:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
@@ -444,27 +551,26 @@ input:focus, select:focus, textarea:focus {
   height: 50px;
   padding: 0 16px;
   font-size: 14.5px;
-  color: var(--color-navy);
-  background: var(--bg-page);
-  border: 1px solid var(--border-input);
+  color: var(--text-dark);
+  background: #FFFFFF;
+  border: 1px solid #D6CBC0;
   border-radius: var(--radius-sm);
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   outline: none;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .neo-input:focus {
-  border-color: var(--color-blue);
-  background: #FFFFFF;
-  outline: 2px solid var(--color-blue);
+  border-color: var(--gold-antique);
+  box-shadow: 0 0 0 3px rgba(176, 138, 70, 0.25);
 }
 
 .btn-neo-black {
-  background: var(--color-navy);
-  color: #FFFFFF;
-  border: 0;
+  background: linear-gradient(135deg, #171310 0%, #2A231E 100%);
+  color: var(--gold-champagne);
+  border: 1px solid var(--gold-antique);
   border-radius: var(--radius-sm);
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 12.5px;
   letter-spacing: 1.2px;
   font-weight: 700;
@@ -474,26 +580,29 @@ input:focus, select:focus, textarea:focus {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: background 0.15s ease;
+  transition: all 0.2s ease;
   text-decoration: none;
 }
 
 .btn-neo-black:hover:not(:disabled) {
-  background: var(--color-blue);
+  background: linear-gradient(135deg, #B08A46 0%, #8E6D32 100%);
   color: #FFFFFF;
+  border-color: #E8D2A0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(176, 138, 70, 0.35);
 }
 
 .btn-neo-black:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
 .btn-neo-outline {
   background: #FFFFFF;
-  color: var(--color-navy);
-  border: 1px solid var(--border-color);
+  color: var(--text-dark);
+  border: 1px solid #D6CBC0;
   border-radius: var(--radius-sm);
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 12px;
   letter-spacing: 1.2px;
   font-weight: 700;
@@ -503,54 +612,58 @@ input:focus, select:focus, textarea:focus {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   text-decoration: none;
 }
 
 .btn-neo-outline:hover:not(:disabled) {
-  background: var(--bg-page);
-  border-color: var(--border-input);
-  color: var(--color-blue);
+  background: var(--bg-ivory);
+  border-color: var(--gold-antique);
+  color: var(--gold-antique);
 }
 
 .mono-tag {
   font-family: var(--font-mono);
-  font-size: 11.5px;
+  font-size: 11px;
   letter-spacing: 1.8px;
   font-weight: 700;
-  color: var(--color-blue);
+  color: var(--gold-antique);
   text-transform: uppercase;
 }
 
 .mono-label {
-  font-family: var(--font-mono);
-  font-size: 11.5px;
+  font-family: var(--font-body);
+  font-size: 11px;
   letter-spacing: 1.5px;
   font-weight: 700;
-  color: var(--text-body);
+  color: var(--text-dark-muted);
   text-transform: uppercase;
 }
 
 /* ==========================================================================
-   EVENT AT A GLANCE BANNER (DATE, VENUE, TIME)
+   EVENT AT A GLANCE (DATE, VENUE, TIME METRICS RIBBON)
    ========================================================================== */
 .dbit-glance-section {
-  background: linear-gradient(90deg, #FFF4DC 0%, #FFFBF2 35%, #F1F7FF 100%);
-  border-top: 1px solid #E8DDBF;
-  border-bottom: 1px solid var(--border-color);
-  padding: 36px 64px;
+  background: var(--bg-espresso);
+  border-top: 1px solid var(--gold-border);
+  border-bottom: 1px solid var(--gold-border);
+  padding: 38px 64px;
+  position: relative;
+  z-index: 2;
 }
 
 .dbit-glance-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 32px;
+  max-width: 1280px;
+  margin: 0 auto;
 }
 
 .dbit-glance-item {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
 }
 
 .dbit-glance-icon-box {
@@ -560,55 +673,62 @@ input:focus, select:focus, textarea:focus {
   justify-content: center;
   width: 52px;
   height: 52px;
-  border-radius: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--gold-border);
+  background: rgba(176, 138, 70, 0.1);
+  color: var(--gold-champagne);
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
-.dbit-glance-icon-box.gold {
-  background: #FBE9BE;
-  color: #9A7210;
+.dbit-glance-item:hover .dbit-glance-icon-box {
+  border-color: var(--gold-champagne);
+  transform: translateY(-2px);
+  background: rgba(176, 138, 70, 0.18);
 }
 
-.dbit-glance-icon-box.blue {
-  background: #DCE7FC;
-  color: var(--color-blue);
-}
-
+.dbit-glance-icon-box.gold,
+.dbit-glance-icon-box.blue,
 .dbit-glance-icon-box.cyan {
-  background: #D4EEF3;
-  color: #16788E;
+  background: rgba(176, 138, 70, 0.12);
+  color: var(--gold-champagne);
 }
 
 .dbit-glance-text {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .dbit-glance-label {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 11px;
-  letter-spacing: 1.5px;
-  color: var(--text-muted);
+  letter-spacing: 1.8px;
+  color: var(--gold-antique);
   font-weight: 700;
+  text-transform: uppercase;
 }
 
 .dbit-glance-value {
-  font-size: 18px;
+  font-family: var(--font-display);
+  font-size: 21px;
   font-weight: 600;
-  color: var(--color-navy);
+  color: #FFFFFF;
+  letter-spacing: 0.3px;
 }
 
 /* ==========================================================================
-   HOW IT WORKS SECTION
+   HOW IT WORKS SECTION (EDITORIAL TIMELINE)
    ========================================================================== */
 .dbit-how-section {
-  background: #FFFFFF;
-  border-top: 1px solid var(--border-color);
-  border-bottom: 1px solid var(--border-color);
-  padding: 56px 64px;
+  background: var(--bg-obsidian);
+  border-bottom: 1px solid var(--gold-border-subtle);
+  padding: 80px 64px;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 48px;
+  max-width: 1320px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .dbit-section-tag-wrap {
@@ -620,77 +740,111 @@ input:focus, select:focus, textarea:focus {
 .dbit-gold-divider-small {
   display: block;
   width: 32px;
-  height: 3px;
-  background: var(--color-gold);
-  border-radius: 2px;
+  height: 2px;
+  background: linear-gradient(90deg, #E8D2A0, #B08A46);
 }
 
 .dbit-section-tag {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 2px;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  letter-spacing: 2.5px;
   font-weight: 700;
-  color: var(--color-blue);
+  color: var(--gold-champagne);
+  text-transform: uppercase;
+}
+
+.dbit-how-header-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.dbit-how-section-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 4vw, 3.4rem);
+  line-height: 1.05;
+  color: #FFFFFF;
+  font-weight: 600;
 }
 
 .dbit-how-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 32px;
+  position: relative;
 }
 
 .dbit-how-card {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 24px;
-  background: var(--bg-page);
-  border: 1px solid var(--border-color);
+  gap: 14px;
+  padding: 32px 28px;
+  background: var(--bg-espresso-card);
+  border: 1px solid var(--gold-border-subtle);
   border-radius: var(--radius-box);
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+.dbit-how-card:hover {
+  border-color: var(--gold-border);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), 0 0 24px rgba(176, 138, 70, 0.12);
 }
 
 .dbit-how-step-num {
-  font-family: var(--font-mono);
-  font-size: 13px;
+  font-family: var(--font-display);
+  font-size: 42px;
   font-weight: 700;
-  color: var(--color-blue);
+  line-height: 1;
+  background: linear-gradient(135deg, #FFF3D6 0%, #B08A46 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .dbit-how-title {
   margin: 0;
-  font-size: 22px;
-  letter-spacing: -0.5px;
-  font-weight: 700;
-  color: var(--color-navy);
+  font-family: var(--font-display);
+  font-size: 24px;
+  letter-spacing: 0.2px;
+  font-weight: 600;
+  color: #FFFFFF;
 }
 
 .dbit-how-desc {
   margin: 0;
-  font-size: 16px;
-  line-height: 1.5;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
   color: var(--text-body);
 }
 
 /* ==========================================================================
-   EVENT ATMOSPHERE / CONCERT SECTION
+   EVENT ATMOSPHERE / GALA SPREAD SECTION
    ========================================================================== */
 .dbit-event-preview-section {
   display: block;
-  border-bottom: 1px solid var(--border-color);
-  background: #FFFFFF;
+  border-bottom: 1px solid var(--gold-border-subtle);
+  background: var(--bg-espresso);
+  padding: 80px 64px;
+  position: relative;
 }
 
 .dbit-event-preview-full {
-  padding: 64px 48px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 24px;
-  background: linear-gradient(135deg, #F0F5FD 0%, #E8F0FE 60%, #FFFFFF 100%);
-  width: 100%;
   max-width: 1240px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  background: 
+    radial-gradient(circle at 90% 10%, rgba(176, 138, 70, 0.14) 0%, transparent 50%),
+    linear-gradient(135deg, #1C1713 0%, #171310 100%);
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius-card);
+  padding: 56px 64px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
 }
 
 .dbit-event-meta-top {
@@ -698,96 +852,150 @@ input:focus, select:focus, textarea:focus {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 1.2px;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--gold-champagne);
+  border-bottom: 1px solid var(--gold-border-subtle);
+  padding-bottom: 20px;
 }
 
 .dbit-event-title {
-  font-size: clamp(2.8rem, 4.5vw, 4.4rem);
-  font-weight: 700;
-  line-height: 0.98;
-  letter-spacing: -2px;
-  color: var(--color-navy);
-  margin: 20px 0 16px;
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 5vw, 4.5rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.5px;
+  color: #FFFFFF;
+  margin: 8px 0 16px;
+}
+
+.dbit-event-title span {
+  background: linear-gradient(135deg, #FFF3D6 0%, #E8D2A0 50%, #B08A46 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-style: italic;
 }
 
 .dbit-event-desc {
-  font-size: 18px;
-  line-height: 1.55;
+  font-size: 17.5px;
+  line-height: 1.65;
   color: var(--text-body);
-  max-width: 600px;
-  margin-bottom: 24px;
+  max-width: 700px;
+  margin-bottom: 8px;
+}
+
+.dbit-event-details-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  margin-top: 12px;
+  padding-top: 24px;
+  border-top: 1px solid var(--gold-border-subtle);
+}
+
+.dbit-event-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dbit-event-detail-k {
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  letter-spacing: 1.5px;
+  color: var(--gold-antique);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.dbit-event-detail-v {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  color: #FFFFFF;
 }
 
 .dbit-claim-action-btn {
   align-self: flex-start;
-  padding: 16px 32px;
-  font-family: var(--font-mono);
-  font-size: 12.5px;
-  letter-spacing: 1.5px;
+  padding: 15px 32px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 1.8px;
   font-weight: 700;
-  color: #FFFFFF !important;
-  background: var(--color-navy);
+  color: #090909 !important;
+  background: linear-gradient(135deg, #E8D2A0 0%, #B08A46 100%);
+  border: 1px solid rgba(232, 210, 160, 0.4);
   border-radius: var(--radius-sm);
   text-decoration: none;
-  transition: background 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 4px 20px rgba(176, 138, 70, 0.3);
+  transition: all 0.22s ease;
+  margin-top: 8px;
 }
 
 .dbit-claim-action-btn:hover {
-  background: var(--color-blue);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #FFF3D6 0%, #C99B4B 100%);
+  box-shadow: 0 6px 28px rgba(176, 138, 70, 0.45);
+  transform: translateY(-2px);
 }
 
 /* ==========================================================================
-   FAQ SECTION (FROM MAIN.DC.HTML)
+   FAQ SECTION (EDITORIAL ACCORDION)
    ========================================================================== */
 .dbit-faq-section {
-  background: linear-gradient(180deg, #FFFFFF 0%, #EAF1FD 100%);
-  border-top: 1px solid var(--border-color);
-  padding: 64px;
+  background: var(--bg-obsidian);
+  border-bottom: 1px solid var(--gold-border-subtle);
+  padding: 80px 64px;
   display: flex;
   flex-wrap: wrap;
-  gap: 48px;
+  gap: 56px;
+  max-width: 1320px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .dbit-faq-left {
-  flex: 1 1 280px;
+  flex: 1 1 320px;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
 .dbit-faq-title {
   margin: 0;
-  font-size: 44px;
-  letter-spacing: -1.5px;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 4vw, 3.4rem);
+  letter-spacing: -0.5px;
   line-height: 1.05;
-  font-weight: 700;
-  color: var(--color-navy);
+  font-weight: 600;
+  color: #FFFFFF;
 }
 
 .dbit-faq-desc {
   margin: 0;
-  font-size: 17px;
-  line-height: 1.55;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--text-body);
-  max-width: 340px;
+  max-width: 360px;
 }
 
 .dbit-faq-right {
-  flex: 2 1 520px;
+  flex: 2 1 540px;
   min-width: 0;
   display: flex;
   flex-direction: column;
 }
 
 .dbit-faq-item {
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--gold-border-subtle);
+  transition: border-color 0.2s ease;
+}
+
+.dbit-faq-item:last-child {
+  border-bottom: 1px solid var(--gold-border-subtle);
 }
 
 .dbit-faq-btn {
@@ -800,16 +1008,17 @@ input:focus, select:focus, textarea:focus {
   border: 0;
   background: transparent;
   text-align: left;
-  font-size: 20px;
+  font-family: var(--font-display);
+  font-size: 22px;
   font-weight: 600;
-  letter-spacing: -0.3px;
-  color: var(--color-navy);
+  letter-spacing: 0.2px;
+  color: #FFFFFF;
   cursor: pointer;
   transition: color 0.2s ease;
 }
 
 .dbit-faq-btn:hover {
-  color: var(--color-blue);
+  color: var(--gold-champagne);
 }
 
 .dbit-faq-toggle-icon {
@@ -820,31 +1029,36 @@ input:focus, select:focus, textarea:focus {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: #EAF0FB;
-  color: var(--color-blue);
+  background: rgba(176, 138, 70, 0.12);
+  border: 1px solid var(--gold-border);
+  color: var(--gold-champagne);
   transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.3, 1), background 0.2s;
 }
 
 .dbit-faq-btn:hover .dbit-faq-toggle-icon {
-  background: #DCE7FC;
+  background: rgba(176, 138, 70, 0.25);
+  border-color: var(--gold-champagne);
 }
 
 .dbit-faq-answer {
   margin: 0 0 24px;
-  max-width: 620px;
-  font-size: 16.5px;
-  line-height: 1.6;
+  max-width: 680px;
+  font-family: var(--font-body);
+  font-size: 15.5px;
+  line-height: 1.65;
   color: var(--text-body);
   animation: fadeIn 0.25s ease-out forwards;
 }
 
 /* ==========================================================================
-   FOOTER & CONTACT US (DBIT SPEC)
+   FOOTER & CONTACT US (PRESTIGE GALA FOOTER)
    ========================================================================== */
 .dbit-footer {
-  background: var(--color-navy);
-  color: #FFFFFF;
-  padding: 56px 64px 32px;
+  background: #0B0908;
+  border-top: 1px solid var(--gold-border);
+  color: var(--text-main);
+  padding: 64px 64px 36px;
+  position: relative;
 }
 
 .dbit-footer-content {
@@ -853,40 +1067,44 @@ input:focus, select:focus, textarea:focus {
   align-items: flex-start;
   justify-content: space-between;
   gap: 48px;
-  padding-bottom: 40px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding-bottom: 48px;
+  border-bottom: 1px solid var(--gold-border-subtle);
+  max-width: 1280px;
+  margin: 0 auto;
 }
 
 /* Full-width Branding Header Row */
 .dbit-footer-header-container {
   width: 100%;
+  max-width: 1280px;
+  margin: 0 auto 48px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 32px;
   padding-bottom: 36px;
-  margin-bottom: 40px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid var(--gold-border-subtle);
   background: transparent;
 }
 
 .dbit-footer-brand-logo {
-  width: 78px;
-  height: 78px;
+  width: 68px;
+  height: 68px;
   object-fit: contain;
   flex-shrink: 0;
   display: block;
+  filter: drop-shadow(0 2px 10px rgba(176, 138, 70, 0.3));
 }
 
 .dbit-footer-logo-badge {
-  background: #FFFFFF;
-  padding: 10px;
-  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--gold-border);
+  padding: 8px;
+  border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
   line-height: 0;
 }
 
@@ -901,21 +1119,23 @@ input:focus, select:focus, textarea:focus {
 }
 
 .dbit-footer-college {
-  font-size: 24px;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
   color: #FFFFFF;
-  letter-spacing: -0.3px;
+  letter-spacing: 0.3px;
   line-height: 1.25;
   text-align: center;
 }
 
 .dbit-footer-sub {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 1.5px;
-  color: #A9B8D8;
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--gold-champagne);
   line-height: 1.4;
   text-align: center;
+  text-transform: uppercase;
 }
 
 /* CONTACT US SECTION */
@@ -931,60 +1151,60 @@ input:focus, select:focus, textarea:focus {
 
 .dbit-contact-title {
   margin: 0;
+  font-family: var(--font-display);
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 600;
   color: #FFFFFF;
-  letter-spacing: -0.3px;
+  letter-spacing: 0.2px;
 }
 
 .dbit-contact-gold-bar {
   display: block;
-  width: 42px;
-  height: 3.5px;
-  background: #F5B82E;
-  border-radius: 2px;
+  width: 36px;
+  height: 2px;
+  background: linear-gradient(90deg, #E8D2A0, #B08A46);
   margin-top: 8px;
 }
 
 .dbit-contact-list {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
 .dbit-contact-item {
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  color: #FFFFFF;
+  color: var(--text-body);
 }
 
 .dbit-contact-icon {
   flex-shrink: 0;
-  color: #FFFFFF;
+  color: var(--gold-champagne);
   margin-top: 3px;
 }
 
 .dbit-contact-link {
-  font-size: 16px;
-  color: #FFFFFF;
+  font-size: 15px;
+  color: var(--text-body);
   text-decoration: none;
   transition: color 0.2s ease;
   line-height: 1.4;
 }
 
 .dbit-contact-link:hover {
-  color: var(--color-gold);
+  color: var(--gold-champagne);
   text-decoration: underline;
 }
 
 .dbit-contact-address {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  font-size: 15.5px;
+  gap: 2px;
+  font-size: 14.5px;
   line-height: 1.5;
-  color: #FFFFFF;
+  color: var(--text-body);
 }
 
 /* CONNECT US ON (SOCIAL LINKS) */
@@ -997,54 +1217,42 @@ input:focus, select:focus, textarea:focus {
 .dbit-social-row {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   flex-wrap: wrap;
   margin-top: 6px;
 }
 
 .dbit-social-circle {
-  width: 50px;
-  height: 50px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   text-decoration: none;
   cursor: pointer;
-  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.22s ease, filter 0.22s ease;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  background: var(--bg-espresso-card);
+  border: 1px solid var(--gold-border);
+  transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
   flex-shrink: 0;
 }
 
+.dbit-social-circle svg {
+  transition: fill 0.2s ease, transform 0.2s ease;
+}
+
 .dbit-social-circle:hover {
-  transform: translateY(-4px) scale(1.08);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
-  filter: brightness(1.12);
-}
-
-.dbit-social-facebook {
-  background: #1877F2;
-}
-
-.dbit-social-x {
-  background: #000000;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-}
-
-.dbit-social-instagram {
-  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
-}
-
-.dbit-social-linkedin {
-  background: #0A66C2;
-}
-
-.dbit-social-youtube {
-  background: #FF0000;
+  transform: translateY(-3px) scale(1.06);
+  border-color: var(--gold-champagne);
+  background: rgba(176, 138, 70, 0.2);
+  box-shadow: 0 6px 20px rgba(176, 138, 70, 0.3);
 }
 
 .dbit-footer-bottom {
-  padding-top: 24px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-top: 28px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1053,50 +1261,53 @@ input:focus, select:focus, textarea:focus {
 }
 
 .dbit-footer-meet-tag {
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  letter-spacing: 1.2px;
-  color: #A9B8D8;
+  font-family: var(--font-body);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--gold-champagne);
+  text-transform: uppercase;
 }
 
 .dbit-footer-copy {
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  letter-spacing: 1px;
-  color: #6C81A8;
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
 }
 
 /* ==========================================================================
-   TICKET / BOARDING PASS STYLES
+   TICKET / BOARDING PASS STYLES (OBSIDIAN & GOLD CREDENTIAL)
    ========================================================================== */
 .ticket-wrapper-neo {
   width: 100%;
-  max-width: 520px;
+  max-width: 540px;
   margin: 0 auto;
 }
 
 .ticket-neo {
-  background: #FFFFFF;
-  border: 1px solid var(--border-color);
+  background: var(--bg-espresso);
+  border: 1.5px solid var(--gold-antique);
   border-radius: var(--radius-card);
   overflow: hidden;
-  box-shadow: 0 16px 40px -16px rgba(14, 31, 69, 0.2);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(176, 138, 70, 0.2);
+  color: #FFFFFF;
 }
 
 .ticket-neo-header {
-  background: var(--color-navy);
+  background: linear-gradient(135deg, #171310 0%, #2A231E 100%);
+  border-bottom: 1px solid var(--gold-border);
   color: #FFFFFF;
-  padding: 20px 24px;
+  padding: 22px 26px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .ticket-neo-tear {
-  border-top: 2px dashed var(--border-color);
+  border-top: 2px dashed rgba(176, 138, 70, 0.4);
   position: relative;
   margin: 0;
-  background: var(--bg-page);
+  background: var(--bg-obsidian);
   height: 20px;
 }
 
@@ -1169,9 +1380,33 @@ input:focus, select:focus, textarea:focus {
 
 .neo-box {
   background: #FFFFFF;
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(176, 138, 70, 0.3);
   border-radius: var(--radius-box);
   overflow: hidden;
+}
+
+.badge-onfile {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #065F46;
+  border: 1px solid #10B981;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.badge-missing {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  background: rgba(239, 68, 68, 0.12);
+  color: #991B1B;
+  border: 1px solid #EF4444;
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 
 .neo-tabs-header {
@@ -1421,35 +1656,40 @@ input:focus, select:focus, textarea:focus {
     padding: 12px 24px;
   }
 
+  .dbit-hero-section {
+    padding: 36px 32px 56px;
+    gap: 40px;
+  }
+
   .dbit-hero-left {
-    padding: 32px 24px;
-    gap: 12px;
+    padding: 0;
+    gap: 14px;
   }
 
   .dbit-hero-right {
-    padding: 32px 24px 48px;
+    padding: 0;
   }
 
   .dbit-event-preview-full {
-    padding: 48px 32px;
+    padding: 44px 32px;
   }
 
   .dbit-how-section {
-    padding: 48px 32px;
+    padding: 60px 32px;
   }
 
   .dbit-faq-section {
-    padding: 48px 32px;
+    padding: 60px 32px;
   }
 
   .dbit-footer {
-    padding: 36px 32px;
+    padding: 48px 32px 32px;
   }
 }
 
 @media (max-width: 640px) {
   .dbit-header {
-    padding: 12px 16px;
+    padding: 12px 18px;
     flex-wrap: nowrap;
     gap: 12px;
   }
@@ -1460,19 +1700,20 @@ input:focus, select:focus, textarea:focus {
   }
 
   .dbit-header-name {
-    font-size: 18px;
+    font-size: 20px;
     line-height: 1.1;
     white-space: nowrap;
   }
 
   .dbit-header-subtitle {
     font-size: 9px;
-    letter-spacing: 0.8px;
+    letter-spacing: 1px;
     white-space: nowrap;
   }
 
   .dbit-header-logo {
-    width: 40px;
+    width: 38px;
+    height: 38px;
     flex-shrink: 0;
   }
 
@@ -1485,110 +1726,116 @@ input:focus, select:focus, textarea:focus {
   }
 
   .dbit-nav-cta {
-    padding: 9px 13px;
+    padding: 9px 14px;
     font-size: 11px;
     letter-spacing: 1px;
     white-space: nowrap;
     flex-shrink: 0;
   }
 
-  .dbit-header-banner-container {
-    padding: 0;
-  }
-
-  .dbit-header-banner-inner {
-    border-radius: 0;
-  }
-
-  .dbit-hero-left {
-    padding: 24px 18px 18px;
-    gap: 8px;
+  .dbit-hero-section {
+    padding: 28px 18px 48px;
+    gap: 32px;
   }
 
   .dbit-hero-badge-wrap {
-    gap: 14px;
-    margin-bottom: 0;
+    gap: 12px;
   }
 
   .dbit-hero-assoc-logo {
-    width: 64px;
-    height: 64px;
-    object-fit: contain;
+    width: 52px;
+    height: 52px;
     flex-shrink: 0;
   }
 
   .dbit-hero-tag {
-    font-size: 12.5px;
-    letter-spacing: 1.1px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
   }
 
   .dbit-hero-venue {
-    font-size: 12px;
-    line-height: 1.45;
+    font-size: 11.5px;
+    line-height: 1.4;
   }
 
   .dbit-hero-title {
-    font-size: 2.5rem;
-    letter-spacing: -1.2px;
-    line-height: 1.05;
-    margin: 2px 0 4px;
+    font-size: 3.2rem;
+    line-height: 0.95;
+  }
+
+  .dbit-hero-script {
+    font-size: 2.2rem;
   }
 
   .dbit-hero-description {
     font-size: 15px;
-    line-height: 1.55;
-    margin-bottom: 12px;
+    line-height: 1.6;
   }
 
-  .dbit-hero-stats,
-  .dbit-stat-card {
-    display: none !important;
-  }
-
-  .dbit-hero-right {
-    padding: 24px 16px 40px;
+  .dbit-portal-card {
+    border-radius: 12px;
   }
 
   .dbit-portal-content {
-    padding: 26px 18px;
+    padding: 24px 18px;
   }
 
   .dbit-glance-section {
-    padding: 36px 18px;
-    gap: 16px;
+    padding: 32px 18px;
   }
 
-  .dbit-event-preview-full {
-    padding: 36px 18px;
+  .dbit-glance-grid {
     gap: 20px;
   }
 
+  .dbit-event-preview-section {
+    padding: 48px 18px;
+  }
+
+  .dbit-event-preview-full {
+    padding: 32px 20px;
+    gap: 24px;
+  }
+
+  .dbit-event-title {
+    font-size: 2.6rem;
+  }
+
   .dbit-how-section {
-    padding: 36px 18px;
+    padding: 48px 18px;
+    gap: 32px;
+  }
+
+  .dbit-how-section-title {
+    font-size: 2.4rem;
+  }
+
+  .dbit-how-card {
+    padding: 24px 20px;
   }
 
   .dbit-faq-section {
-    padding: 36px 18px;
-    gap: 28px;
+    padding: 48px 18px;
+    gap: 32px;
   }
 
   .dbit-faq-title {
-    font-size: 28px;
+    font-size: 2.4rem;
   }
 
   .dbit-faq-btn {
-    font-size: 16px;
-    padding: 16px 0;
+    font-size: 18px;
+    padding: 18px 0;
   }
 
   .dbit-footer {
-    padding: 36px 18px 24px;
+    padding: 40px 18px 28px;
   }
 
   .dbit-footer-header-container {
-    gap: 12px;
+    gap: 14px;
     padding-bottom: 24px;
-    margin-bottom: 28px;
+    margin-bottom: 32px;
   }
 
   .dbit-footer-brand-logo {
@@ -1596,31 +1843,25 @@ input:focus, select:focus, textarea:focus {
     height: 48px;
   }
 
-  .dbit-footer-logo-badge {
-    padding: 6px;
-    border-radius: 10px;
-  }
-
   .dbit-footer-college {
-    font-size: 16px;
+    font-size: 18px;
     line-height: 1.3;
   }
 
   .dbit-footer-sub {
     font-size: 9.5px;
-    letter-spacing: 1px;
-    line-height: 1.4;
+    letter-spacing: 1.2px;
   }
 
   .dbit-footer-content {
     flex-direction: column;
-    gap: 32px;
-    padding-bottom: 24px;
+    gap: 36px;
+    padding-bottom: 32px;
   }
 
   .dbit-footer-bottom {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
+    gap: 12px;
   }
 }

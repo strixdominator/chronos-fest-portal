@@ -102,19 +102,19 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
         format: [105, 148], // A6 Pass format
       });
 
-      // Background Navy
-      doc.setFillColor(10, 25, 47);
+      // Background Obsidian Black
+      doc.setFillColor(9, 9, 9);
       doc.rect(0, 0, 105, 148, 'F');
 
-      // Gold Outer Border
-      doc.setDrawColor(245, 184, 46);
+      // Antique Gold Outer Border
+      doc.setDrawColor(176, 138, 70);
       doc.setLineWidth(1.2);
       doc.rect(4, 4, 97, 140);
 
-      // Header Banner Box
-      doc.setFillColor(7, 21, 43);
+      // Header Banner Box (Deep Espresso)
+      doc.setFillColor(23, 19, 16);
       doc.rect(6, 6, 93, 24, 'F');
-      doc.setDrawColor(30, 58, 138);
+      doc.setDrawColor(176, 138, 70);
       doc.setLineWidth(0.4);
       doc.rect(6, 6, 93, 24);
 
@@ -124,20 +124,20 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
       doc.setFontSize(14);
       doc.text('MILAN 2026', 52.5, 13, { align: 'center' });
 
-      doc.setTextColor(147, 197, 253);
+      doc.setTextColor(232, 210, 160);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(6.5);
       doc.text('DON BOSCO INSTITUTE OF TECHNOLOGY', 52.5, 17.5, { align: 'center' });
 
-      doc.setTextColor(245, 184, 46);
+      doc.setTextColor(176, 138, 70);
       doc.setFont('courier', 'bold');
       doc.setFontSize(6.5);
       doc.text('OFFICIAL ALUMNI DIGITAL ENTRY PASS', 52.5, 22, { align: 'center' });
 
       // Attendee Info Box
-      doc.setFillColor(17, 34, 64);
+      doc.setFillColor(31, 26, 22);
       doc.rect(8, 33, 89, 23, 'F');
-      doc.setDrawColor(30, 58, 138);
+      doc.setDrawColor(176, 138, 70);
       doc.rect(8, 33, 89, 23);
 
       doc.setTextColor(255, 255, 255);
@@ -145,12 +145,12 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
       doc.setFontSize(10.5);
       doc.text(attendee.fullName.toUpperCase(), 52.5, 40, { align: 'center' });
 
-      doc.setTextColor(245, 184, 46);
+      doc.setTextColor(232, 210, 160);
       doc.setFont('courier', 'bold');
       doc.setFontSize(9);
       doc.text(`USN: ${attendee.usn || attendee.rollNumber}`, 52.5, 46, { align: 'center' });
 
-      doc.setTextColor(203, 213, 225);
+      doc.setTextColor(212, 204, 193);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7);
       doc.text(`${attendee.department || 'Engineering'} · ${attendee.year || 'Alumni'}`, 52.5, 51, { align: 'center' });
@@ -161,7 +161,7 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
       const qrY = 59;
       doc.setFillColor(255, 255, 255);
       doc.rect(qrX - 1.5, qrY - 1.5, qrSize + 3, qrSize + 3, 'F');
-      doc.setDrawColor(245, 184, 46);
+      doc.setDrawColor(176, 138, 70);
       doc.setLineWidth(0.8);
       doc.rect(qrX - 1.5, qrY - 1.5, qrSize + 3, qrSize + 3);
 
@@ -170,17 +170,17 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
       }
 
       // Security Details
-      doc.setTextColor(255, 255, 255);
+      doc.setTextColor(232, 210, 160);
       doc.setFont('courier', 'bold');
       doc.setFontSize(8);
       doc.text(`CODE: ${attendee.ticketCode}`, 52.5, 110, { align: 'center' });
 
-      doc.setTextColor(148, 163, 184);
+      doc.setTextColor(165, 155, 143);
       doc.setFontSize(5.5);
       doc.text('PRESENT AT SECURITY GATE FOR WRISTBAND', 52.5, 114, { align: 'center' });
 
       // Event Info Box
-      doc.setFillColor(30, 58, 138);
+      doc.setFillColor(23, 19, 16);
       doc.rect(8, 117, 89, 13, 'F');
 
       doc.setTextColor(255, 255, 255);
@@ -188,12 +188,12 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
       doc.setFontSize(7.5);
       doc.text('7 NOVEMBER 2026 · 2:30 PM (GATES: 2:00 PM)', 52.5, 122.5, { align: 'center' });
 
-      doc.setTextColor(252, 211, 77);
+      doc.setTextColor(232, 210, 160);
       doc.setFontSize(6.5);
-      doc.text('DBIT CRICKET GROUND, BANGALORE', 52.5, 127, { align: 'center' });
+      doc.text('DBIT CRICKET GROUND, BENGALURU', 52.5, 127, { align: 'center' });
 
       // Footer
-      doc.setTextColor(100, 116, 139);
+      doc.setTextColor(140, 130, 120);
       doc.setFont('courier', 'normal');
       doc.setFontSize(5);
       doc.text('DBIT ALUMNI ASSOCIATION · RECONNECTING RELATIONS', 52.5, 135, { align: 'center' });
@@ -275,37 +275,37 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
         {/* Top Header */}
         <div className="ticket-neo-header">
           <div>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '1.25rem', letterSpacing: '-0.03em' }}>
-              MILAN <span style={{ color: 'var(--accent-coral)' }}>2026</span>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.4rem', letterSpacing: '0.5px' }}>
+              MILAN <span style={{ color: 'var(--gold-champagne, #E8D2A0)', fontStyle: 'italic' }}>2026</span>
             </div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: '#a3a3a3', letterSpacing: '0.08em', marginTop: 2 }}>
-              OFFICIAL ALUMNI ENTRY PASS
+            <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.7rem', color: 'var(--gold-champagne, #E8D2A0)', letterSpacing: '1.8px', marginTop: 2, textTransform: 'uppercase' }}>
+              OFFICIAL ALUMNI ADMISSION CREDENTIAL
             </div>
           </div>
 
           <div>
             {isApproved && !isFullyCheckedIn && !isPartiallyCheckedIn && (
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 800, background: 'var(--accent-sage)', color: '#064e3b', padding: '4px 8px', border: '1px solid #fff' }}>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', fontWeight: 800, background: 'rgba(176, 138, 70, 0.2)', color: 'var(--gold-champagne, #E8D2A0)', padding: '5px 10px', borderRadius: 6, border: '1px solid var(--gold-antique, #B08A46)', letterSpacing: '1px' }}>
                 VERIFIED ({totalQuota} {totalQuota > 1 ? 'PASSES' : 'PASS'})
               </span>
             )}
             {isApproved && isPartiallyCheckedIn && (
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 800, background: 'var(--accent-ochre)', color: '#78350f', padding: '4px 8px', border: '1px solid #fff' }}>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', fontWeight: 800, background: 'rgba(201, 155, 75, 0.25)', color: '#FDE68A', padding: '5px 10px', borderRadius: 6, border: '1px solid #D97706', letterSpacing: '1px' }}>
                 {admittedCount}/{totalQuota} ADMITTED
               </span>
             )}
             {isApproved && isFullyCheckedIn && (
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 800, background: '#fee2e2', color: '#991b1b', padding: '4px 8px', border: '1px solid #fff' }}>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', fontWeight: 800, background: 'rgba(239, 68, 68, 0.2)', color: '#FCA5A5', padding: '5px 10px', borderRadius: 6, border: '1px solid #EF4444', letterSpacing: '1px' }}>
                 EXHAUSTED ({totalQuota}/{totalQuota})
               </span>
             )}
             {isPending && (
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 800, background: 'var(--accent-ochre)', color: '#78350f', padding: '4px 8px', border: '1px solid #fff' }}>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', fontWeight: 800, background: 'rgba(245, 158, 11, 0.2)', color: '#FDE68A', padding: '5px 10px', borderRadius: 6, border: '1px solid #F59E0B', letterSpacing: '1px' }}>
                 PENDING REVIEW
               </span>
             )}
             {isRejected && (
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 800, background: '#fee2e2', color: '#991b1b', padding: '4px 8px', border: '1px solid #fff' }}>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', fontWeight: 800, background: 'rgba(239, 68, 68, 0.2)', color: '#FCA5A5', padding: '5px 10px', borderRadius: 6, border: '1px solid #EF4444', letterSpacing: '1px' }}>
                 DENIED
               </span>
             )}
@@ -314,74 +314,74 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
 
         {/* Live Anti-Counterfeit Banner */}
         <div style={{
-          background: 'var(--bg-card-alt)',
-          borderBottom: '1px solid var(--border-black)',
-          padding: '8px 16px',
+          background: 'var(--bg-espresso-card, #1F1A16)',
+          borderBottom: '1px solid rgba(176, 138, 70, 0.3)',
+          padding: '9px 18px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           fontFamily: 'var(--font-mono)',
           fontSize: '0.68rem',
           fontWeight: 700,
-          color: 'var(--text-secondary)'
+          color: 'var(--gold-champagne, #E8D2A0)'
         }}>
           <span>LIVE SECURITY STAMP</span>
-          <span style={{ color: 'var(--accent-coral)' }}>{liveClock}</span>
+          <span style={{ color: '#FFFFFF', letterSpacing: '0.5px' }}>{liveClock}</span>
         </div>
 
-        {/* Primary Details Grid */}
-        <div style={{ padding: '24px 24px 16px', background: '#fff' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 16, marginBottom: 16 }}>
+        {/* Primary Details Grid (Warm Ivory Parchment) */}
+        <div style={{ padding: '26px 24px 18px', background: 'var(--bg-ivory, #F5F0E7)', color: 'var(--text-dark, #171310)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 16, marginBottom: 18 }}>
             <div>
-              <div className="mono-label" style={{ fontSize: '0.68rem', marginBottom: 2 }}>ALUMNUS NAME</div>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', fontWeight: 900 }}>
+              <div className="mono-label" style={{ fontSize: '0.65rem', marginBottom: 2 }}>ALUMNUS NAME</div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-dark, #171310)', lineHeight: 1.15 }}>
                 {attendee.fullName}
               </div>
             </div>
             <div>
-              <div className="mono-label" style={{ fontSize: '0.68rem', marginBottom: 2 }}>SEAT NUMBER (USN)</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.15rem', fontWeight: 800, color: 'var(--accent-coral)' }}>
+              <div className="mono-label" style={{ fontSize: '0.65rem', marginBottom: 2 }}>SEAT NUMBER (USN)</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.15rem', fontWeight: 700, color: 'var(--gold-antique, #B08A46)' }}>
                 {attendee.rollNumber}
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, paddingBottom: 14, borderBottom: '1px solid var(--border-color)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 16, paddingBottom: 14, borderBottom: '1px solid rgba(176, 138, 70, 0.25)' }}>
             <div>
-              <div className="mono-label" style={{ fontSize: '0.68rem', marginBottom: 2 }}>DEPARTMENT & BATCH</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 700 }}>
+              <div className="mono-label" style={{ fontSize: '0.65rem', marginBottom: 2 }}>DEPARTMENT & BATCH</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.86rem', fontWeight: 700, color: 'var(--text-dark, #171310)' }}>
                 {attendee.department || 'Graduate'} {attendee.batchYear ? `• ${attendee.batchYear}` : ''}
               </div>
             </div>
             <div>
-              <div className="mono-label" style={{ fontSize: '0.68rem', marginBottom: 2 }}>TICKET CODE</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 800 }}>
+              <div className="mono-label" style={{ fontSize: '0.65rem', marginBottom: 2 }}>TICKET CODE</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.86rem', fontWeight: 700, color: 'var(--gold-dark, #8E6D32)' }}>
                 {attendee.ticketCode}
               </div>
             </div>
           </div>
 
           {/* Event Venue, Date & Time Row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 16, marginTop: 14, paddingBottom: 14, borderBottom: '1px solid var(--border-color)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 16, marginTop: 14, paddingBottom: 14, borderBottom: '1px solid rgba(176, 138, 70, 0.25)' }}>
             <div>
-              <div className="mono-label" style={{ fontSize: '0.68rem', marginBottom: 2 }}>EVENT VENUE</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-navy)' }}>
-                DBIT CRICKET GROUND, BANGALORE
+              <div className="mono-label" style={{ fontSize: '0.65rem', marginBottom: 2 }}>EVENT VENUE</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-dark, #171310)' }}>
+                DBIT Cricket Ground, Bengaluru
               </div>
             </div>
             <div>
-              <div className="mono-label" style={{ fontSize: '0.68rem', marginBottom: 2 }}>EVENT & GATES OPEN</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-blue)' }}>
-                7 NOV 2026 · 2:30 PM (GATES 2:00 PM)
+              <div className="mono-label" style={{ fontSize: '0.65rem', marginBottom: 2 }}>DATE & TIME</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.82rem', fontWeight: 700, color: 'var(--gold-antique, #B08A46)' }}>
+                7 Nov 2026 · From 2:30 PM
               </div>
             </div>
           </div>
 
           {/* Professional Affiliation */}
           {(attendee.organization || attendee.designation) && (
-            <div style={{ marginTop: 14, padding: '10px 14px', background: '#F8FAFC', border: '1px solid var(--border-color)', borderRadius: 6 }}>
-              <div className="mono-label" style={{ fontSize: '0.64rem', marginBottom: 2, color: 'var(--color-blue)' }}>PROFESSIONAL AFFILIATION</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', fontWeight: 700, color: 'var(--color-navy)' }}>
+            <div style={{ marginTop: 14, padding: '10px 14px', background: '#FFFFFF', border: '1px solid rgba(176, 138, 70, 0.3)', borderRadius: 6 }}>
+              <div className="mono-label" style={{ fontSize: '0.64rem', marginBottom: 2, color: 'var(--gold-antique, #B08A46)' }}>PROFESSIONAL AFFILIATION</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-dark, #171310)' }}>
                 {attendee.organization || ''}{attendee.organization && attendee.designation ? ' · ' : ''}{attendee.designation || ''}
               </div>
             </div>
@@ -392,19 +392,20 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
             <div style={{
               margin: '16px 0',
               padding: '12px 14px',
-              background: 'var(--accent-lilac)',
-              border: '1px solid var(--border-black)',
+              background: '#FFFFFF',
+              border: '1px solid rgba(176, 138, 70, 0.4)',
+              borderRadius: 6,
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center'
             }}>
               <div>
-                <span className="mono-label" style={{ color: '#0a0a0a', fontSize: '0.68rem' }}>GROUP ADMISSION</span>
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: '0.95rem', fontWeight: 800 }}>
+                <span className="mono-label" style={{ color: 'var(--gold-antique, #B08A46)', fontSize: '0.65rem' }}>GROUP ADMISSION</span>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 700, color: 'var(--text-dark, #171310)' }}>
                   {totalQuota} PERSONS TOTAL
                 </div>
               </div>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 800 }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 700, color: 'var(--gold-antique, #B08A46)' }}>
                 {admittedCount > 0 ? `${remaining} REMAINING` : 'ALL UNCLAIMED'}
               </span>
             </div>
@@ -413,7 +414,7 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
           {/* Registered Family Members */}
           {attendee.familyMembers && attendee.familyMembers.length > 0 && (
             <div style={{ margin: '14px 0 16px' }}>
-              <div className="mono-label" style={{ fontSize: '0.68rem', marginBottom: 8 }}>
+              <div className="mono-label" style={{ fontSize: '0.65rem', marginBottom: 8 }}>
                 ACCOMPANYING GUESTS ({attendee.familyMembers.length})
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -422,14 +423,16 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
                     display: 'flex',
                     justifyContent: 'space-between',
                     padding: '8px 12px',
-                    background: '#faf8f3',
-                    border: '1px solid var(--border-black)',
-                    fontFamily: 'var(--font-mono)',
+                    background: '#FFFFFF',
+                    border: '1px solid rgba(176, 138, 70, 0.25)',
+                    borderRadius: 4,
+                    fontFamily: 'var(--font-body)',
                     fontSize: '0.78rem',
-                    fontWeight: 700
+                    fontWeight: 600,
+                    color: 'var(--text-dark, #171310)'
                   }}>
                     <span>{member.name}</span>
-                    <span style={{ color: 'var(--text-secondary)' }}>{member.relation}</span>
+                    <span style={{ color: 'var(--text-dark-muted, #786E63)' }}>{member.relation}</span>
                   </div>
                 ))}
               </div>
@@ -442,49 +445,51 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: 'var(--bg-page)',
+          background: 'var(--bg-espresso, #171310)',
           padding: '8px 0',
-          borderTop: '1px dashed var(--border-black)',
-          borderBottom: '1px dashed var(--border-black)',
+          borderTop: '1px dashed rgba(176, 138, 70, 0.4)',
+          borderBottom: '1px dashed rgba(176, 138, 70, 0.4)',
         }}>
-          <div style={{ width: 14, height: 28, background: 'var(--bg-page)', borderRight: '1px solid var(--border-black)' }} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.15em', color: 'var(--text-secondary)' }}>
+          <div style={{ width: 14, height: 28, background: 'var(--bg-obsidian, #090909)', borderRight: '1px solid rgba(176, 138, 70, 0.4)', borderRadius: '0 14px 14px 0' }} />
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.15em', color: 'var(--gold-champagne, #E8D2A0)' }}>
             TEAR LINE • OFFICIAL GATE SCAN AREA
           </span>
-          <div style={{ width: 14, height: 28, background: 'var(--bg-page)', borderLeft: '1px solid var(--border-black)' }} />
+          <div style={{ width: 14, height: 28, background: 'var(--bg-obsidian, #090909)', borderLeft: '1px solid rgba(176, 138, 70, 0.4)', borderRadius: '14px 0 0 14px' }} />
         </div>
 
         {/* QR Code Scan Area */}
-        <div style={{ padding: '24px', background: '#fff', textAlign: 'center' }}>
+        <div style={{ padding: '26px 24px', background: 'var(--bg-espresso, #171310)', textAlign: 'center' }}>
           {isApproved ? (
             <div>
               <div style={{
                 display: 'inline-block',
-                padding: '12px',
-                background: '#fff',
-                border: '1px solid var(--border-black)',
-                marginBottom: 12
+                padding: '14px',
+                background: '#FFFFFF',
+                border: '1.5px solid var(--gold-antique, #B08A46)',
+                borderRadius: 8,
+                marginBottom: 12,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
               }}>
                 <canvas ref={canvasRef} style={{ display: 'block', maxWidth: '100%', height: 'auto' }} />
               </div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
-                SCAN AT SECURITY GATE FOR ADMISSION
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', color: 'var(--gold-champagne, #E8D2A0)', letterSpacing: '1px' }}>
+                PRESENT THIS QR CODE AT SECURITY GATE FOR ENTRY
               </div>
             </div>
           ) : isPending ? (
-            <div style={{ padding: '32px 16px', background: 'var(--accent-ochre)', border: '1px solid var(--border-black)' }}>
-              <Clock size={32} style={{ margin: '0 auto 12px', color: '#78350f' }} />
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', fontWeight: 800 }}>
+            <div style={{ padding: '32px 16px', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid #D97706', borderRadius: 8 }}>
+              <Clock size={32} style={{ margin: '0 auto 12px', color: '#F59E0B' }} />
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.3rem', fontWeight: 700, color: '#FDE68A' }}>
                 APPROVAL PENDING
               </div>
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', color: '#78350f', marginTop: 4 }}>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', color: '#FDE68A', marginTop: 4 }}>
                 QR pass will unlock once the committee validates your submitted details.
               </p>
             </div>
           ) : (
-            <div style={{ padding: '32px 16px', background: '#fee2e2', border: '1px solid var(--border-black)' }}>
-              <XCircle size={32} style={{ margin: '0 auto 12px', color: '#991b1b' }} />
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', fontWeight: 800 }}>
+            <div style={{ padding: '32px 16px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #EF4444', borderRadius: 8 }}>
+              <XCircle size={32} style={{ margin: '0 auto 12px', color: '#EF4444' }} />
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.3rem', fontWeight: 700, color: '#FCA5A5' }}>
                 REGISTRATION DENIED
               </div>
             </div>
@@ -495,51 +500,53 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
         <div style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
-          borderTop: '1px solid var(--border-black)',
-          background: 'var(--bg-card-alt)'
+          borderTop: '1px solid rgba(176, 138, 70, 0.3)',
+          background: 'var(--bg-espresso-card, #1F1A16)'
         }} className="no-print">
           <button
             type="button"
             onClick={handleDownloadPdfPass}
             disabled={!isApproved}
-            className="btn-neo-black"
             style={{ 
               border: 'none', 
-              borderRight: '1px solid var(--border-black)', 
+              borderRight: '1px solid rgba(176, 138, 70, 0.3)', 
               padding: '16px 12px',
-              background: 'var(--color-navy, #0A192F)',
-              color: '#FFFFFF',
+              background: 'linear-gradient(135deg, #E8D2A0 0%, #B08A46 100%)',
+              color: '#090909',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: 8,
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.82rem',
+              fontFamily: 'var(--font-body)',
+              fontSize: '0.78rem',
               fontWeight: 800,
+              letterSpacing: '1px',
               cursor: isApproved ? 'pointer' : 'not-allowed',
+              opacity: isApproved ? 1 : 0.55
             }}
           >
             <Download size={16} />
-            DOWNLOAD PDF PASS ↗
+            DOWNLOAD PDF ↗
           </button>
           <button
             type="button"
             onClick={handleDeliverEmail}
             disabled={!isApproved || sendingEmail}
-            className="btn-neo-outline"
             style={{ 
               border: 'none', 
               padding: '16px 12px',
-              background: '#FFFFFF',
-              color: 'var(--color-navy, #0A192F)',
+              background: 'var(--bg-espresso, #171310)',
+              color: 'var(--gold-champagne, #E8D2A0)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: 8,
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.82rem',
+              fontFamily: 'var(--font-body)',
+              fontSize: '0.78rem',
               fontWeight: 800,
+              letterSpacing: '1px',
               cursor: isApproved && !sendingEmail ? 'pointer' : 'not-allowed',
+              opacity: isApproved && !sendingEmail ? 1 : 0.55
             }}
           >
             {sendingEmail ? (
@@ -550,7 +557,7 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
             ) : (
               <>
                 <Mail size={16} />
-                {emailSuccess ? 'RESEND TO EMAIL ↗' : 'DELIVER TO EMAIL ↗'}
+                {emailSuccess ? 'RESEND TO EMAIL ↗' : 'DELIVER EMAIL ↗'}
               </>
             )}
           </button>

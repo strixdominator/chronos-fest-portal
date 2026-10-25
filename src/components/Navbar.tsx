@@ -45,11 +45,14 @@ export default function Navbar() {
 
       {!hideNav && (
         <nav className="dbit-header-nav">
-          <a href="#about" className="dbit-nav-link">
-            EVENT
+          <a href="#invitation" className="dbit-nav-link">
+            THE INVITATION
           </a>
           <a href="#how" className="dbit-nav-link">
             HOW IT WORKS
+          </a>
+          <a href="#atmosphere" className="dbit-nav-link">
+            ATMOSPHERE
           </a>
           <a href="#faq" className="dbit-nav-link">
             FAQ
@@ -63,7 +66,7 @@ export default function Navbar() {
             className="dbit-nav-cta"
             aria-label="Generate fresh pass"
           >
-            GENERATE PASS ↗
+            CLAIM PASS ↗
           </button>
         </nav>
       )}

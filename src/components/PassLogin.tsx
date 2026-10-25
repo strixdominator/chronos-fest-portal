@@ -336,7 +336,7 @@ export default function PassLogin({ initialUsn = '', settings, onUnlocked }: Pas
                   {matchedAttendee.department}
                 </div>
               </div>
-              <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '0.95rem', background: 'var(--bg-black)', color: '#fff', padding: '4px 8px' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 800, fontSize: '0.88rem', background: '#171310', color: '#E8D2A0', padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(176, 138, 70, 0.45)' }}>
                 {matchedAttendee.usn || matchedAttendee.rollNumber}
               </span>
             </div>

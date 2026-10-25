@@ -17,7 +17,7 @@ export default function ContributionModal({ isOpen, onClose }: ContributionModal
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(6, 16, 30, 0.82)',
+        backgroundColor: 'rgba(9, 9, 9, 0.88)',
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
         display: 'flex',
@@ -35,8 +35,8 @@ export default function ContributionModal({ isOpen, onClose }: ContributionModal
         style={{
           background: '#FFFFFF',
           borderRadius: 16,
-          border: '2px solid var(--color-gold, #F5B82E)',
-          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(245, 184, 46, 0.25)',
+          border: '1.5px solid var(--gold-antique, #B08A46)',
+          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.7), 0 0 25px rgba(176, 138, 70, 0.2)',
           maxWidth: 480,
           width: '100%',
           padding: '36px 28px 28px',

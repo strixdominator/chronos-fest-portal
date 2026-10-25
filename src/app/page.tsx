@@ -64,33 +64,75 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, []);
 
+  const [showPosterModal, setShowPosterModal] = useState(false);
+
   return (
     <div className="dbit-page-wrapper">
-      {/* HEADER BANNER POSTER */}
-      <div className="dbit-header-banner-container no-print">
-        <div className="dbit-header-banner-inner">
-          <picture>
-            <source srcSet="/header-banner.webp" type="image/webp" />
-            <source srcSet="/header-banner.jpg" type="image/jpeg" />
+      {/* POSTER LIGHTBOX MODAL */}
+      {showPosterModal && (
+        <div 
+          className="neo-modal-backdrop" 
+          onClick={() => setShowPosterModal(false)}
+          style={{ background: 'rgba(9, 9, 9, 0.92)', zIndex: 9999 }}
+        >
+          <div 
+            style={{ 
+              position: 'relative', 
+              maxWidth: '1000px', 
+              width: '94%', 
+              background: '#171310', 
+              border: '1.5px solid #B08A46', 
+              borderRadius: 14, 
+              padding: 16, 
+              boxShadow: '0 25px 80px rgba(0,0,0,0.9), 0 0 50px rgba(176,138,70,0.3)' 
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, padding: '4px 8px' }}>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: '20px', color: '#E8D2A0', letterSpacing: '1px' }}>
+                Official Milan 2026 Event Artwork
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowPosterModal(false)}
+                style={{
+                  background: 'rgba(176,138,70,0.15)',
+                  border: '1px solid #B08A46',
+                  color: '#E8D2A0',
+                  borderRadius: '50%',
+                  width: 32,
+                  height: 32,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 16,
+                  cursor: 'pointer'
+                }}
+                aria-label="Close poster preview"
+              >
+                ✕
+              </button>
+            </div>
             <img
               src="/header-banner.webp"
-              alt="Milan 2026 DBIT Alumni Grand Reunion"
-              className="dbit-header-banner-img"
-              loading="eager"
-              decoding="async"
-              width={2048}
-              height={768}
+              alt="Milan 2026 Official Event Poster"
+              style={{ width: '100%', height: 'auto', borderRadius: 8, display: 'block' }}
             />
-          </picture>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* HERO SECTION */}
-      <section id="about" className="dbit-hero-section">
-        {/* Hero Left Column */}
+      {/* EDITORIAL HERO SECTION */}
+      <section id="invitation" className="dbit-hero-section">
+        {/* Hero Left Column (The Grand Invitation) */}
         <div className="dbit-hero-left">
-          {/* Logo & Meta Badge */}
+          {/* Logo & Meta Badge Row */}
           <div className="dbit-hero-badge-wrap">
+            <img
+              src="/assets/66eff0e624600df79e9f69030275731c.png"
+              alt="Don Bosco Institute of Technology emblem"
+              className="dbit-hero-assoc-logo"
+            />
             <img
               src="/assets/1662177580bae749e245f3973661f37f.png"
               alt="DBIT Alumni Association logo"
@@ -102,21 +144,62 @@ export default function HomePage() {
               </span>
               <span className="dbit-gold-divider" />
               <span className="dbit-hero-venue">
-                7 NOVEMBER 2026 · 2:30 PM · GATES OPEN 2:00 PM · DBIT CRICKET GROUND, BANGALORE
+                DBIT CRICKET GROUND, BENGALURU
               </span>
             </div>
           </div>
 
+          {/* Invitation Eyebrow */}
+          <div className="dbit-hero-eyebrow">
+            YOU ARE CORDIALLY INVITED TO
+          </div>
+
           {/* Main Headline */}
           <h1 className="dbit-hero-title">
-            Reconnecting<br />
-            <span className="dbit-hero-title-accent">Relations.</span>
+            MILAN <span className="dbit-hero-title-accent">2026</span>
           </h1>
+
+          {/* Flowing Script Accent */}
+          <div className="dbit-hero-script">
+            Reconnecting Relations
+          </div>
 
           {/* Description */}
           <p className="dbit-hero-description">
-            Every pass is matched against official alumni records. One identity, one verified pass — no screenshots, no transfers.
+            An invitation back to where it began. Celebrating 20 years of Don Bosco Institute of Technology graduates — from the pioneers of 2005 to the fresh alumni of 2025. Every pass is verified against official records.
           </p>
+
+          {/* Batches & Schedule Pill */}
+          <div className="dbit-hero-batches-pill">
+            <span className="dbit-hero-batches-label">GRADUATING BATCHES</span>
+            <span className="dbit-hero-batches-val">2005 – 2025</span>
+          </div>
+
+          {/* Dual Action CTA Buttons */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginTop: 12 }}>
+            <a
+              href="#claim"
+              className="dbit-claim-action-btn"
+              style={{ margin: 0 }}
+            >
+              CLAIM YOUR PASS ↓
+            </a>
+            <button
+              type="button"
+              onClick={() => setShowPosterModal(true)}
+              className="btn-neo-outline"
+              style={{
+                background: 'rgba(23, 19, 16, 0.7)',
+                color: 'var(--gold-champagne)',
+                borderColor: 'var(--gold-border)',
+                padding: '14px 22px',
+                borderRadius: 'var(--radius-sm)',
+                letterSpacing: '1.2px'
+              }}
+            >
+              VIEW OFFICIAL POSTER ↗
+            </button>
+          </div>
         </div>
 
         {/* Hero Right Column (Claim & Find Portal Card) */}
@@ -157,7 +240,7 @@ export default function HomePage() {
         <div className="dbit-glance-grid">
           <div className="dbit-glance-item">
             <span className="dbit-glance-icon-box gold">
-              <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3.5" y="5" width="17" height="15" rx="2.5" />
                 <path d="M3.5 10h17M8 3v4M16 3v4" />
               </svg>
@@ -170,27 +253,27 @@ export default function HomePage() {
 
           <div className="dbit-glance-item">
             <span className="dbit-glance-icon-box blue">
-              <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z" />
-                <circle cx="12" cy="10" r="2.4" />
+              <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 2" />
               </svg>
             </span>
             <div className="dbit-glance-text">
-              <span className="dbit-glance-label">VENUE</span>
-              <span className="dbit-glance-value">DBIT CRICKET GROUND, BANGALORE</span>
+              <span className="dbit-glance-label">TIME</span>
+              <span className="dbit-glance-value">FROM 2:30 PM (GATES 2:00 PM)</span>
             </div>
           </div>
 
           <div className="dbit-glance-item">
             <span className="dbit-glance-icon-box cyan">
-              <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="8.5" />
-                <path d="M12 7.5V12l3 2" />
+              <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z" />
+                <circle cx="12" cy="10" r="2.5" />
               </svg>
             </span>
             <div className="dbit-glance-text">
-              <span className="dbit-glance-label">GATES OPEN</span>
-              <span className="dbit-glance-value">2:00 PM</span>
+              <span className="dbit-glance-label">VENUE</span>
+              <span className="dbit-glance-value">DBIT CRICKET GROUND, BENGALURU</span>
             </div>
           </div>
         </div>
@@ -203,13 +286,22 @@ export default function HomePage() {
           <span className="dbit-section-tag">HOW IT WORKS</span>
         </div>
 
+        <div className="dbit-how-header-row">
+          <h2 className="dbit-how-section-title">
+            A Seamless Return in Three Steps.
+          </h2>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--gold-antique)', letterSpacing: '1px' }}>
+            OFFICIAL ALUMNI CREDENTIALS
+          </span>
+        </div>
+
         <div className="dbit-how-grid">
           {/* Step 1 */}
           <div className="dbit-how-card">
             <span className="dbit-how-step-num">01</span>
             <h3 className="dbit-how-title">Enter your USN</h3>
             <p className="dbit-how-desc">
-              Look yourself up using the university seat number from your college days.
+              Look yourself up using your University Seat Number from your college years.
             </p>
           </div>
 
@@ -218,7 +310,7 @@ export default function HomePage() {
             <span className="dbit-how-step-num">02</span>
             <h3 className="dbit-how-title">Confirm your record</h3>
             <p className="dbit-how-desc">
-              We verify you against the official alumni directory. One identity, one pass.
+              We verify you against the official university directory. One identity, one verified pass.
             </p>
           </div>
 
@@ -227,33 +319,69 @@ export default function HomePage() {
             <span className="dbit-how-step-num">03</span>
             <h3 className="dbit-how-title">Get your QR pass</h3>
             <p className="dbit-how-desc">
-              Generate your unique pass and show it at the entry gate on the day.
+              Receive your personalized digital credential with live security stamp for instant gate check-in.
             </p>
           </div>
         </div>
       </section>
 
-      {/* EVENT ATMOSPHERE / CONCERT SECTION */}
-      <section className="dbit-event-preview-section">
+      {/* EVENT ATMOSPHERE / GALA SECTION */}
+      <section id="atmosphere" className="dbit-event-preview-section">
         <div className="dbit-event-preview-full">
           <div className="dbit-event-meta-top">
             <span>ANNUAL ALUMNI GRAND REUNION</span>
-            <span>BENGALURU • INDIA</span>
+            <span>BENGALURU · INDIA</span>
           </div>
 
           <div>
             <h2 className="dbit-event-title">
-              ONE DAY.<br />
-              ONE VIBE.
+              Two Decades. <span>One Brotherhood.</span>
             </h2>
             <p className="dbit-event-desc">
-              Milan 2026 is the annual return to campus — music, memories and thousands of alumni reconnecting under one roof.
+              Milan 2026 is the annual return to campus — reuniting professors, classmates, and thousands of Don Bosco graduates under the floodlights of the DBIT Cricket Ground. Relive your stories, celebrate achievements, and walk through the corridors where it all began.
             </p>
           </div>
 
-          <a href="#claim" className="dbit-claim-action-btn">
-            GENERATE ALUMNI PASS ↗
-          </a>
+          {/* Event Details Key/Value Strip */}
+          <div className="dbit-event-details-strip">
+            <div className="dbit-event-detail-item">
+              <span className="dbit-event-detail-k">EVENT</span>
+              <span className="dbit-event-detail-v">Milan 2026 — Alumni Meet</span>
+            </div>
+            <div className="dbit-event-detail-item">
+              <span className="dbit-event-detail-k">ELIGIBILITY</span>
+              <span className="dbit-event-detail-v">Graduating Batches 2005 – 2025</span>
+            </div>
+            <div className="dbit-event-detail-item">
+              <span className="dbit-event-detail-k">THEME</span>
+              <span className="dbit-event-detail-v">Meet || Connect || Collaborate</span>
+            </div>
+            <div className="dbit-event-detail-item">
+              <span className="dbit-event-detail-k">ADMISSION</span>
+              <span className="dbit-event-detail-v">Verified Alumnus QR Pass</span>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', marginTop: 12 }}>
+            <a href="#claim" className="dbit-claim-action-btn">
+              CLAIM YOUR ALUMNI PASS ↗
+            </a>
+            <button
+              type="button"
+              onClick={() => setShowPosterModal(true)}
+              className="btn-neo-outline"
+              style={{
+                background: 'rgba(23, 19, 16, 0.7)',
+                color: 'var(--gold-champagne)',
+                borderColor: 'var(--gold-border)',
+                padding: '14px 22px',
+                borderRadius: 'var(--radius-sm)',
+                letterSpacing: '1.2px'
+              }}
+            >
+              VIEW EVENT POSTER ↗
+            </button>
+          </div>
         </div>
       </section>
 
