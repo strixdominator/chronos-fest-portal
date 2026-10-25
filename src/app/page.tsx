@@ -177,7 +177,7 @@ export default function HomePage() {
 
           {/* Batches Pill */}
           <div className="dbit-hero-batches-pill">
-            <span className="dbit-hero-batches-label">GRADUATING BATCHES</span>
+            <span className="dbit-hero-batches-label">GRADUATED BATCHES</span>
             <span className="dbit-hero-batches-val">2005 – 2025</span>
           </div>
 
