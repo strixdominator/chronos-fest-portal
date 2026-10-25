@@ -250,7 +250,8 @@ input, select, textarea {
 }
 
 .dbit-hero-section {
-  background: var(--espresso);
+  /* Deep espresso base */
+  background: #1A1108;
   color: var(--ivory);
   min-height: calc(100vh - 75px);
   padding: 72px 32px 64px;
@@ -264,15 +265,43 @@ input, select, textarea {
   z-index: 1;
 }
 
+/* Layer 1: Warm bronze radial glow — the poster's central illumination */
 .dbit-hero-section::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: 
-    radial-gradient(circle at 50% 20%, rgba(178, 139, 76, 0.12) 0%, transparent 60%),
-    radial-gradient(circle at 85% 70%, rgba(40, 47, 73, 0.25) 0%, transparent 50%);
+  background:
+    /* Central bronze radial burst — the poster's defining warm glow, intensified */
+    radial-gradient(ellipse 80% 65% at 50% 42%, rgba(140, 90, 20, 0.70) 0%, rgba(90, 60, 25, 0.45) 30%, rgba(50, 32, 10, 0.20) 55%, transparent 70%),
+    /* Upper-left warm highlight edge */
+    radial-gradient(ellipse 55% 45% at 18% 12%, rgba(185, 145, 75, 0.32) 0%, rgba(140, 100, 40, 0.18) 40%, transparent 65%),
+    /* Right-side subtle cool shadow */
+    radial-gradient(ellipse 50% 55% at 88% 75%, rgba(30, 20, 10, 0.75) 0%, transparent 55%),
+    /* Fine warm glow from upper-center — billboard light effect */
+    radial-gradient(ellipse 40% 50% at 58% 0%, rgba(185, 145, 75, 0.22) 0%, transparent 60%),
+    /* Base gradient floor — deep espresso */
+    linear-gradient(175deg, #241A12 0%, #1C1208 40%, #0E0A06 100%);
   pointer-events: none;
   z-index: 0;
+}
+
+/* Layer 2: Sweeping gold-ray lines — inspired by the poster's curved light trails */
+.dbit-hero-section::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    /* Ray 1: broad diagonal sweep from upper-left, more visible */
+    linear-gradient(122deg, transparent 0%, transparent 22%, rgba(185, 145, 75, 0.09) 25%, rgba(217, 188, 128, 0.13) 28%, rgba(185, 145, 75, 0.08) 32%, transparent 36%, transparent 100%),
+    /* Ray 2: thinner golden sweep from upper-right */
+    linear-gradient(145deg, transparent 0%, transparent 36%, rgba(185, 145, 75, 0.07) 38%, rgba(217, 188, 128, 0.11) 41%, rgba(185, 145, 75, 0.06) 44%, transparent 47%, transparent 100%),
+    /* Ray 3: bottom-left warm emanation */
+    linear-gradient(52deg, transparent 0%, transparent 50%, rgba(130, 90, 20, 0.08) 54%, rgba(185, 145, 75, 0.12) 57%, rgba(130, 90, 20, 0.07) 61%, transparent 65%, transparent 100%),
+    /* Ray 4: fine highlight streak top-center, subtle */
+    linear-gradient(158deg, transparent 0%, transparent 12%, rgba(217, 188, 128, 0.07) 15%, rgba(245, 239, 227, 0.05) 17%, rgba(185, 145, 75, 0.05) 21%, transparent 25%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: screen;
 }
 
 .dbit-hero-container {
@@ -286,24 +315,39 @@ input, select, textarea {
   z-index: 2;
 }
 
+/* Three-part balanced logo badge row: [DBIT Logo] [Identity Center] [Alumni Association Logo] */
 .dbit-hero-badge-wrap {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: 80px 1fr 80px;
   align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-bottom: 4px;
+  justify-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 680px;
+  margin-bottom: 6px;
 }
 
-.dbit-hero-assoc-logo {
-  width: 58px;
-  height: 58px;
+/* The DBIT logo — left column, no circle background, full colors preserved */
+.dbit-hero-dbit-logo {
+  width: 80px;
+  height: 80px;
   object-fit: contain;
   display: block;
-  filter: drop-shadow(0 4px 12px rgba(178, 139, 76, 0.3));
+  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.6)) brightness(1.05);
+  justify-self: center;
+}
+
+/* The Alumni Association logo — right column, white background ring to make blue visible */
+.dbit-hero-assoc-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  display: block;
+  background: rgba(255, 255, 255, 0.92);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 4px;
-  border: 1px solid rgba(178, 139, 76, 0.3);
+  padding: 6px;
+  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.5));
+  justify-self: center;
 }
 
 .dbit-hero-meta {
@@ -321,6 +365,17 @@ input, select, textarea {
   font-weight: 700;
   color: var(--champagne);
   text-transform: uppercase;
+}
+
+/* MILAN 2026 center identity name — primary event label in three-part composition */
+.dbit-hero-event-name {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #FFFFFF;
+  line-height: 1.1;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .dbit-hero-venue {
@@ -349,12 +404,18 @@ input, select, textarea {
   letter-spacing: 0.01em;
   font-weight: 600;
   color: #FFFFFF;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
-.dbit-hero-title-accent {
+/* Year numerals — clean, consistent, unaltered lining digits */
+.dbit-hero-title-year {
   color: var(--champagne);
-  font-weight: 700;
+  font-weight: 600;
+  font-style: normal;
   margin-left: 6px;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
+  letter-spacing: 0.01em;
 }
 
 .dbit-hero-script {
@@ -1876,13 +1937,23 @@ input, select, textarea {
   }
 
   .dbit-hero-badge-wrap {
-    gap: 12px;
+    grid-template-columns: 56px 1fr 56px;
+    gap: 10px;
+    max-width: 100%;
+  }
+
+  .dbit-hero-dbit-logo {
+    width: 56px;
+    height: 56px;
   }
 
   .dbit-hero-assoc-logo {
-    width: 52px;
-    height: 52px;
-    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+  }
+
+  .dbit-hero-event-name {
+    font-size: 20px;
   }
 
   .dbit-hero-tag {

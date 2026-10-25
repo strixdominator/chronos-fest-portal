@@ -125,26 +125,34 @@ export default function HomePage() {
       {/* SECTION B: CINEMATIC ESPRESSO HERO */}
       <section id="invitation" className="dbit-hero-section">
         <div className="dbit-hero-container">
-          {/* Logo & Meta Badge Row */}
+          {/* ===== THREE-PART LOGO ROW: [DBIT Logo] [Event Identity] [Alumni Association Logo] ===== */}
           <div className="dbit-hero-badge-wrap">
+            {/* LEFT: Official DBIT Emblem */}
             <img
               src="/assets/66eff0e624600df79e9f69030275731c.png"
               alt="Don Bosco Institute of Technology emblem"
-              className="dbit-hero-assoc-logo"
+              className="dbit-hero-dbit-logo"
             />
-            <img
-              src="/assets/1662177580bae749e245f3973661f37f.png"
-              alt="DBIT Alumni Association logo"
-              className="dbit-hero-assoc-logo"
-            />
+
+            {/* CENTER: Event Identity */}
             <div className="dbit-hero-meta">
               <span className="dbit-hero-tag">
-                ALUMNI MEET · MILAN 2026
+                ALUMNI MEET
+              </span>
+              <span className="dbit-hero-event-name">
+                MILAN 2026
               </span>
               <span className="dbit-hero-venue">
                 DBIT CRICKET GROUND, BENGALURU
               </span>
             </div>
+
+            {/* RIGHT: Official DBIT Alumni Association Logo */}
+            <img
+              src="/assets/1662177580bae749e245f3973661f37f.png"
+              alt="DBIT Alumni Association logo"
+              className="dbit-hero-assoc-logo"
+            />
           </div>
 
           {/* Invitation Eyebrow */}
@@ -154,7 +162,7 @@ export default function HomePage() {
 
           {/* Main Headline */}
           <h1 className="dbit-hero-title">
-            MILAN <span className="dbit-hero-title-accent">2026</span>
+            MILAN <span className="dbit-hero-title-year">2026</span>
           </h1>
 
           {/* Flowing Script Accent */}
