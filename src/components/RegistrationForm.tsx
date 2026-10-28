@@ -54,10 +54,10 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
   const [lookupError, setLookupError] = useState<string | null>(null);
 
   // OTP flow state for new registration
-  const [otpChannel, setOtpChannel] = useState<'EMAIL' | 'PHONE' | 'WHATSAPP'>('EMAIL');
+  const [otpChannel, setOtpChannel] = useState<'EMAIL' | 'WHATSAPP'>('EMAIL');
   const [otpSent, setOtpSent] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
-  const [sendingChannel, setSendingChannel] = useState<'EMAIL' | 'PHONE' | 'WHATSAPP' | null>(null);
+  const [sendingChannel, setSendingChannel] = useState<'EMAIL' | 'WHATSAPP' | null>(null);
   const [otpCode, setOtpCode] = useState('');
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
@@ -73,7 +73,7 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
   const [generatePassError, setGeneratePassError] = useState<string | null>(null);
 
   // Secure OTP unlock state for already-claimed pass
-  const [claimedOtpChannel, setClaimedOtpChannel] = useState<'EMAIL' | 'PHONE' | 'WHATSAPP'>('EMAIL');
+  const [claimedOtpChannel, setClaimedOtpChannel] = useState<'EMAIL' | 'WHATSAPP'>('EMAIL');
   const [claimedOtpSent, setClaimedOtpSent] = useState(false);
   const [sendingClaimedOtp, setSendingClaimedOtp] = useState(false);
   const [claimedOtpCode, setClaimedOtpCode] = useState('');
@@ -191,7 +191,7 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
   };
 
   // Dispatch OTP to unlock already claimed pass
-  const handleSendClaimedOtp = async (channel: 'EMAIL' | 'PHONE' | 'WHATSAPP') => {
+  const handleSendClaimedOtp = async (channel: 'EMAIL' | 'WHATSAPP') => {
     if (!alumnus) return;
     setSendingClaimedOtp(true);
     setClaimedOtpError(null);
@@ -272,7 +272,7 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
   };
 
   // 2. Dispatch OTP strictly to verified directory contacts
-  const handleSendOtp = async (channel: 'EMAIL' | 'PHONE' | 'WHATSAPP') => {
+  const handleSendOtp = async (channel: 'EMAIL' | 'WHATSAPP') => {
     if (!alumnus) return;
 
     if (channel === 'EMAIL' && !alumnus.hasEmail) {
@@ -280,7 +280,7 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
       return;
     }
 
-    if ((channel === 'PHONE' || channel === 'WHATSAPP') && !alumnus.hasPhone) {
+    if (channel === 'WHATSAPP' && !alumnus.hasPhone) {
       setOtpError('No official mobile number on record for this USN. Please request manual committee approval below.');
       return;
     }
@@ -695,40 +695,28 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
               )}
 
               {alumnus.hasPhone && (
-                <>
-                  <button
-                    type="button"
-                    disabled={sendingClaimedOtp}
-                    onClick={() => handleSendClaimedOtp('PHONE')}
-                    className="btn-neo-outline"
-                    style={{ width: '100%', justifyContent: 'space-between' }}
-                  >
-                    <span>SEND SMS TO {alumnus.maskedPhone}</span>
-                    <span>↗</span>
-                  </button>
-                  <button
-                    type="button"
-                    disabled={sendingClaimedOtp}
-                    onClick={() => handleSendClaimedOtp('WHATSAPP')}
-                    className="btn-neo-outline"
-                    style={{
-                      width: '100%',
-                      justifyContent: 'space-between',
-                      background: 'rgba(37, 211, 102, 0.08)',
-                      borderColor: '#25D366',
-                      color: '#128C7E',
-                      fontWeight: 700,
-                    }}
-                  >
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="#25D366">
-                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
-                      </svg>
-                      SEND WHATSAPP TO {alumnus.maskedPhone}
-                    </span>
-                    <span>↗</span>
-                  </button>
-                </>
+                <button
+                  type="button"
+                  disabled={sendingClaimedOtp}
+                  onClick={() => handleSendClaimedOtp('WHATSAPP')}
+                  className="btn-neo-outline"
+                  style={{
+                    width: '100%',
+                    justifyContent: 'space-between',
+                    background: 'rgba(37, 211, 102, 0.08)',
+                    borderColor: '#25D366',
+                    color: '#128C7E',
+                    fontWeight: 700,
+                  }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="#25D366">
+                      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+                    </svg>
+                    SEND WHATSAPP TO {alumnus.maskedPhone}
+                  </span>
+                  <span>↗</span>
+                </button>
               )}
             </div>
 
@@ -994,41 +982,30 @@ export default function RegistrationForm({ onSwitchToLookup }: RegistrationFormP
                   {alumnus.hasPhone ? alumnus.maskedPhone : 'Not recorded in college directory'}
                 </div>
                 {alumnus.hasPhone && (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10 }}>
-                    <button
-                      type="button"
-                      disabled={sendingOtp}
-                      onClick={() => handleSendOtp('PHONE')}
-                      className="btn-neo-outline"
-                      style={{ width: '100%', fontSize: '0.74rem', padding: '12px 8px' }}
-                    >
-                      {sendingOtp && sendingChannel === 'PHONE' ? 'DISPATCHING...' : 'SMS OTP ↗'}
-                    </button>
-                    <button
-                      type="button"
-                      disabled={sendingOtp}
-                      onClick={() => handleSendOtp('WHATSAPP')}
-                      className="btn-neo-outline"
-                      style={{
-                        width: '100%',
-                        fontSize: '0.74rem',
-                        padding: '12px 8px',
-                        background: 'rgba(37, 211, 102, 0.08)',
-                        borderColor: '#25D366',
-                        color: '#128C7E',
-                        fontWeight: 700,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 6,
-                      }}
-                    >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="#25D366">
-                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
-                      </svg>
-                      {sendingOtp && sendingChannel === 'WHATSAPP' ? 'DISPATCHING...' : 'WHATSAPP OTP ↗'}
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    disabled={sendingOtp}
+                    onClick={() => handleSendOtp('WHATSAPP')}
+                    className="btn-neo-outline"
+                    style={{
+                      width: '100%',
+                      fontSize: '0.76rem',
+                      padding: '12px',
+                      background: 'rgba(37, 211, 102, 0.08)',
+                      borderColor: '#25D366',
+                      color: '#128C7E',
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366">
+                      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+                    </svg>
+                    {sendingOtp && sendingChannel === 'WHATSAPP' ? 'DISPATCHING...' : 'SEND OTP ON WHATSAPP ↗'}
+                  </button>
                 )}
               </div>
 

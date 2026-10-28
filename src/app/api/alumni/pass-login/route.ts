@@ -48,26 +48,24 @@ export async function POST(request: NextRequest) {
       const master = findAlumnusByUsn(cleanedUsn);
       const email = attendee.email || master?.officialEmail || '';
       const phone = attendee.phone || master?.phone || '';
-      const isPhoneChannel = channel === 'PHONE' || channel === 'WHATSAPP';
-      const target = isPhoneChannel ? phone : email;
+      const isWhatsApp = channel === 'WHATSAPP' || channel === 'PHONE';
+      const target = isWhatsApp ? phone : email;
 
       if (!target) {
         return NextResponse.json({
           success: false,
-          error: `No registered ${isPhoneChannel ? (channel === 'WHATSAPP' ? 'WhatsApp phone' : 'phone') : 'email'} found for this pass. Please contact the organizers.`
+          error: `No registered ${isWhatsApp ? 'WhatsApp mobile number' : 'email'} found for this pass. Please contact the organizers.`
         }, { status: 400 });
       }
 
-      const otpResult = await createOtp(cleanedUsn, (channel === 'WHATSAPP' || channel === 'PHONE') ? channel : 'EMAIL', target);
+      const otpResult = await createOtp(cleanedUsn, isWhatsApp ? 'WHATSAPP' : 'EMAIL', target);
       if (!otpResult) {
         return NextResponse.json({ success: false, error: 'Failed to create OTP' }, { status: 500 });
       }
 
       let dispatchResult;
-      if (channel === 'WHATSAPP') {
+      if (isWhatsApp) {
         dispatchResult = await sendWhatsAppOtp({ toPhone: target, otp: otpResult.otp, recipientName: attendee.fullName, usn: cleanedUsn });
-      } else if (channel === 'PHONE') {
-        dispatchResult = await sendSmsOtp({ toPhone: target, otp: otpResult.otp, recipientName: attendee.fullName, usn: cleanedUsn });
       } else {
         dispatchResult = await sendEmailOtp({ toEmail: target, otp: otpResult.otp, recipientName: attendee.fullName, usn: cleanedUsn });
       }
@@ -75,16 +73,16 @@ export async function POST(request: NextRequest) {
       if (dispatchResult && !dispatchResult.success && dispatchResult.provider !== 'SIMULATION') {
         return NextResponse.json({
           success: false,
-          error: dispatchResult.error ? `${channel === 'WHATSAPP' ? 'WhatsApp' : 'Delivery'} failed: ${dispatchResult.error}` : 'Could not deliver unlock code to registered contact.',
+          error: dispatchResult.error ? `${isWhatsApp ? 'WhatsApp' : 'Delivery'} failed: ${dispatchResult.error}` : 'Could not deliver unlock code to registered contact.',
           dispatchError: dispatchResult.error,
         }, { status: 502 });
       }
 
       const response = NextResponse.json({
         success: true,
-        message: dispatchResult?.isReal ? `Real unlock code delivered to ${isPhoneChannel ? maskPhone(phone) : maskEmail(email)}!` : `Simulation Mode: Unlock code is ${otpResult.otp}`,
-        maskedTarget: isPhoneChannel ? maskPhone(phone) : maskEmail(email),
-        channel: channel === 'WHATSAPP' ? 'WhatsApp' : (channel === 'PHONE' ? 'SMS' : 'Email'),
+        message: dispatchResult?.isReal ? `Real unlock code delivered to ${isWhatsApp ? maskPhone(phone) : maskEmail(email)}!` : `Simulation Mode: Unlock code is ${otpResult.otp}`,
+        maskedTarget: isWhatsApp ? maskPhone(phone) : maskEmail(email),
+        channel: isWhatsApp ? 'WhatsApp' : 'Email',
         isRealDelivery: dispatchResult?.isReal || false,
         deliveryProvider: dispatchResult?.provider || 'SIMULATION',
         simulationCode: !dispatchResult?.isReal ? otpResult.otp : undefined,
