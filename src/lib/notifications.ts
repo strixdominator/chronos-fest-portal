@@ -48,48 +48,74 @@ export async function sendEmailOtp({
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Your Pass Security Code</title>
+  <title>Your MILAN 2026 Verification Code</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0b0f19; margin: 0; padding: 20px; color: #f8fafc; }
-    .card { max-width: 540px; margin: 0 auto; background: #111827; border: 1px solid #1e293b; border-radius: 0px; overflow: hidden; }
-    .header { background: #0a192f; padding: 24px; text-align: center; color: #ffffff; border-bottom: 2px solid #1d4ed8; }
-    .header h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; }
-    .header p { margin: 6px 0 0; font-size: 13px; font-weight: 600; opacity: 0.9; color: #93c5fd; }
-    .content { padding: 32px 24px; text-align: center; }
-    .greeting { font-size: 18px; font-weight: 700; color: #ffffff; margin-bottom: 8px; }
-    .subtext { font-size: 14px; color: #94a3b8; line-height: 1.5; margin-bottom: 24px; }
-    .otp-box { background: #1e293b; border: 2px dashed #3b82f6; border-radius: 0px; padding: 18px; margin: 20px auto; display: inline-block; }
-    .otp-code { font-family: monospace; font-size: 38px; font-weight: 800; letter-spacing: 0.25em; color: #60a5fa; margin: 0; padding-left: 0.25em; }
-    .warning { font-size: 12px; color: #f59e0b; margin-top: 18px; }
-    .footer { border-top: 1px solid #1e293b; padding: 18px; text-align: center; font-size: 12px; color: #64748b; background: #0f172a; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #100C09; margin: 0; padding: 24px 12px; color: #F5EFE3; }
+    .card { max-width: 560px; margin: 0 auto; background-color: #181410; border: 2px solid #B28B4C; border-radius: 12px; overflow: hidden; box-shadow: 0 16px 50px rgba(0,0,0,0.7); }
+    .header { background-color: #130F0C; padding: 26px 20px 22px; text-align: center; border-bottom: 2px solid #B28B4C; }
+    .header h1 { margin: 0; font-family: 'Times New Roman', Georgia, serif; font-size: 26px; font-weight: 700; letter-spacing: 1px; color: #FFFFFF; text-transform: uppercase; }
+    .header h1 span { color: #E5D2A5; }
+    .header p { margin: 6px 0 0; font-size: 11px; font-weight: 700; color: #E5D2A5; letter-spacing: 2px; text-transform: uppercase; }
+    .content { padding: 32px 24px; text-align: center; background-color: #1A1511; }
+    .greeting { font-family: 'Times New Roman', Georgia, serif; font-size: 22px; font-weight: 700; color: #F5EFE3; margin-bottom: 8px; }
+    .subtext { font-size: 13.5px; color: #D1C7B7; line-height: 1.6; margin-bottom: 24px; }
+    .otp-box { background-color: #211A14; border: 2px dashed #B28B4C; border-radius: 10px; padding: 20px 32px; margin: 20px auto; display: inline-block; box-shadow: 0 4px 20px rgba(178, 139, 76, 0.2); }
+    .otp-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 38px; font-weight: 800; letter-spacing: 0.25em; color: #E5D2A5; margin: 0; padding-left: 0.25em; }
+    .warning { font-size: 12px; color: #D1A354; margin-top: 18px; line-height: 1.5; padding: 10px 14px; background-color: rgba(178, 139, 76, 0.1); border-left: 3px solid #B28B4C; border-radius: 4px; text-align: left; }
+    .footer { border-top: 1px solid rgba(178, 139, 76, 0.25); padding: 20px; text-align: center; font-size: 11px; color: #9A8E7F; background-color: #100C09; line-height: 1.6; }
+    .footer-tag { color: #E5D2A5; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px; }
+    .footer-dev { font-size: 10.5px; color: #736758; margin-top: 8px; }
   </style>
 </head>
-<body>
-  <div class="card">
-    <div class="header">
-      <h1>MILAN 2026</h1>
-      <p>Don Bosco Institute of Technology · Official Alumni Pass Portal</p>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #100C09; margin: 0; padding: 24px 12px; color: #F5EFE3;">
+  <div class="card" style="max-width: 560px; margin: 0 auto; background-color: #181410; border: 2px solid #B28B4C; border-radius: 12px; overflow: hidden; box-shadow: 0 16px 50px rgba(0,0,0,0.7);">
+    
+    <!-- HEADER -->
+    <div class="header" style="background-color: #130F0C; padding: 26px 20px 22px; text-align: center; border-bottom: 2px solid #B28B4C;">
+      <h1 style="margin: 0; font-family: 'Times New Roman', Georgia, serif; font-size: 26px; font-weight: 700; letter-spacing: 1px; color: #FFFFFF; text-transform: uppercase;">
+        MILAN <span style="color: #E5D2A5;">2026</span>
+      </h1>
+      <p style="margin: 6px 0 0; font-size: 11px; font-weight: 700; color: #E5D2A5; letter-spacing: 2px; text-transform: uppercase;">
+        DON BOSCO INSTITUTE OF TECHNOLOGY, BANGALORE
+      </p>
     </div>
-    <div class="content">
-      <div class="greeting">Hello, ${recipientName}!</div>
-      <div class="subtext">
-        A request was made to verify and unlock the alumni event entry pass for University Seat Number (USN) <strong>${usn}</strong>.
+
+    <!-- CONTENT -->
+    <div class="content" style="padding: 32px 24px; text-align: center; background-color: #1A1511;">
+      <div class="greeting" style="font-family: 'Times New Roman', Georgia, serif; font-size: 22px; font-weight: 700; color: #F5EFE3; margin-bottom: 8px;">
+        Hello, ${recipientName}!
+      </div>
+      <div class="subtext" style="font-size: 13.5px; color: #D1C7B7; line-height: 1.6; margin-bottom: 24px;">
+        A request was made to verify and unlock the alumni event entry pass for University Seat Number (USN) <strong style="color: #E5D2A5;">${usn}</strong>.
       </div>
 
-      <div class="otp-box">
-        <div class="otp-code">${otp}</div>
+      <!-- OTP CODE BOX -->
+      <div class="otp-box" style="background-color: #211A14; border: 2px dashed #B28B4C; border-radius: 10px; padding: 20px 32px; margin: 20px auto; display: inline-block; box-shadow: 0 4px 20px rgba(178, 139, 76, 0.2);">
+        <div class="otp-code" style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 38px; font-weight: 800; letter-spacing: 0.25em; color: #E5D2A5; margin: 0; padding-left: 0.25em;">
+          ${otp}
+        </div>
       </div>
 
-      <div style="font-size: 13px; color: #cbd5e1; margin-top: 10px;">
-        This verification code is strictly valid for <strong>10 minutes</strong>.
+      <div style="font-size: 12.5px; color: #B5A897; margin-top: 12px;">
+        This verification code is strictly valid for <strong style="color: #E5D2A5;">10 minutes</strong>.
       </div>
-      <div class="warning">
-        ⚠️ If you did not request this pass, please ignore this email. Do not share this code with anyone.
+      <div class="warning" style="font-size: 12px; color: #D1A354; margin-top: 20px; line-height: 1.5; padding: 10px 14px; background-color: rgba(178, 139, 76, 0.1); border-left: 3px solid #B28B4C; border-radius: 4px; text-align: left;">
+        ⚠️ If you did not request this pass, please ignore this email. Never share this verification code with anyone.
       </div>
     </div>
-    <div class="footer">
-      DBIT Alumni Affairs & Student Council<br>
-      Automated Digital Pass System · MILAN 2026
+
+    <!-- FOOTER -->
+    <div class="footer" style="border-top: 1px solid rgba(178, 139, 76, 0.25); padding: 20px; text-align: center; font-size: 11px; color: #9A8E7F; background-color: #100C09; line-height: 1.6;">
+      <div class="footer-tag" style="color: #E5D2A5; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px;">
+        MILAN 2026 · ALUMNI MEET
+      </div>
+      <div>
+        Don Bosco Institute of Technology Alumni Association (R) · Reconnecting Relations<br>
+        Kumbalagodu, Mysore Road, Bengaluru – 560074, India
+      </div>
+      <div class="footer-dev" style="font-size: 10.5px; color: #736758; margin-top: 8px;">
+        Made with ❤️ by Kishan
+      </div>
     </div>
   </div>
 </body>
@@ -617,64 +643,113 @@ export async function sendEmailPass({
   <meta charset="utf-8">
   <title>Your MILAN 2026 Official Entry Pass</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #06101E; margin: 0; padding: 20px; color: #f8fafc; }
-    .card { max-width: 560px; margin: 0 auto; background: #0A192F; border: 2px solid #1E3A8A; border-radius: 8px; overflow: hidden; }
-    .header { background: #07152B; padding: 26px 20px; text-align: center; color: #ffffff; border-bottom: 2px solid #F5B82E; }
-    .header h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #FFFFFF; }
-    .header p { margin: 6px 0 0; font-size: 13px; font-weight: 600; color: #93C5FD; letter-spacing: 1.5px; }
-    .badge { display: inline-block; background: #F5B82E; color: #07152B; padding: 4px 12px; font-weight: 800; font-size: 11px; letter-spacing: 1px; margin-top: 10px; border-radius: 4px; text-transform: uppercase; }
-    .content { padding: 28px 24px; text-align: center; }
-    .name { font-size: 22px; font-weight: 800; color: #FFFFFF; margin-bottom: 4px; }
-    .usn { font-family: monospace; font-size: 16px; color: #F5B82E; font-weight: 700; margin-bottom: 14px; }
-    .details { background: #112240; border: 1px solid #1E3A8A; padding: 14px; border-radius: 6px; text-align: left; margin: 18px 0; font-size: 13px; line-height: 1.6; color: #CBD5E1; }
-    .qr-box { background: #FFFFFF; padding: 16px; display: inline-block; border: 3px solid #F5B82E; border-radius: 8px; margin: 14px auto; }
-    .qr-img { display: block; width: 220px; height: 220px; margin: 0 auto; }
-    .notice { font-size: 12px; color: #94A3B8; margin-top: 14px; line-height: 1.5; }
-    .event-info { background: #1E3A8A; color: #FFFFFF; padding: 12px; border-radius: 6px; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; margin: 16px 0; }
-    .btn { display: inline-block; background: #F5B82E; color: #07152B; padding: 14px 28px; font-weight: 800; text-decoration: none; border-radius: 6px; font-size: 13px; letter-spacing: 1px; margin-top: 14px; }
-    .footer { border-top: 1px solid #1E3A8A; padding: 18px; text-align: center; font-size: 11px; color: #64748B; background: #06101E; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #100C09; margin: 0; padding: 24px 12px; color: #F5EFE3; }
+    .card { max-width: 580px; margin: 0 auto; background-color: #181410; border: 2px solid #B28B4C; border-radius: 12px; overflow: hidden; box-shadow: 0 16px 50px rgba(0,0,0,0.7); }
+    .header { background-color: #130F0C; padding: 28px 20px 24px; text-align: center; border-bottom: 2px solid #B28B4C; }
+    .header h1 { margin: 0; font-family: 'Times New Roman', Georgia, serif; font-size: 28px; font-weight: 700; letter-spacing: 1px; color: #FFFFFF; text-transform: uppercase; }
+    .header h1 span { color: #E5D2A5; }
+    .header p { margin: 6px 0 0; font-size: 11px; font-weight: 700; color: #E5D2A5; letter-spacing: 2px; text-transform: uppercase; }
+    .badge { display: inline-block; background-color: rgba(178, 139, 76, 0.2); border: 1px solid #B28B4C; color: #E5D2A5; padding: 6px 14px; font-weight: 800; font-size: 10.5px; letter-spacing: 1.5px; margin-top: 14px; border-radius: 4px; text-transform: uppercase; }
+    .content { padding: 32px 24px; text-align: center; background-color: #1A1511; }
+    .name { font-family: 'Times New Roman', Georgia, serif; font-size: 24px; font-weight: 700; color: #F5EFE3; margin-bottom: 4px; }
+    .usn { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; color: #E5D2A5; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 20px; }
+    .qr-box { background-color: #FFFFFF; padding: 16px; display: inline-block; border: 3px solid #B28B4C; border-radius: 10px; margin: 0 auto 20px; box-shadow: 0 4px 20px rgba(178, 139, 76, 0.25); }
+    .qr-img { display: block; width: 220px; height: 220px; margin: 0 auto; border: 0; }
+    .event-info { background-color: #231C16; border: 1px solid rgba(178, 139, 76, 0.4); border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; text-align: center; }
+    .event-info-date { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; font-weight: 700; color: #E5D2A5; letter-spacing: 1px; margin-bottom: 4px; }
+    .event-info-venue { font-size: 11.5px; color: #E8DFCF; letter-spacing: 0.5px; }
+    .notice { font-size: 12px; line-height: 1.55; color: #D1C7B7; margin-bottom: 24px; padding: 12px 14px; background-color: rgba(178, 139, 76, 0.1); border-left: 3px solid #B28B4C; border-radius: 4px; text-align: left; }
+    .btn { display: inline-block; background-color: #B28B4C; background-image: linear-gradient(135deg, #C59D5B 0%, #A47B3A 100%); color: #17130F; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 800; font-size: 13px; letter-spacing: 1.2px; text-transform: uppercase; text-decoration: none; padding: 14px 32px; border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.4); border: 1px solid #D6B26F; }
+    .footer { border-top: 1px solid rgba(178, 139, 76, 0.25); padding: 22px 20px; text-align: center; font-size: 11px; color: #9A8E7F; background-color: #100C09; line-height: 1.6; }
+    .footer-tag { color: #E5D2A5; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px; }
+    .footer-dev { font-size: 10.5px; color: #736758; margin-top: 8px; }
   </style>
 </head>
-<body>
-  <div class="card">
-    <div class="header">
-      <h1>MILAN 2026</h1>
-      <p>DON BOSCO INSTITUTE OF TECHNOLOGY</p>
-      <div class="badge">OFFICIAL ALUMNI DIGITAL PASS</div>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #100C09; margin: 0; padding: 24px 12px; color: #F5EFE3;">
+  <div class="card" style="max-width: 580px; margin: 0 auto; background-color: #181410; border: 2px solid #B28B4C; border-radius: 12px; overflow: hidden; box-shadow: 0 16px 50px rgba(0,0,0,0.7);">
+    
+    <!-- HEADER -->
+    <div class="header" style="background-color: #130F0C; padding: 28px 20px 24px; text-align: center; border-bottom: 2px solid #B28B4C;">
+      <h1 style="margin: 0; font-family: 'Times New Roman', Georgia, serif; font-size: 28px; font-weight: 700; letter-spacing: 1px; color: #FFFFFF; text-transform: uppercase;">
+        MILAN <span style="color: #E5D2A5;">2026</span>
+      </h1>
+      <p style="margin: 6px 0 0; font-size: 11px; font-weight: 700; color: #E5D2A5; letter-spacing: 2px; text-transform: uppercase;">
+        DON BOSCO INSTITUTE OF TECHNOLOGY, BANGALORE
+      </p>
+      <div class="badge" style="display: inline-block; background-color: rgba(178, 139, 76, 0.2); border: 1px solid #B28B4C; color: #E5D2A5; padding: 6px 14px; font-weight: 800; font-size: 10.5px; letter-spacing: 1.5px; margin-top: 14px; border-radius: 4px; text-transform: uppercase;">
+        OFFICIAL ALUMNI ADMISSION CREDENTIAL
+      </div>
     </div>
-    <div class="content">
-      <div class="name">${recipientName}</div>
-      <div class="usn">USN: ${usn}</div>
 
-      <div class="qr-box">
-        <img src="${onlineQrUrl}" alt="Milan 2026 QR Entry Pass" class="qr-img" width="220" height="220" style="display:block;margin:0 auto;width:220px;height:220px;border:0;" />
+    <!-- CONTENT -->
+    <div class="content" style="padding: 32px 24px; text-align: center; background-color: #1A1511;">
+      <div class="name" style="font-family: 'Times New Roman', Georgia, serif; font-size: 24px; font-weight: 700; color: #F5EFE3; margin-bottom: 4px;">
+        ${recipientName}
+      </div>
+      <div class="usn" style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; color: #E5D2A5; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 20px;">
+        USN: ${usn}
       </div>
 
-      <div class="event-info">
-        📅 7 NOVEMBER 2026 · ⏰ 2:30 PM (GATES OPEN: 2:00 PM)<br>
-        📍 DBIT CRICKET GROUND, MYSORE ROAD, BANGALORE
+      <!-- QR CODE CONTAINER -->
+      <div class="qr-box" style="background-color: #FFFFFF; padding: 16px; display: inline-block; border: 3px solid #B28B4C; border-radius: 10px; margin: 0 auto 20px; box-shadow: 0 4px 20px rgba(178, 139, 76, 0.25);">
+        <img src="${onlineQrUrl}" alt="MILAN 2026 QR Entry Pass" class="qr-img" width="220" height="220" style="display: block; margin: 0 auto; width: 220px; height: 220px; border: 0;" />
       </div>
 
-      <div class="details">
-        <strong>TICKET CODE:</strong> ${ticketCode}<br>
-        <strong>DEPARTMENT:</strong> ${department}<br>
-        <strong>BATCH:</strong> ${year}<br>
-        <strong>ADMISSION:</strong> 1 PERSON · NON-TRANSFERABLE
+      <!-- EVENT SCHEDULE STRIP -->
+      <div class="event-info" style="background-color: #231C16; border: 1px solid rgba(178, 139, 76, 0.4); border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; text-align: center;">
+        <div class="event-info-date" style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; font-weight: 700; color: #E5D2A5; letter-spacing: 1px; margin-bottom: 4px;">
+          📅 SATURDAY, 7 NOVEMBER 2026 · 2:30 PM (GATES: 2:00 PM)
+        </div>
+        <div class="event-info-venue" style="font-size: 11.5px; color: #E8DFCF; letter-spacing: 0.5px;">
+          📍 DBIT CRICKET GROUND, MYSORE ROAD, BANGALORE
+        </div>
       </div>
 
-      <div class="notice">
+      <!-- CREDENTIAL DETAILS TABLE -->
+      <table style="width: 100%; background-color: #211A14; border: 1px solid rgba(178, 139, 76, 0.3); border-radius: 8px; margin-bottom: 20px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; border-collapse: separate; border-spacing: 0;">
+        <tr>
+          <td style="padding: 10px 14px; color: #B28B4C; font-weight: 700; width: 38%; border-bottom: 1px solid rgba(178, 139, 76, 0.15);">TICKET CODE:</td>
+          <td style="padding: 10px 14px; color: #FFFFFF; font-weight: 700; border-bottom: 1px solid rgba(178, 139, 76, 0.15);">${ticketCode}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 14px; color: #B28B4C; font-weight: 700; border-bottom: 1px solid rgba(178, 139, 76, 0.15);">DEPARTMENT:</td>
+          <td style="padding: 10px 14px; color: #F5EFE3; font-weight: 600; border-bottom: 1px solid rgba(178, 139, 76, 0.15);">${department}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 14px; color: #B28B4C; font-weight: 700; border-bottom: 1px solid rgba(178, 139, 76, 0.15);">BATCH:</td>
+          <td style="padding: 10px 14px; color: #F5EFE3; font-weight: 600; border-bottom: 1px solid rgba(178, 139, 76, 0.15);">${year}</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 14px; color: #B28B4C; font-weight: 700;">ADMISSION:</td>
+          <td style="padding: 10px 14px; color: #E5D2A5; font-weight: 700;">VERIFIED ALUMNI ENTRY PASS</td>
+        </tr>
+      </table>
+
+      <!-- GATE NOTICE -->
+      <div class="notice" style="font-size: 12px; line-height: 1.55; color: #D1C7B7; margin-bottom: 24px; padding: 12px 14px; background-color: rgba(178, 139, 76, 0.1); border-left: 3px solid #B28B4C; border-radius: 4px; text-align: left;">
         ⚡ <strong>Gate Security Instruction:</strong> Present this QR Code directly from your smartphone or printout at the verification gate for immediate wristband issuance.
       </div>
 
-      <div style="margin-top: 18px;">
-        <a href="${effectivePassUrl}" class="btn" target="_blank" style="display:inline-block;background:#F5B82E;color:#07152B;padding:14px 28px;font-weight:800;text-decoration:none;border-radius:6px;font-size:13px;letter-spacing:1px;">
-          CLICK HERE FOR ONLINE PASS ↗
+      <!-- CTA BUTTON -->
+      <div style="margin-top: 10px;">
+        <a href="${effectivePassUrl}" class="btn" target="_blank" style="display: inline-block; background-color: #B28B4C; background-image: linear-gradient(135deg, #C59D5B 0%, #A47B3A 100%); color: #17130F; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 800; font-size: 13px; letter-spacing: 1.2px; text-transform: uppercase; text-decoration: none; padding: 14px 32px; border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.4); border: 1px solid #D6B26F;">
+          VIEW DIGITAL PASS ON PORTAL ↗
         </a>
       </div>
     </div>
-    <div class="footer">
-      DBIT ALUMNI ASSOCIATION (R) · RECONNECTING RELATIONS<br>
-      Kumbalagodu, Mysore Road, Bengaluru – 560074, India
+
+    <!-- FOOTER -->
+    <div class="footer" style="border-top: 1px solid rgba(178, 139, 76, 0.25); padding: 22px 20px; text-align: center; font-size: 11px; color: #9A8E7F; background-color: #100C09; line-height: 1.6;">
+      <div class="footer-tag" style="color: #E5D2A5; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px;">
+        MILAN 2026 · ALUMNI MEET
+      </div>
+      <div>
+        Don Bosco Institute of Technology Alumni Association (R) · Reconnecting Relations<br>
+        Kumbalagodu, Mysore Road, Bengaluru – 560074, India
+      </div>
+      <div class="footer-dev" style="font-size: 10.5px; color: #736758; margin-top: 8px;">
+        Made with ❤️ by Kishan
+      </div>
     </div>
   </div>
 </body>
