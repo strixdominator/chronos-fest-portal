@@ -222,7 +222,7 @@ export default function HomePage() {
             </span>
             <div className="dbit-glance-text">
               <span className="dbit-glance-label">TIME</span>
-              <span className="dbit-glance-value">FROM 2:30 PM (GATES 2:00 PM)</span>
+              <span className="dbit-glance-value">FROM 2:30 PM (GATES OPEN: 2:00 PM)</span>
             </div>
           </div>
 

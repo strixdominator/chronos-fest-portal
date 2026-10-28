@@ -698,7 +698,7 @@ export async function sendEmailPass({
       <!-- EVENT SCHEDULE STRIP -->
       <div class="event-info" style="background-color: #231C16; border: 1px solid rgba(178, 139, 76, 0.4); border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; text-align: center;">
         <div class="event-info-date" style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; font-weight: 700; color: #E5D2A5; letter-spacing: 1px; margin-bottom: 4px;">
-          📅 SATURDAY, 7 NOVEMBER 2026 · 2:30 PM (GATES: 2:00 PM)
+          📅 SATURDAY, 7 NOVEMBER 2026 · 2:30 PM (GATES OPEN: 2:00 PM)
         </div>
         <div class="event-info-venue" style="font-size: 11.5px; color: #E8DFCF; letter-spacing: 0.5px;">
           📍 DBIT CRICKET GROUND, MYSORE ROAD, BANGALORE

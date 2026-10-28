@@ -564,7 +564,7 @@ export default function AdminPage() {
               Admin Command Center
             </h2>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--champagne)', letterSpacing: 1 }}>
-              7 NOVEMBER 2026 · 2:30 PM (GATES: 2:00 PM) · DBIT CRICKET GROUND
+              7 NOVEMBER 2026 · 2:30 PM (GATES OPEN: 2:00 PM) · DBIT CRICKET GROUND
             </div>
           </div>
 

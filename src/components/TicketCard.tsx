@@ -186,7 +186,7 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(7.5);
-      doc.text('7 NOVEMBER 2026 · 2:30 PM (GATES: 2:00 PM)', 52.5, 122.5, { align: 'center' });
+      doc.text('7 NOVEMBER 2026 · 2:30 PM (GATES OPEN: 2:00 PM)', 52.5, 122.5, { align: 'center' });
 
       doc.setTextColor(232, 210, 160);
       doc.setFontSize(6.5);
