@@ -92,6 +92,6 @@ export interface OtpRecord {
   usn: string;
   code: string;
   expiresAt: number;
-  channel: 'EMAIL' | 'PHONE';
+  channel: 'EMAIL' | 'PHONE' | 'WHATSAPP';
   target: string;
 }

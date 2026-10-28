@@ -17,7 +17,7 @@ interface SmsOtpParams {
 export interface NotificationResult {
   success: boolean;
   isReal: boolean;
-  provider: 'RESEND' | 'BREVO' | 'GMAIL_RELAY' | 'GMAIL_SMTP' | 'FAST2SMS' | 'TWILIO' | 'SIMULATION';
+  provider: 'RESEND' | 'BREVO' | 'GMAIL_RELAY' | 'GMAIL_SMTP' | 'FAST2SMS' | 'TWILIO' | 'WHATSAPP' | 'SIMULATION';
   message: string;
   simulationCode?: string;
   error?: string;
@@ -408,6 +408,162 @@ export async function sendSmsOtp({
     message: fast2SmsError 
       ? `Fast2SMS notice: ${fast2SmsError}. (Testing code: ${otp})`
       : 'SMS Simulation Mode. Configure FAST2SMS_API_KEY or TWILIO credentials in .env.local for real SMS.',
+  };
+}
+
+export interface WhatsAppOtpParams {
+  toPhone: string;
+  otp: string;
+  recipientName: string;
+  usn: string;
+}
+
+/**
+ * Dispatches real WhatsApp OTP via Meta WhatsApp Cloud API.
+ * Normalizes Indian phone numbers to E.164 (91XXXXXXXXXX).
+ * Falls back to simulation mode if WHATSAPP_PHONE_NUMBER_ID / ACCESS_TOKEN are not configured.
+ */
+export async function sendWhatsAppOtp({
+  toPhone,
+  otp,
+  recipientName,
+  usn,
+}: WhatsAppOtpParams): Promise<NotificationResult> {
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID?.trim();
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN?.trim();
+  const templateName = process.env.WHATSAPP_TEMPLATE_NAME?.trim() || 'milan_pass_otp';
+  const languageCode = process.env.WHATSAPP_LANGUAGE_CODE?.trim() || 'en_US';
+
+  // Normalize phone number (strip non-digits)
+  const cleanPhone = toPhone.replace(/\D/g, '');
+  // Format standard 10-digit Indian phone numbers with country code 91
+  const recipientE164 = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+
+  if (phoneNumberId && accessToken) {
+    try {
+      // Build Meta WhatsApp Business Cloud API payload
+      const payload: any = {
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to: recipientE164,
+        type: 'template',
+        template: {
+          name: templateName,
+          language: { code: languageCode },
+          components: [
+            {
+              type: 'body',
+              parameters: [
+                { type: 'text', text: String(otp) },
+              ],
+            },
+            {
+              type: 'button',
+              sub_type: 'url',
+              index: '0',
+              parameters: [
+                { type: 'text', text: String(otp) },
+              ],
+            },
+          ],
+        },
+      };
+
+      const response = await fetch(
+        `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok && data.messages?.[0]?.id) {
+        console.log(`[REAL WHATSAPP OTP SENT] To: +${recipientE164} | Code: ${otp} | USN: ${usn} | MsgId: ${data.messages[0].id}`);
+        return {
+          success: true,
+          isReal: true,
+          provider: 'WHATSAPP',
+          message: `Official WhatsApp verification code sent to +${recipientE164}!`,
+        };
+      }
+
+      // If button component failed (e.g. user template doesn't have a button), retry with body only
+      if (data.error && /button|component/i.test(data.error.message || '')) {
+        console.warn('[WHATSAPP RETRY WITHOUT BUTTON]', data.error.message);
+        const retryPayload = {
+          messaging_product: 'whatsapp',
+          recipient_type: 'individual',
+          to: recipientE164,
+          type: 'template',
+          template: {
+            name: templateName,
+            language: { code: languageCode },
+            components: [
+              {
+                type: 'body',
+                parameters: [{ type: 'text', text: String(otp) }],
+              },
+            ],
+          },
+        };
+        const retryRes = await fetch(
+          `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(retryPayload),
+          }
+        );
+        const retryData = await retryRes.json();
+        if (retryRes.ok && retryData.messages?.[0]?.id) {
+          console.log(`[REAL WHATSAPP OTP SENT (FALLBACK)] To: +${recipientE164} | Code: ${otp}`);
+          return {
+            success: true,
+            isReal: true,
+            provider: 'WHATSAPP',
+            message: `Official WhatsApp verification code sent to +${recipientE164}!`,
+          };
+        }
+      }
+
+      const errMsg = data.error?.message || 'Meta WhatsApp API returned an error';
+      console.error('[WHATSAPP API ERROR]', data.error);
+      return {
+        success: false,
+        isReal: false,
+        provider: 'WHATSAPP',
+        error: errMsg,
+        message: `WhatsApp delivery failed: ${errMsg}`,
+      };
+    } catch (err: any) {
+      console.error('[WHATSAPP EXCEPTION]', err.message);
+      return {
+        success: false,
+        isReal: false,
+        provider: 'WHATSAPP',
+        error: err.message,
+        message: `WhatsApp network error: ${err.message}`,
+      };
+    }
+  }
+
+  // Simulation mode fallback for local development or testing without credentials
+  console.log(`[WHATSAPP OTP SIMULATION] To: +${recipientE164} | Code: ${otp} | Alumnus: ${recipientName} (${usn})`);
+  return {
+    success: true,
+    isReal: false,
+    provider: 'SIMULATION',
+    simulationCode: otp,
+    message: `WhatsApp Simulation Mode: Verification code is ${otp}. Configure WHATSAPP_PHONE_NUMBER_ID and WHATSAPP_ACCESS_TOKEN for live delivery.`,
   };
 }
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createOtp, verifyOtp, findAlumnusByUsn, maskEmail, maskPhone } from '@/lib/alumni';
 import { getAttendees } from '@/lib/db';
-import { sendEmailOtp, sendSmsOtp, sendEmailPass } from '@/lib/notifications';
+import { sendEmailOtp, sendSmsOtp, sendWhatsAppOtp, sendEmailPass } from '@/lib/notifications';
 import QRCode from 'qrcode';
 import { getClientIp, checkOtpDispatchLimits, checkOtpVerifyAttempts, recordFailedOtpAttempt, resetFailedOtpAttempts } from '@/lib/rateLimit';
 
@@ -48,22 +48,25 @@ export async function POST(request: NextRequest) {
       const master = findAlumnusByUsn(cleanedUsn);
       const email = attendee.email || master?.officialEmail || '';
       const phone = attendee.phone || master?.phone || '';
-      const target = channel === 'PHONE' ? phone : email;
+      const isPhoneChannel = channel === 'PHONE' || channel === 'WHATSAPP';
+      const target = isPhoneChannel ? phone : email;
 
       if (!target) {
         return NextResponse.json({
           success: false,
-          error: `No registered ${channel.toLowerCase()} found for this pass. Please contact the organizers.`
+          error: `No registered ${isPhoneChannel ? (channel === 'WHATSAPP' ? 'WhatsApp phone' : 'phone') : 'email'} found for this pass. Please contact the organizers.`
         }, { status: 400 });
       }
 
-      const otpResult = await createOtp(cleanedUsn, channel === 'PHONE' ? 'PHONE' : 'EMAIL', target);
+      const otpResult = await createOtp(cleanedUsn, (channel === 'WHATSAPP' || channel === 'PHONE') ? channel : 'EMAIL', target);
       if (!otpResult) {
         return NextResponse.json({ success: false, error: 'Failed to create OTP' }, { status: 500 });
       }
 
       let dispatchResult;
-      if (channel === 'PHONE') {
+      if (channel === 'WHATSAPP') {
+        dispatchResult = await sendWhatsAppOtp({ toPhone: target, otp: otpResult.otp, recipientName: attendee.fullName, usn: cleanedUsn });
+      } else if (channel === 'PHONE') {
         dispatchResult = await sendSmsOtp({ toPhone: target, otp: otpResult.otp, recipientName: attendee.fullName, usn: cleanedUsn });
       } else {
         dispatchResult = await sendEmailOtp({ toEmail: target, otp: otpResult.otp, recipientName: attendee.fullName, usn: cleanedUsn });
@@ -72,15 +75,16 @@ export async function POST(request: NextRequest) {
       if (dispatchResult && !dispatchResult.success && dispatchResult.provider !== 'SIMULATION') {
         return NextResponse.json({
           success: false,
-          error: dispatchResult.error ? `Email delivery failed: ${dispatchResult.error}` : 'Could not deliver unlock code to registered contact.',
+          error: dispatchResult.error ? `${channel === 'WHATSAPP' ? 'WhatsApp' : 'Delivery'} failed: ${dispatchResult.error}` : 'Could not deliver unlock code to registered contact.',
           dispatchError: dispatchResult.error,
         }, { status: 502 });
       }
 
       const response = NextResponse.json({
         success: true,
-        message: dispatchResult?.isReal ? `Real unlock code delivered to ${channel === 'PHONE' ? maskPhone(phone) : maskEmail(email)}!` : `Simulation Mode: Unlock code is ${otpResult.otp}`,
-        maskedTarget: channel === 'PHONE' ? maskPhone(phone) : maskEmail(email),
+        message: dispatchResult?.isReal ? `Real unlock code delivered to ${isPhoneChannel ? maskPhone(phone) : maskEmail(email)}!` : `Simulation Mode: Unlock code is ${otpResult.otp}`,
+        maskedTarget: isPhoneChannel ? maskPhone(phone) : maskEmail(email),
+        channel: channel === 'WHATSAPP' ? 'WhatsApp' : (channel === 'PHONE' ? 'SMS' : 'Email'),
         isRealDelivery: dispatchResult?.isReal || false,
         deliveryProvider: dispatchResult?.provider || 'SIMULATION',
         simulationCode: !dispatchResult?.isReal ? otpResult.otp : undefined,

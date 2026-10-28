@@ -440,7 +440,7 @@ export function createStatelessOtpToken(
   usn: string,
   code: string,
   target: string,
-  channel: 'EMAIL' | 'PHONE',
+  channel: 'EMAIL' | 'PHONE' | 'WHATSAPP',
   expiresAt: number
 ): string {
   const cleanedUsn = usn.trim().toUpperCase();
@@ -462,7 +462,7 @@ export function verifyStatelessOtpToken(
   usn: string,
   inputCode: string,
   token: string
-): { valid: boolean; target?: string; channel?: 'EMAIL' | 'PHONE'; error?: string } {
+): { valid: boolean; target?: string; channel?: 'EMAIL' | 'PHONE' | 'WHATSAPP'; error?: string } {
   try {
     const raw = Buffer.from(token, 'base64').toString('utf-8');
     const data = JSON.parse(raw);
@@ -498,7 +498,7 @@ async function getActiveOtpFromDb(usn: string): Promise<OtpRecord | null> {
   return {
     usn: data.usn,
     code: data.code,
-    channel: data.channel as 'EMAIL' | 'PHONE',
+    channel: data.channel as 'EMAIL' | 'PHONE' | 'WHATSAPP',
     target: data.target,
     expiresAt: data.expires_at,
   };
@@ -521,16 +521,17 @@ async function deleteOtpFromDb(usn: string): Promise<void> {
 // In-Memory with Supabase fallback + Stateless HMAC token
 export async function createOtp(
   usn: string, 
-  channel: 'EMAIL' | 'PHONE',
+  channel: 'EMAIL' | 'PHONE' | 'WHATSAPP',
   customTarget?: string
 ): Promise<{ otp: string; target: string; maskedTarget: string; statelessToken: string } | null> {
   const alumnus = findAlumnusByUsn(usn);
-  const target = customTarget || (channel === 'EMAIL' ? alumnus?.officialEmail : alumnus?.phone);
+  const isPhone = channel === 'PHONE' || channel === 'WHATSAPP';
+  const target = customTarget || (isPhone ? alumnus?.phone : alumnus?.officialEmail);
   if (!target) return null;
 
   const cleanedUsn = usn.trim().toUpperCase();
   const code = Math.floor(100000 + Math.random() * 900000).toString();
-  const maskedTarget = channel === 'EMAIL' ? maskEmail(target) : maskPhone(target);
+  const maskedTarget = isPhone ? maskPhone(target) : maskEmail(target);
   const expiresAt = Date.now() + 10 * 60 * 1000;
 
   await saveOtpToDb(cleanedUsn, { usn: cleanedUsn, code, channel, target, expiresAt });
@@ -543,7 +544,7 @@ export async function verifyOtp(
   usn: string, 
   inputCode: string,
   statelessToken?: string
-): Promise<{ valid: boolean; error?: string; target?: string; channel?: 'EMAIL' | 'PHONE' }> {
+): Promise<{ valid: boolean; error?: string; target?: string; channel?: 'EMAIL' | 'PHONE' | 'WHATSAPP' }> {
   const cleanedUsn = usn.trim().toUpperCase();
   const cleanCode = inputCode.trim();
 

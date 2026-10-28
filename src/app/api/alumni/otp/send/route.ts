@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createOtp, findAlumnusByUsn, maskEmail, maskPhone } from '@/lib/alumni';
 import { getAttendees } from '@/lib/db';
-import { sendEmailOtp, sendSmsOtp } from '@/lib/notifications';
+import { sendEmailOtp, sendSmsOtp, sendWhatsAppOtp } from '@/lib/notifications';
 import { getClientIp, checkOtpDispatchLimits, checkOtpVerifyAttempts } from '@/lib/rateLimit';
 
 export async function POST(request: NextRequest) {
@@ -50,22 +50,25 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const targetContact = channel === 'PHONE' ? alumnus.phone?.trim() : alumnus.officialEmail?.trim();
+    const isPhoneChannel = channel === 'PHONE' || channel === 'WHATSAPP';
+    const targetContact = isPhoneChannel ? alumnus.phone?.trim() : alumnus.officialEmail?.trim();
     if (!targetContact) {
       return NextResponse.json({
         success: false,
-        error: `No official ${channel === 'PHONE' ? 'mobile number' : 'email address'} on record in the graduate archives for USN "${cleanedUsn}". To protect against identity theft, automatic OTP dispatch is restricted. Please request Manual Committee Approval with your ID proof.`
+        error: `No official ${isPhoneChannel ? (channel === 'WHATSAPP' ? 'WhatsApp mobile number' : 'mobile number') : 'email address'} on record in the graduate archives for USN "${cleanedUsn}". To protect against identity theft, automatic OTP dispatch is restricted. Please request Manual Committee Approval with your ID proof.`
       }, { status: 400 });
     }
 
-    const otpData = await createOtp(cleanedUsn, channel === 'PHONE' ? 'PHONE' : 'EMAIL', targetContact);
+    const otpData = await createOtp(cleanedUsn, (channel === 'WHATSAPP' || channel === 'PHONE') ? channel : 'EMAIL', targetContact);
     if (!otpData) {
       return NextResponse.json({ success: false, error: 'Failed to generate verification code. Please try again.' }, { status: 500 });
     }
 
     let dispatchResult;
     try {
-      if (channel === 'PHONE') {
+      if (channel === 'WHATSAPP') {
+        dispatchResult = await sendWhatsAppOtp({ toPhone: otpData.target, otp: otpData.otp, recipientName: alumnus.fullName, usn: alumnus.usn });
+      } else if (channel === 'PHONE') {
         dispatchResult = await sendSmsOtp({ toPhone: otpData.target, otp: otpData.otp, recipientName: alumnus.fullName, usn: alumnus.usn });
       } else {
         dispatchResult = await sendEmailOtp({ toEmail: otpData.target, otp: otpData.otp, recipientName: alumnus.fullName, usn: alumnus.usn });
@@ -77,7 +80,7 @@ export async function POST(request: NextRequest) {
     if (dispatchResult && !dispatchResult.success && dispatchResult.provider !== 'SIMULATION') {
       return NextResponse.json({
         success: false,
-        error: dispatchResult.error ? `Email delivery failed: ${dispatchResult.error}` : 'Could not deliver email to registered contact.',
+        error: dispatchResult.error ? `${channel === 'WHATSAPP' ? 'WhatsApp' : 'Delivery'} failed: ${dispatchResult.error}` : 'Could not deliver verification code to registered contact.',
         dispatchError: dispatchResult.error,
       }, { status: 502 });
     }
@@ -86,7 +89,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: dispatchResult?.isReal ? `Real verification code sent to ${otpData.maskedTarget}!` : `Simulation Mode: Verification code is ${otpData.otp}`,
       maskedTarget: otpData.maskedTarget,
-      channel: channel === 'PHONE' ? 'SMS' : 'Email',
+      channel: channel === 'WHATSAPP' ? 'WhatsApp' : (channel === 'PHONE' ? 'SMS' : 'Email'),
       isRealDelivery: dispatchResult?.isReal || false,
       deliveryProvider: dispatchResult?.provider || 'SIMULATION',
       simulationCode: !dispatchResult?.isReal ? otpData.otp : undefined,

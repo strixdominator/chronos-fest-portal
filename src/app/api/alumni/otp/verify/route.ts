@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 
       const token = await createVerifiedSession(cleanedUsn, {
         email: verification.channel === 'EMAIL' ? verification.target : (alumnus.officialEmail || undefined),
-        phone: verification.channel === 'PHONE' ? verification.target : (alumnus.phone || undefined),
+        phone: (verification.channel === 'PHONE' || verification.channel === 'WHATSAPP') ? verification.target : (alumnus.phone || undefined),
       });
 
       return NextResponse.json({
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     }
 
     // MODE 2: COMPLETE PASS WITH SESSION TOKEN
-    let directVerification: { target?: string; channel?: 'EMAIL' | 'PHONE' } | null = null;
+    let directVerification: { target?: string; channel?: 'EMAIL' | 'PHONE' | 'WHATSAPP' } | null = null;
     if (sessionToken) {
       const isValidSession = await verifySessionToken(cleanedUsn, sessionToken);
       if (!isValidSession) {
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
 
     const sessionData = sessionToken ? await getSessionData(sessionToken) : null;
     const finalEmail = sessionData?.email || (directVerification?.channel === 'EMAIL' ? directVerification.target : null) || alumnus.officialEmail || 'alumni@chronosfest.com';
-    const finalPhone = sessionData?.phone || (directVerification?.channel === 'PHONE' ? directVerification.target : null) || alumnus.phone || '+91 99999 99999';
+    const finalPhone = sessionData?.phone || ((directVerification?.channel === 'PHONE' || directVerification?.channel === 'WHATSAPP') ? directVerification.target : null) || alumnus.phone || '+91 99999 99999';
 
     const result = await createAttendee({
       fullName: alumnus.fullName,
