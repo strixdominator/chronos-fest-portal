@@ -43,7 +43,7 @@ export default function AdminPage() {
 
   // Test notification state
   const [testTarget, setTestTarget] = useState('');
-  const [testType, setTestType] = useState<'EMAIL' | 'PHONE'>('EMAIL');
+  const [testType, setTestType] = useState<'EMAIL' | 'WHATSAPP'>('EMAIL');
   const [testingGate, setTestingGate] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
 
@@ -1341,17 +1341,17 @@ export default function AdminPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setTestType('PHONE')}
-                      className={testType === 'PHONE' ? 'btn-neo-black' : 'btn-neo-outline'}
+                      onClick={() => setTestType('WHATSAPP')}
+                      className={testType === 'WHATSAPP' ? 'btn-neo-black' : 'btn-neo-outline'}
                       style={{ flex: 1, padding: '10px' }}
                     >
-                      TEST SMS OTP ↗
+                      TEST WHATSAPP OTP ↗
                     </button>
                   </div>
 
                   <div style={{ marginBottom: 16 }}>
                     <label className="mono-label" style={{ display: 'block', marginBottom: 6 }}>
-                      {testType === 'EMAIL' ? 'TEST RECIPIENT EMAIL' : '10-DIGIT MOBILE NUMBER (+91)'}
+                      {testType === 'EMAIL' ? 'TEST RECIPIENT EMAIL' : '10-DIGIT WHATSAPP NUMBER (+91)'}
                     </label>
                     <input
                       type={testType === 'EMAIL' ? 'email' : 'tel'}
@@ -1369,7 +1369,7 @@ export default function AdminPage() {
                     className="btn-neo-black"
                     style={{ width: '100%', padding: '14px' }}
                   >
-                    {testingGate ? 'DISPATCHING...' : `DISPATCH TEST ${testType === 'EMAIL' ? 'EMAIL' : 'SMS'} NOW ↗`}
+                    {testingGate ? 'DISPATCHING...' : `DISPATCH TEST ${testType === 'EMAIL' ? 'EMAIL' : 'WHATSAPP'} NOW ↗`}
                   </button>
                 </form>
 

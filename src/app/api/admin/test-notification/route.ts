@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendEmailOtp, sendSmsOtp } from '@/lib/notifications';
+import { sendEmailOtp, sendWhatsAppOtp, sendSmsOtp } from '@/lib/notifications';
 import { verifyAdminPasscode, getAdminPasscodeFromRequest } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
@@ -24,6 +24,14 @@ export async function POST(request: NextRequest) {
     if (type === 'EMAIL') {
       const result = await sendEmailOtp({
         toEmail: target.trim(),
+        otp: testOtp,
+        recipientName: 'Fest Organizer (Test)',
+        usn: 'ADMIN-TEST',
+      });
+      return NextResponse.json({ ...result, testOtp });
+    } else if (type === 'WHATSAPP' || type === 'PHONE') {
+      const result = await sendWhatsAppOtp({
+        toPhone: target.trim(),
         otp: testOtp,
         recipientName: 'Fest Organizer (Test)',
         usn: 'ADMIN-TEST',
