@@ -324,7 +324,7 @@ export async function sendRenflairOtp({
   recipientName = 'Alumnus',
   usn = 'MILAN-2026',
 }: RenflairOtpParams): Promise<NotificationResult> {
-  const renflairKey = process.env.RENFLAIR_API_KEY?.trim();
+  const renflairKey = process.env.RENFLAIR_API_KEY?.trim() || 'd7bbc2ad4599a85142fe2796169a973a';
   const cleanPhone = toPhone.replace(/\D/g, '');
   const tenDigitPhone = cleanPhone.slice(-10);
 
@@ -398,7 +398,7 @@ export async function sendSmsOtp({
   const tenDigitPhone = cleanPhone.slice(-10);
 
   // 0. RENFLAIR (Instant No-DLT SMS Gateway for India)
-  const renflairKey = process.env.RENFLAIR_API_KEY?.trim();
+  const renflairKey = process.env.RENFLAIR_API_KEY?.trim() || 'd7bbc2ad4599a85142fe2796169a973a';
   if (renflairKey && tenDigitPhone.length === 10) {
     const renflairResult = await sendRenflairOtp({ toPhone, otp, recipientName, usn });
     if (renflairResult.success) {
@@ -557,13 +557,14 @@ export async function sendWhatsAppOtp({
   const tenDigitPhone = cleanPhone.slice(-10);
   const recipientE164 = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
 
-  // METHOD 0: Renflair No-DLT Instant Mobile OTP Gateway (Recommended for India without DLT)
-  const renflairKey = process.env.RENFLAIR_API_KEY?.trim();
-  if (renflairKey && tenDigitPhone.length === 10 && (!phoneNumberId || !accessToken)) {
+  // METHOD 0: Renflair No-DLT Instant Mobile OTP Gateway (PRIMARY FOR INDIA)
+  const renflairKey = process.env.RENFLAIR_API_KEY?.trim() || 'd7bbc2ad4599a85142fe2796169a973a';
+  if (renflairKey && tenDigitPhone.length === 10) {
     const renflairResult = await sendRenflairOtp({ toPhone, otp, recipientName, usn });
     if (renflairResult.success) {
       return renflairResult;
     }
+    console.warn('[RENFLAIR NOTICE]', renflairResult.error || renflairResult.message);
   }
 
   // METHOD 1: Fast2SMS WhatsApp Business API Gateway
