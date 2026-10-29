@@ -349,7 +349,7 @@ export async function sendRenflairOtp({
       // Plain text response fallback
     }
 
-    const isSuccess = data.status === 'success' || data.code === 200 || data.status === true || /success/i.test(rawText);
+    const isSuccess = String(data.status).toLowerCase() === 'success' || data.code === 200 || data.status === true || /success/i.test(rawText);
 
     if (isSuccess) {
       console.log(`[REAL RENFLAIR OTP SENT] To: +91 ${tenDigitPhone} | Code: ${otp} | Res: ${rawText}`);

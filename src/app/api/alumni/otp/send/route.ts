@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     if (dispatchResult && !dispatchResult.success && dispatchResult.provider !== 'SIMULATION') {
       return NextResponse.json({
         success: false,
-        error: dispatchResult.error ? `${isWhatsApp ? 'WhatsApp' : 'Delivery'} failed: ${dispatchResult.error}` : 'Could not deliver verification code to registered contact.',
+        error: dispatchResult.error ? `${dispatchResult.provider === 'RENFLAIR' ? 'SMS' : (isWhatsApp ? 'WhatsApp' : 'Delivery')} failed: ${dispatchResult.error}` : 'Could not deliver verification code to registered contact.',
         dispatchError: dispatchResult.error,
       }, { status: 502 });
     }
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: dispatchResult?.isReal ? `Real verification code sent to ${otpData.maskedTarget}!` : `Simulation Mode: Verification code is ${otpData.otp}`,
       maskedTarget: otpData.maskedTarget,
-      channel: isWhatsApp ? 'WhatsApp' : 'Email',
+      channel: isWhatsApp ? (dispatchResult?.provider === 'RENFLAIR' ? 'SMS' : 'WhatsApp') : 'Email',
       isRealDelivery: dispatchResult?.isReal || false,
       deliveryProvider: dispatchResult?.provider || 'SIMULATION',
       simulationCode: !dispatchResult?.isReal ? otpData.otp : undefined,
