@@ -460,11 +460,57 @@ export async function sendWhatsAppOtp({
   const templateName = process.env.WHATSAPP_TEMPLATE_NAME?.trim() || 'milan_pass_otp';
   const languageCode = process.env.WHATSAPP_LANGUAGE_CODE?.trim() || 'en_US';
 
+  // Fast2SMS WhatsApp & OTP Gateway credentials
+  const fast2SmsKey = process.env.FAST2SMS_API_KEY?.trim();
+  const fast2SmsWaMessageId = process.env.FAST2SMS_WA_MESSAGE_ID?.trim();
+  const fast2SmsWaPhoneId = process.env.FAST2SMS_WA_PHONE_NUMBER_ID?.trim() || process.env.WHATSAPP_PHONE_NUMBER_ID?.trim();
+
   // Normalize phone number (strip non-digits)
   const cleanPhone = toPhone.replace(/\D/g, '');
-  // Format standard 10-digit Indian phone numbers with country code 91
+  // Format standard 10-digit Indian phone numbers
+  const tenDigitPhone = cleanPhone.slice(-10);
   const recipientE164 = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
 
+  // METHOD 1: Fast2SMS WhatsApp Business API Gateway
+  if (fast2SmsKey && (fast2SmsWaMessageId || fast2SmsWaPhoneId)) {
+    try {
+      const msgId = fast2SmsWaMessageId || '1';
+      const phoneId = fast2SmsWaPhoneId || '';
+      const params = new URLSearchParams({
+        message_id: msgId,
+        numbers: tenDigitPhone,
+        variables_values: String(otp),
+      });
+      if (phoneId) {
+        params.append('phone_number_id', phoneId);
+      }
+
+      const response = await fetch(`https://www.fast2sms.com/dev/whatsapp?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': fast2SmsKey,
+        },
+      });
+
+      const data = await response.json();
+      if (data.status === true || data.return === true) {
+        console.log(`[REAL FAST2SMS WHATSAPP SENT] To: +91 ${tenDigitPhone} | Code: ${otp} | Req: ${data.request_id || ''}`);
+        return {
+          success: true,
+          isReal: true,
+          provider: 'FAST2SMS',
+          message: `Official WhatsApp verification code sent to +91 ${tenDigitPhone} via Fast2SMS!`,
+        };
+      } else {
+        const errMsg = Array.isArray(data.message) ? data.message.join(', ') : (data.message || JSON.stringify(data));
+        console.warn('[FAST2SMS WHATSAPP NOTICE]', errMsg);
+      }
+    } catch (err: any) {
+      console.warn('[FAST2SMS WHATSAPP EXCEPTION]', err.message);
+    }
+  }
+
+  // METHOD 2: Official Meta WhatsApp Business Cloud API
   if (phoneNumberId && accessToken) {
     try {
       // Build Meta WhatsApp Business Cloud API payload
@@ -582,6 +628,26 @@ export async function sendWhatsAppOtp({
     }
   }
 
+  // METHOD 3: Fast2SMS Quick OTP Route Fallback (if user only has Fast2SMS API key)
+  if (fast2SmsKey) {
+    try {
+      const getUrl = `https://www.fast2sms.com/dev/bulkV2?authorization=${encodeURIComponent(fast2SmsKey)}&variables_values=${encodeURIComponent(otp)}&route=otp&numbers=${tenDigitPhone}`;
+      const response = await fetch(getUrl, { method: 'GET' });
+      const data = await response.json();
+      if (data.return) {
+        console.log(`[REAL FAST2SMS OTP FALLBACK SENT] To: ${tenDigitPhone} | Code: ${otp}`);
+        return {
+          success: true,
+          isReal: true,
+          provider: 'FAST2SMS',
+          message: `Verification code delivered to +91 ${tenDigitPhone} via Fast2SMS!`,
+        };
+      }
+    } catch (err: any) {
+      console.warn('[FAST2SMS FALLBACK EXCEPTION]', err.message);
+    }
+  }
+
   // Simulation mode fallback for local development or testing without credentials
   console.log(`[WHATSAPP OTP SIMULATION] To: +${recipientE164} | Code: ${otp} | Alumnus: ${recipientName} (${usn})`);
   return {
@@ -589,7 +655,7 @@ export async function sendWhatsAppOtp({
     isReal: false,
     provider: 'SIMULATION',
     simulationCode: otp,
-    message: `WhatsApp Simulation Mode: Verification code is ${otp}. Configure WHATSAPP_PHONE_NUMBER_ID and WHATSAPP_ACCESS_TOKEN for live delivery.`,
+    message: `WhatsApp Simulation Mode: Verification code is ${otp}. Configure Fast2SMS or Meta WhatsApp credentials for live delivery.`,
   };
 }
 
