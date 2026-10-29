@@ -1345,13 +1345,13 @@ export default function AdminPage() {
                       className={testType === 'WHATSAPP' ? 'btn-neo-black' : 'btn-neo-outline'}
                       style={{ flex: 1, padding: '10px' }}
                     >
-                      TEST WHATSAPP OTP ↗
+                      TEST MOBILE OTP (SMS/WA) ↗
                     </button>
                   </div>
 
                   <div style={{ marginBottom: 16 }}>
                     <label className="mono-label" style={{ display: 'block', marginBottom: 6 }}>
-                      {testType === 'EMAIL' ? 'TEST RECIPIENT EMAIL' : '10-DIGIT WHATSAPP NUMBER (+91)'}
+                      {testType === 'EMAIL' ? 'TEST RECIPIENT EMAIL' : '10-DIGIT MOBILE NUMBER (+91)'}
                     </label>
                     <input
                       type={testType === 'EMAIL' ? 'email' : 'tel'}
@@ -1369,7 +1369,7 @@ export default function AdminPage() {
                     className="btn-neo-black"
                     style={{ width: '100%', padding: '14px' }}
                   >
-                    {testingGate ? 'DISPATCHING...' : `DISPATCH TEST ${testType === 'EMAIL' ? 'EMAIL' : 'WHATSAPP'} NOW ↗`}
+                    {testingGate ? 'DISPATCHING...' : `DISPATCH TEST ${testType === 'EMAIL' ? 'EMAIL' : 'MOBILE OTP'} NOW ↗`}
                   </button>
                 </form>
 

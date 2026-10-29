@@ -17,7 +17,7 @@ interface SmsOtpParams {
 export interface NotificationResult {
   success: boolean;
   isReal: boolean;
-  provider: 'RESEND' | 'BREVO' | 'GMAIL_RELAY' | 'GMAIL_SMTP' | 'FAST2SMS' | 'TWILIO' | 'WHATSAPP' | 'SIMULATION';
+  provider: 'RESEND' | 'BREVO' | 'GMAIL_RELAY' | 'GMAIL_SMTP' | 'FAST2SMS' | 'TWILIO' | 'WHATSAPP' | 'RENFLAIR' | 'SIMULATION';
   message: string;
   simulationCode?: string;
   error?: string;
@@ -306,9 +306,85 @@ export async function sendEmailOtp({
   };
 }
 
+export interface RenflairOtpParams {
+  toPhone: string;
+  otp: string;
+  recipientName?: string;
+  usn?: string;
+}
+
+/**
+ * Dispatches real SMS OTP via Renflair API (sms.renflair.in).
+ * Simple, instant OTP delivery to Indian mobile numbers without requiring TRAI DLT registration.
+ * Endpoint: https://sms.renflair.in/V1.php?API={API}&PHONE={PHONE}&OTP={OTP}
+ */
+export async function sendRenflairOtp({
+  toPhone,
+  otp,
+  recipientName = 'Alumnus',
+  usn = 'MILAN-2026',
+}: RenflairOtpParams): Promise<NotificationResult> {
+  const renflairKey = process.env.RENFLAIR_API_KEY?.trim();
+  const cleanPhone = toPhone.replace(/\D/g, '');
+  const tenDigitPhone = cleanPhone.slice(-10);
+
+  if (!renflairKey) {
+    return {
+      success: false,
+      isReal: false,
+      provider: 'SIMULATION',
+      simulationCode: otp,
+      message: `Renflair API key not configured. Simulation code is ${otp}.`,
+    };
+  }
+
+  try {
+    const url = `https://sms.renflair.in/V1.php?API=${encodeURIComponent(renflairKey)}&PHONE=${encodeURIComponent(tenDigitPhone)}&OTP=${encodeURIComponent(otp)}`;
+    const res = await fetch(url, { method: 'GET' });
+    const rawText = await res.text();
+    let data: any = {};
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      // Plain text response fallback
+    }
+
+    const isSuccess = data.status === 'success' || data.code === 200 || data.status === true || /success/i.test(rawText);
+
+    if (isSuccess) {
+      console.log(`[REAL RENFLAIR OTP SENT] To: +91 ${tenDigitPhone} | Code: ${otp} | Res: ${rawText}`);
+      return {
+        success: true,
+        isReal: true,
+        provider: 'RENFLAIR',
+        message: `Real verification OTP delivered to +91 ${tenDigitPhone} via Renflair!`,
+      };
+    } else {
+      const errMsg = data.message || rawText || 'Failed to dispatch via Renflair';
+      console.error('[RENFLAIR ERROR]', errMsg);
+      return {
+        success: false,
+        isReal: false,
+        provider: 'RENFLAIR',
+        error: errMsg,
+        message: `Renflair OTP notice: ${errMsg}`,
+      };
+    }
+  } catch (err: any) {
+    console.error('[RENFLAIR EXCEPTION]', err.message);
+    return {
+      success: false,
+      isReal: false,
+      provider: 'RENFLAIR',
+      error: err.message,
+      message: `Renflair network error: ${err.message}`,
+    };
+  }
+}
+
 /**
  * Dispatches real SMS OTP
- * Supports Fast2SMS (Indian domestic) or Twilio.
+ * Supports Renflair (No-DLT India), Fast2SMS (Indian domestic) or Twilio.
  * Falls back to simulation if credentials are not configured.
  */
 export async function sendSmsOtp({
@@ -320,6 +396,15 @@ export async function sendSmsOtp({
   // Clean phone number (strip spaces, dashes, +91)
   const cleanPhone = toPhone.replace(/\D/g, '');
   const tenDigitPhone = cleanPhone.slice(-10);
+
+  // 0. RENFLAIR (Instant No-DLT SMS Gateway for India)
+  const renflairKey = process.env.RENFLAIR_API_KEY?.trim();
+  if (renflairKey && tenDigitPhone.length === 10) {
+    const renflairResult = await sendRenflairOtp({ toPhone, otp, recipientName, usn });
+    if (renflairResult.success) {
+      return renflairResult;
+    }
+  }
 
   // 1. FAST2SMS (India domestic SMS gateway)
   const fast2SmsKey = process.env.FAST2SMS_API_KEY?.trim();
@@ -471,6 +556,15 @@ export async function sendWhatsAppOtp({
   // Format standard 10-digit Indian phone numbers
   const tenDigitPhone = cleanPhone.slice(-10);
   const recipientE164 = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+
+  // METHOD 0: Renflair No-DLT Instant Mobile OTP Gateway (Recommended for India without DLT)
+  const renflairKey = process.env.RENFLAIR_API_KEY?.trim();
+  if (renflairKey && tenDigitPhone.length === 10 && (!phoneNumberId || !accessToken)) {
+    const renflairResult = await sendRenflairOtp({ toPhone, otp, recipientName, usn });
+    if (renflairResult.success) {
+      return renflairResult;
+    }
+  }
 
   // METHOD 1: Fast2SMS WhatsApp Business API Gateway
   if (fast2SmsKey && (fast2SmsWaMessageId || fast2SmsWaPhoneId)) {
@@ -653,6 +747,14 @@ export async function sendWhatsAppOtp({
     } catch (err: any) {
       console.warn('[FAST2SMS FALLBACK EXCEPTION]', err.message);
       fast2SmsError = err.message;
+    }
+  }
+
+  // METHOD 4: Renflair No-DLT Gateway Fallback
+  if (renflairKey && tenDigitPhone.length === 10) {
+    const renflairResult = await sendRenflairOtp({ toPhone, otp, recipientName, usn });
+    if (renflairResult.success) {
+      return renflairResult;
     }
   }
 
