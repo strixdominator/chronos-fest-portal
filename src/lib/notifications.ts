@@ -464,6 +464,7 @@ export async function sendWhatsAppOtp({
   const fast2SmsKey = process.env.FAST2SMS_API_KEY?.trim();
   const fast2SmsWaMessageId = process.env.FAST2SMS_WA_MESSAGE_ID?.trim();
   const fast2SmsWaPhoneId = process.env.FAST2SMS_WA_PHONE_NUMBER_ID?.trim() || process.env.WHATSAPP_PHONE_NUMBER_ID?.trim();
+  let fast2SmsError = '';
 
   // Normalize phone number (strip non-digits)
   const cleanPhone = toPhone.replace(/\D/g, '');
@@ -504,9 +505,11 @@ export async function sendWhatsAppOtp({
       } else {
         const errMsg = Array.isArray(data.message) ? data.message.join(', ') : (data.message || JSON.stringify(data));
         console.warn('[FAST2SMS WHATSAPP NOTICE]', errMsg);
+        fast2SmsError = errMsg;
       }
     } catch (err: any) {
       console.warn('[FAST2SMS WHATSAPP EXCEPTION]', err.message);
+      fast2SmsError = err.message;
     }
   }
 
@@ -642,10 +645,27 @@ export async function sendWhatsAppOtp({
           provider: 'FAST2SMS',
           message: `Verification code delivered to +91 ${tenDigitPhone} via Fast2SMS!`,
         };
+      } else {
+        const errMsg = Array.isArray(data.message) ? data.message.join(', ') : (data.message || JSON.stringify(data));
+        console.warn('[FAST2SMS FALLBACK NOTICE]', errMsg);
+        fast2SmsError = errMsg;
       }
     } catch (err: any) {
       console.warn('[FAST2SMS FALLBACK EXCEPTION]', err.message);
+      fast2SmsError = err.message;
     }
+  }
+
+  // If Fast2SMS returned an explicit error (e.g. Invalid Authentication or Low Balance)
+  if (fast2SmsError) {
+    console.warn('[FAST2SMS DIAGNOSIS NOTICE]', fast2SmsError);
+    return {
+      success: false,
+      isReal: false,
+      provider: 'FAST2SMS',
+      error: fast2SmsError,
+      message: `Fast2SMS notice: ${fast2SmsError}. Please check your Fast2SMS API key and wallet.`,
+    };
   }
 
   // Simulation mode fallback for local development or testing without credentials
