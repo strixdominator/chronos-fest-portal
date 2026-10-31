@@ -1,6 +1,56 @@
 import { Attendee, EventSettings, AttendeeStatus } from './types';
 import { sql } from './neon';
+import { supabase, isSupabaseConfigured } from './supabase';
 import { safeReadJson, safeWriteJson } from './storage';
+
+// ─── DUAL-WRITE MIRROR HELPER ─────────────────────────────────────────────────
+// Mirror writes to Supabase in the background for live dual-redundancy
+function mirrorToSupabase(action: () => any): void {
+  if (!isSupabaseConfigured) return;
+  try {
+    Promise.resolve(action()).catch(err => {
+      console.warn('[DB DUAL-WRITE] Supabase mirror skipped:', err?.message || err);
+    });
+  } catch {}
+}
+
+function attendeeToRow(a: Attendee) {
+  return {
+    id: a.id,
+    ticket_code: a.ticketCode,
+    full_name: a.fullName,
+    email: a.email,
+    phone: a.phone || '',
+    roll_number: a.rollNumber,
+    usn: a.usn,
+    department: a.department || '',
+    year: a.year || '',
+    id_card_url: a.idCardUrl || null,
+    degree_proof_url: a.degreeProofUrl || null,
+    status: a.status,
+    rejection_reason: a.rejectionReason || null,
+    checked_in: a.checkedIn,
+    checked_in_at: a.checkedInAt || null,
+    checked_in_by: a.checkedInBy || null,
+    registered_at: a.registeredAt,
+    approved_at: a.approvedAt || null,
+    wristband_color: a.wristbandColor || 'Neon Cyan (General)',
+    wristband_number: a.wristbandNumber || null,
+    notes: a.notes || null,
+    organization: a.organization || null,
+    designation: a.designation || null,
+    family_count: a.familyCount || 0,
+    family_members: a.familyMembers || [],
+    total_quota: a.totalQuota || 1,
+    admitted_count: a.admittedCount || 0,
+    check_in_logs: a.checkInLogs || [],
+    verification_method: a.verificationMethod || null,
+    is_contact_updated: Boolean(a.isContactUpdated),
+    original_email: a.originalEmail || null,
+    original_phone: a.originalPhone || null,
+    review_reason: a.reviewReason || null,
+  };
+}
 
 // ─── DEFAULT SETTINGS ──────────────────────────────────────────────────────────
 const DEFAULT_SETTINGS: EventSettings = {
@@ -140,6 +190,20 @@ export async function updateSettings(newSettings: Partial<EventSettings>): Promi
         wristband_colors = EXCLUDED.wristband_colors,
         updated_at = NOW();
     `;
+    // Dual-write mirror to Supabase
+    mirrorToSupabase(() => supabase.from('settings').upsert({
+      id: 1,
+      event_name: merged.eventName,
+      tagline: merged.tagline,
+      event_date: merged.eventDate,
+      event_time: merged.eventTime,
+      gates_open_time: merged.gatesOpenTime,
+      event_venue: merged.eventVenue,
+      organizer: merged.organizer,
+      total_capacity: merged.totalCapacity,
+      is_registration_open: merged.isRegistrationOpen,
+      wristband_colors: merged.wristbandColors,
+    }));
   } catch (e) {
     console.warn('[DB] Neon updateSettings failed:', e);
   }
@@ -356,6 +420,9 @@ export async function createAttendee(
     // Always persist to local backup
     saveLocalAttendee(newAttendee);
 
+    // Dual-write mirror to Supabase in background
+    mirrorToSupabase(() => supabase.from('attendees').upsert(attendeeToRow(newAttendee)));
+
     return { success: true, attendee: newAttendee };
   }
 
@@ -370,6 +437,14 @@ export async function updateAttendeeStatus(
 ): Promise<Attendee | null> {
   const approvedAt = status === 'APPROVED' ? new Date().toISOString() : null;
   const reason = status === 'REJECTED' ? (rejectionReason || 'Details did not match official college records.') : null;
+
+  // Dual-write mirror to Supabase
+  mirrorToSupabase(() => supabase.from('attendees').update({
+    status,
+    approved_at: approvedAt,
+    rejection_reason: reason,
+    ...(wristbandColor ? { wristband_color: wristbandColor } : {})
+  }).eq('id', id.trim()));
 
   try {
     const rows = await sql`
@@ -406,6 +481,12 @@ export async function updateAttendeeStatus(
 export async function bulkApproveAttendees(ids: string[]): Promise<number> {
   if (!ids.length) return 0;
   const approvedAt = new Date().toISOString();
+
+  // Dual-write mirror to Supabase
+  mirrorToSupabase(() => supabase.from('attendees').update({
+    status: 'APPROVED',
+    approved_at: approvedAt,
+  }).in('id', ids).eq('status', 'PENDING'));
 
   let count = 0;
   try {
@@ -466,6 +547,10 @@ export async function deleteAttendee(
     saveLocalAttendees(local);
   }
 
+  if (foundAttendee) {
+    mirrorToSupabase(() => supabase.from('attendees').delete().eq('id', foundAttendee!.id));
+  }
+
   if (!foundAttendee) return { success: false, error: 'Attendee pass not found.' };
   return { success: true, deletedAttendee: foundAttendee };
 }
@@ -479,6 +564,8 @@ export async function deleteAllAttendees(): Promise<{ success: boolean; count: n
   } catch (e: any) {
     console.warn('[DB] Neon deleteAllAttendees error:', e.message);
   }
+
+  mirrorToSupabase(() => supabase.from('attendees').delete().neq('id', ''));
 
   const local = getLocalAttendees();
   if (local.length > count) count = local.length;
@@ -500,6 +587,8 @@ export async function deleteSelectedAttendees(
     console.warn('[DB] Neon deleteSelectedAttendees error:', e.message);
   }
 
+  mirrorToSupabase(() => supabase.from('attendees').delete().in('id', ids));
+
   const local = getLocalAttendees();
   const updated = local.filter(a => !ids.includes(a.id));
   saveLocalAttendees(updated);
@@ -508,6 +597,14 @@ export async function deleteSelectedAttendees(
 }
 
 export async function resetCheckIn(id: string): Promise<Attendee | null> {
+  mirrorToSupabase(() => supabase.from('attendees').update({
+    checked_in: false,
+    checked_in_at: null,
+    checked_in_by: null,
+    admitted_count: 0,
+    check_in_logs: [],
+  }).eq('id', id.trim()));
+
   try {
     const rows = await sql`
       UPDATE attendees
@@ -717,6 +814,16 @@ export async function checkInAttendee(
   }
 
   saveLocalAttendee(updatedAttendee);
+
+  // Dual-write mirror to Supabase
+  mirrorToSupabase(() => supabase.from('attendees').update({
+    total_quota: totalQuota,
+    admitted_count: newAdmitted,
+    checked_in: isFullyExhausted,
+    checked_in_at: new Date().toISOString(),
+    checked_in_by: volunteerName,
+    check_in_logs: [...existingLogs, newLog],
+  }).eq('id', attendee.id));
 
   if (isFullyExhausted) {
     return { status: 'SUCCESS', message: `FINAL ENTRY GRANTED! Admitted ${countToAdmit} member(s). All ${totalQuota} of ${totalQuota} quotas used. Issue ${countToAdmit} ${attendee.wristbandColor || 'Neon Cyan'} wristband(s). Pass is now EXPIRED.`, attendee: updatedAttendee, admittedNow: countToAdmit, remaining: 0, totalQuota };

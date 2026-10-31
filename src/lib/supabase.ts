@@ -1,14 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 // Use service key for server-side (bypasses RLS), fallback to anon key
 const supabaseKey =
   process.env.SUPABASE_SERVICE_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  '';
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing Supabase environment variables. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.');
-}
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseKey);
 
 // Resilient fetch with strict 3500ms timeout to prevent hanging on paused/crashed Supabase instances
 const fetchWithTimeout: typeof fetch = (input: RequestInfo | URL, init?: RequestInit) => {
@@ -35,7 +34,7 @@ function anySignal(signals: AbortSignal[]): AbortSignal {
   return controller.signal;
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey, {
+export const supabase = createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseKey || 'placeholder', {
   auth: { persistSession: false },
   global: { fetch: fetchWithTimeout },
 });
