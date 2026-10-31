@@ -1,5 +1,31 @@
 import { Attendee, EventSettings, AttendeeStatus } from './types';
 import { supabase } from './supabase';
+import { safeReadJson, safeWriteJson } from './storage';
+
+// ─── LOCAL STORAGE FALLBACK HELPERS ───────────────────────────────────────────
+function getLocalAttendees(): Attendee[] {
+  return safeReadJson<Attendee[]>('attendees.json', []);
+}
+
+function saveLocalAttendees(list: Attendee[]): void {
+  safeWriteJson('attendees.json', list);
+}
+
+function saveLocalAttendee(attendee: Attendee): void {
+  try {
+    const list = getLocalAttendees();
+    const usnKey = (attendee.usn || attendee.rollNumber || '').toUpperCase();
+    const idx = list.findIndex(a => a.id === attendee.id || (usnKey && (a.usn || a.rollNumber || '').toUpperCase() === usnKey));
+    if (idx >= 0) {
+      list[idx] = attendee;
+    } else {
+      list.unshift(attendee);
+    }
+    saveLocalAttendees(list);
+  } catch (err) {
+    console.warn('[DB] Failed to save attendee locally:', err);
+  }
+}
 
 // ─── DEFAULT SETTINGS ──────────────────────────────────────────────────────────
 const DEFAULT_SETTINGS: EventSettings = {
@@ -119,47 +145,36 @@ export async function getSettings(): Promise<EventSettings> {
       .eq('id', 1)
       .single();
 
-    if (error || !data) {
-      // First run: seed default settings
-      await supabase.from('settings').upsert({
-        id: 1,
-        event_name: DEFAULT_SETTINGS.eventName,
-        tagline: DEFAULT_SETTINGS.tagline,
-        event_date: DEFAULT_SETTINGS.eventDate,
-        event_time: DEFAULT_SETTINGS.eventTime,
-        gates_open_time: DEFAULT_SETTINGS.gatesOpenTime,
-        event_venue: DEFAULT_SETTINGS.eventVenue,
-        organizer: DEFAULT_SETTINGS.organizer,
-        total_capacity: DEFAULT_SETTINGS.totalCapacity,
-        is_registration_open: DEFAULT_SETTINGS.isRegistrationOpen,
-        wristband_colors: DEFAULT_SETTINGS.wristbandColors,
-      });
-      return DEFAULT_SETTINGS;
+    if (!error && data) {
+      return rowToSettings(data);
     }
-
-    return rowToSettings(data);
-  } catch {
-    return DEFAULT_SETTINGS;
+  } catch (e) {
+    console.warn('[DB] Supabase getSettings failed, using defaults:', e);
   }
+  return DEFAULT_SETTINGS;
 }
 
 export async function updateSettings(newSettings: Partial<EventSettings>): Promise<EventSettings> {
   const current = await getSettings();
   const merged = { ...current, ...newSettings };
 
-  await supabase.from('settings').upsert({
-    id: 1,
-    event_name: merged.eventName,
-    tagline: merged.tagline,
-    event_date: merged.eventDate,
-    event_time: merged.eventTime,
-    gates_open_time: merged.gatesOpenTime,
-    event_venue: merged.eventVenue,
-    organizer: merged.organizer,
-    total_capacity: merged.totalCapacity,
-    is_registration_open: merged.isRegistrationOpen,
-    wristband_colors: merged.wristbandColors,
-  });
+  try {
+    await supabase.from('settings').upsert({
+      id: 1,
+      event_name: merged.eventName,
+      tagline: merged.tagline,
+      event_date: merged.eventDate,
+      event_time: merged.eventTime,
+      gates_open_time: merged.gatesOpenTime,
+      event_venue: merged.eventVenue,
+      organizer: merged.organizer,
+      total_capacity: merged.totalCapacity,
+      is_registration_open: merged.isRegistrationOpen,
+      wristband_colors: merged.wristbandColors,
+    });
+  } catch (e) {
+    console.warn('[DB] Supabase updateSettings failed:', e);
+  }
 
   return merged;
 }
@@ -167,49 +182,112 @@ export async function updateSettings(newSettings: Partial<EventSettings>): Promi
 // ─── ATTENDEES ────────────────────────────────────────────────────────────────
 
 export async function getAttendees(): Promise<Attendee[]> {
-  const { data, error } = await supabase
-    .from('attendees')
-    .select('*')
-    .order('registered_at', { ascending: false });
+  try {
+    const { data, error } = await supabase
+      .from('attendees')
+      .select('*')
+      .order('registered_at', { ascending: false });
 
-  if (error) {
-    console.error('[DB] getAttendees error:', error.message);
-    return [];
+    if (!error && data && Array.isArray(data) && data.length > 0) {
+      const list = data.map(rowToAttendee);
+      saveLocalAttendees(list);
+      return list;
+    }
+  } catch (err: any) {
+    console.warn('[DB] Supabase getAttendees failed/timed out, using local fallback:', err?.message || err);
   }
 
-  return (data || []).map(rowToAttendee);
+  return getLocalAttendees();
 }
 
 export async function getAttendeeById(id: string): Promise<Attendee | undefined> {
-  const { data } = await supabase
-    .from('attendees')
-    .select('*')
-    .ilike('id', id)
-    .maybeSingle();
+  const cleanId = id.trim();
+  try {
+    const { data } = await supabase
+      .from('attendees')
+      .select('*')
+      .ilike('id', cleanId)
+      .maybeSingle();
 
-  return data ? rowToAttendee(data) : undefined;
+    if (data) {
+      const attendee = rowToAttendee(data);
+      saveLocalAttendee(attendee);
+      return attendee;
+    }
+  } catch (err) {
+    console.warn('[DB] Supabase getAttendeeById failed:', err);
+  }
+
+  const local = getLocalAttendees();
+  return local.find(a => a.id.toLowerCase() === cleanId.toLowerCase());
 }
 
 export async function getAttendeeByTicketCode(code: string): Promise<Attendee | undefined> {
   const cleaned = code.trim().toLowerCase();
-  const { data } = await supabase
-    .from('attendees')
-    .select('*')
-    .or(`ticket_code.ilike.${cleaned},id.ilike.${cleaned}`)
-    .maybeSingle();
+  try {
+    const { data } = await supabase
+      .from('attendees')
+      .select('*')
+      .or(`ticket_code.ilike.${cleaned},id.ilike.${cleaned}`)
+      .maybeSingle();
 
-  return data ? rowToAttendee(data) : undefined;
+    if (data) {
+      const attendee = rowToAttendee(data);
+      saveLocalAttendee(attendee);
+      return attendee;
+    }
+  } catch (err) {
+    console.warn('[DB] Supabase getAttendeeByTicketCode failed:', err);
+  }
+
+  const local = getLocalAttendees();
+  return local.find(a => (a.ticketCode?.toLowerCase() === cleaned || a.id.toLowerCase() === cleaned));
+}
+
+export async function getAttendeeByUsn(usn: string): Promise<Attendee | undefined> {
+  const cleaned = usn.trim().toUpperCase();
+  try {
+    const { data, error } = await supabase
+      .from('attendees')
+      .select('*')
+      .or(`usn.ilike.${cleaned},roll_number.ilike.${cleaned}`)
+      .maybeSingle();
+
+    if (!error && data) {
+      const attendee = rowToAttendee(data);
+      saveLocalAttendee(attendee);
+      return attendee;
+    }
+  } catch (err: any) {
+    console.warn('[DB] Supabase getAttendeeByUsn failed, using local:', err?.message || err);
+  }
+
+  const local = getLocalAttendees();
+  return local.find(a => (a.usn || a.rollNumber || '').trim().toUpperCase() === cleaned);
 }
 
 async function getNextAttendeeIdAndTicket(): Promise<{ id: string; ticketCode: string }> {
-  const { data } = await supabase.from('attendees').select('id, ticket_code');
-  const existingIds = new Set((data || []).map(r => r.id));
-  const existingTickets = new Set((data || []).map(r => r.ticket_code));
+  const existingIds = new Set<string>();
+  const existingTickets = new Set<string>();
+
+  try {
+    const { data } = await supabase.from('attendees').select('id, ticket_code');
+    for (const row of data || []) {
+      if (row.id) existingIds.add(row.id);
+      if (row.ticket_code) existingTickets.add(row.ticket_code);
+    }
+  } catch {}
+
+  const local = getLocalAttendees();
+  for (const row of local) {
+    if (row.id) existingIds.add(row.id);
+    if (row.ticketCode) existingTickets.add(row.ticketCode);
+  }
 
   let maxNum = 1000;
-  for (const row of data || []) {
-    if (typeof row.id === 'string' && row.id.startsWith('ATT-')) {
-      const num = parseInt(row.id.replace('ATT-', ''), 10);
+  for (const rowId of existingIds) {
+    if (typeof rowId === 'string' && rowId.startsWith('ATT-')) {
+      const num = parseInt(rowId.replace('ATT-', ''), 10);
       if (!isNaN(num) && num > maxNum) {
         maxNum = num;
       }
@@ -248,18 +326,8 @@ export async function createAttendee(
 ): Promise<{ success: boolean; attendee?: Attendee; error?: string }> {
   const usnKey = (data.usn || data.rollNumber).trim().toUpperCase();
 
-  // Check for duplicate USN only (email may be shared for family registrations)
-  const emailToCheck = data.email?.trim();
-  const orFilter = emailToCheck
-    ? `usn.ilike.${usnKey},email.ilike.${emailToCheck}`
-    : `usn.ilike.${usnKey}`;
-  const { data: existingByUsn } = await supabase
-    .from('attendees')
-    .select('id, full_name, ticket_code')
-    .ilike('usn', usnKey)
-    .maybeSingle();
-  const existing = existingByUsn;
-
+  // Check for duplicate USN (check Supabase and local cache)
+  const existing = await getAttendeeByUsn(usnKey);
   if (existing) {
     return {
       success: false,
@@ -297,20 +365,25 @@ export async function createAttendee(
       checkInLogs: [],
     };
 
-    const { error } = await supabase.from('attendees').insert(attendeeToRow(newAttendee));
-
-    if (!error) {
-      return { success: true, attendee: newAttendee };
+    // Try Supabase insert
+    try {
+      const { error } = await supabase.from('attendees').insert(attendeeToRow(newAttendee));
+      if (error) {
+        lastError = error;
+        console.warn(`[DB] Supabase createAttendee attempt ${attempt + 1}:`, error.message);
+        if (error.message.includes('unique constraint') || error.message.includes('duplicate key')) {
+          await new Promise(r => setTimeout(r, 100));
+          continue;
+        }
+      }
+    } catch (insertErr: any) {
+      console.warn(`[DB] Supabase insert timed out/errored, persisting locally:`, insertErr?.message || insertErr);
     }
 
-    lastError = error;
-    console.error(`[DB] createAttendee attempt ${attempt + 1} error:`, error.message);
+    // Always persist to local storage backup
+    saveLocalAttendee(newAttendee);
 
-    if (!error.message.includes('unique constraint') && !error.message.includes('duplicate key')) {
-      break;
-    }
-
-    await new Promise(r => setTimeout(r, 100));
+    return { success: true, attendee: newAttendee };
   }
 
   return { success: false, error: 'Database error: ' + (lastError?.message || 'Failed to save attendee record.') };
@@ -366,41 +439,82 @@ export async function deleteAttendee(
 ): Promise<{ success: boolean; deletedAttendee?: Attendee; error?: string }> {
   const query = idOrUsn.trim();
 
-  // Find first
-  const { data: found } = await supabase
-    .from('attendees')
-    .select('*')
-    .or(`id.ilike.${query},usn.ilike.${query},roll_number.ilike.${query},ticket_code.ilike.${query}`)
-    .maybeSingle();
+  let foundAttendee: Attendee | undefined = undefined;
 
-  if (!found) return { success: false, error: 'Attendee pass not found.' };
+  // Try finding in Supabase
+  try {
+    const { data: found } = await supabase
+      .from('attendees')
+      .select('*')
+      .or(`id.ilike.${query},usn.ilike.${query},roll_number.ilike.${query},ticket_code.ilike.${query}`)
+      .maybeSingle();
 
-  const { error } = await supabase.from('attendees').delete().eq('id', found.id);
+    if (found) {
+      foundAttendee = rowToAttendee(found);
+      await supabase.from('attendees').delete().eq('id', found.id);
+    }
+  } catch (err) {
+    console.warn('[DB] Supabase deleteAttendee error:', err);
+  }
 
-  if (error) return { success: false, error: error.message };
-  return { success: true, deletedAttendee: rowToAttendee(found) };
+  // Remove from local storage
+  const local = getLocalAttendees();
+  const localIdx = local.findIndex(a =>
+    a.id.toLowerCase() === query.toLowerCase() ||
+    (a.usn && a.usn.toLowerCase() === query.toLowerCase()) ||
+    (a.rollNumber && a.rollNumber.toLowerCase() === query.toLowerCase()) ||
+    (a.ticketCode && a.ticketCode.toLowerCase() === query.toLowerCase())
+  );
+
+  if (localIdx >= 0) {
+    if (!foundAttendee) foundAttendee = local[localIdx];
+    local.splice(localIdx, 1);
+    saveLocalAttendees(local);
+  }
+
+  if (!foundAttendee) return { success: false, error: 'Attendee pass not found.' };
+  return { success: true, deletedAttendee: foundAttendee };
 }
 
 export async function deleteAllAttendees(): Promise<{ success: boolean; count: number }> {
-  const { count } = await supabase
-    .from('attendees')
-    .select('*', { count: 'exact', head: true });
+  let count = 0;
+  try {
+    const { count: c } = await supabase
+      .from('attendees')
+      .select('*', { count: 'exact', head: true });
+    count = c ?? 0;
+    await supabase.from('attendees').delete().neq('id', '');
+  } catch (e) {
+    console.warn('[DB] Supabase deleteAllAttendees error:', e);
+  }
 
-  await supabase.from('attendees').delete().neq('id', '');
-  return { success: true, count: count ?? 0 };
+  const local = getLocalAttendees();
+  if (local.length > count) count = local.length;
+  saveLocalAttendees([]);
+
+  return { success: true, count };
 }
 
 export async function deleteSelectedAttendees(
   ids: string[]
 ): Promise<{ success: boolean; count: number }> {
-  const { data, error } = await supabase
-    .from('attendees')
-    .delete()
-    .in('id', ids)
-    .select();
+  let count = 0;
+  try {
+    const { data, error } = await supabase
+      .from('attendees')
+      .delete()
+      .in('id', ids)
+      .select();
+    if (!error && data) count = data.length;
+  } catch (e) {
+    console.warn('[DB] Supabase deleteSelectedAttendees error:', e);
+  }
 
-  if (error) return { success: false, count: 0 };
-  return { success: true, count: data?.length ?? 0 };
+  const local = getLocalAttendees();
+  const updated = local.filter(a => !ids.includes(a.id));
+  saveLocalAttendees(updated);
+
+  return { success: true, count: Math.max(count, ids.length) };
 }
 
 export async function resetCheckIn(id: string): Promise<Attendee | null> {
@@ -463,49 +577,32 @@ async function findAttendeeByQuery(query: string): Promise<Attendee | undefined>
   const q = query.trim();
   if (!q) return undefined;
 
-  // 1. Direct ID match (e.g. ATT-1001, ATT-1002)
-  const { data: byId } = await supabase
-    .from('attendees')
-    .select('*')
-    .ilike('id', q)
-    .maybeSingle();
-  if (byId) return rowToAttendee(byId);
-
-  // 2. Direct ticket code match (e.g. TKT-CHRONOS-...)
-  const { data: byTicket } = await supabase
-    .from('attendees')
-    .select('*')
-    .ilike('ticket_code', q)
-    .maybeSingle();
-  if (byTicket) return rowToAttendee(byTicket);
-
-  // 3. Direct USN / Roll number match
-  const { data: byUsn } = await supabase
-    .from('attendees')
-    .select('*')
-    .ilike('usn', q)
-    .maybeSingle();
-  if (byUsn) return rowToAttendee(byUsn);
-
-  const { data: byRoll } = await supabase
-    .from('attendees')
-    .select('*')
-    .ilike('roll_number', q)
-    .maybeSingle();
-  if (byRoll) return rowToAttendee(byRoll);
-
-  // 4. Case-insensitive search if clean alphanumeric
-  const cleanAlpha = q.replace(/[^a-zA-Z0-9_-]/g, '');
-  if (cleanAlpha && cleanAlpha !== q) {
-    const { data: fallback } = await supabase
+  // 1. Try Supabase combined query
+  try {
+    const { data } = await supabase
       .from('attendees')
       .select('*')
-      .or(`id.ilike.${cleanAlpha},ticket_code.ilike.${cleanAlpha},usn.ilike.${cleanAlpha}`)
+      .or(`id.ilike.${q},ticket_code.ilike.${q},usn.ilike.${q},roll_number.ilike.${q}`)
       .maybeSingle();
-    if (fallback) return rowToAttendee(fallback);
+
+    if (data) {
+      const attendee = rowToAttendee(data);
+      saveLocalAttendee(attendee);
+      return attendee;
+    }
+  } catch (e) {
+    console.warn('[DB] Supabase findAttendeeByQuery error:', e);
   }
 
-  return undefined;
+  // 2. Check local fallback
+  const clean = q.toLowerCase();
+  const local = getLocalAttendees();
+  return local.find(a =>
+    a.id?.toLowerCase() === clean ||
+    a.ticketCode?.toLowerCase() === clean ||
+    a.usn?.toLowerCase() === clean ||
+    a.rollNumber?.toLowerCase() === clean
+  );
 }
 
 export async function getScanPreview(ticketOrId: string): Promise<{

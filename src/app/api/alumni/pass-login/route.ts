@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createOtp, verifyOtp, findAlumnusByUsn, maskEmail, maskPhone } from '@/lib/alumni';
-import { getAttendees } from '@/lib/db';
+import { getAttendeeByUsn } from '@/lib/db';
 import { sendEmailOtp, sendSmsOtp, sendWhatsAppOtp, sendEmailPass } from '@/lib/notifications';
 import QRCode from 'qrcode';
 import { getClientIp, checkOtpDispatchLimits, checkOtpVerifyAttempts, recordFailedOtpAttempt, resetFailedOtpAttempts } from '@/lib/rateLimit';
@@ -21,10 +21,7 @@ export async function POST(request: NextRequest) {
 
     const cleanedUsn = usn.trim().toUpperCase();
     const clientIp = getClientIp(request);
-    const attendees = await getAttendees();
-    const attendee = attendees.find(
-      a => (a.usn || a.rollNumber).trim().toUpperCase() === cleanedUsn
-    );
+    const attendee = await getAttendeeByUsn(cleanedUsn);
 
     if (!attendee) {
       return NextResponse.json({

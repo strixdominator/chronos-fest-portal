@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createOtp, findAlumnusByUsn, maskEmail, maskPhone } from '@/lib/alumni';
-import { getAttendees } from '@/lib/db';
+import { getAttendeeByUsn } from '@/lib/db';
 import { sendEmailOtp, sendSmsOtp, sendWhatsAppOtp } from '@/lib/notifications';
 import { getClientIp, checkOtpDispatchLimits, checkOtpVerifyAttempts } from '@/lib/rateLimit';
 
@@ -39,10 +39,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if already registered
-    const allAttendees = await getAttendees();
-    const existing = allAttendees.find(
-      a => (a.usn || a.rollNumber).trim().toUpperCase() === cleanedUsn
-    );
+    let existing = null;
+    try {
+      existing = await getAttendeeByUsn(cleanedUsn);
+    } catch {}
     if (existing) {
       return NextResponse.json({
         success: false,

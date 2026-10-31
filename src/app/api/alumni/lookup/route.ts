@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { findAlumnusByUsn, maskEmail, maskPhone } from '@/lib/alumni';
-import { getAttendees } from '@/lib/db';
+import { getAttendeeByUsn } from '@/lib/db';
 import { getClientIp, checkRateLimit } from '@/lib/rateLimit';
 
 export async function GET(request: NextRequest) {
@@ -33,11 +33,13 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Check if this USN has already claimed their pass
-    const attendees = await getAttendees();
-    const existing = attendees.find(
-      a => (a.usn || a.rollNumber).trim().toUpperCase() === cleanedUsn
-    );
+    // Check if this USN has already claimed their pass (targeted check, never full scan)
+    let existing: any = undefined;
+    try {
+      existing = await getAttendeeByUsn(cleanedUsn);
+    } catch (dbErr) {
+      console.warn('[LOOKUP] Error checking existing registration:', dbErr);
+    }
 
     return NextResponse.json({
       success: true,

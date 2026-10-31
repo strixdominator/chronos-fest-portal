@@ -489,33 +489,44 @@ export function verifyStatelessOtpToken(
 // ─── OTP STORAGE (Supabase-backed with stateless token fallback) ─────────────
 
 async function getActiveOtpFromDb(usn: string): Promise<OtpRecord | null> {
-  const { data } = await supabase
-    .from('active_otps')
-    .select('*')
-    .eq('usn', usn.trim().toUpperCase())
-    .maybeSingle();
-  if (!data) return null;
-  return {
-    usn: data.usn,
-    code: data.code,
-    channel: data.channel as 'EMAIL' | 'PHONE' | 'WHATSAPP',
-    target: data.target,
-    expiresAt: data.expires_at,
-  };
+  try {
+    const { data } = await supabase
+      .from('active_otps')
+      .select('*')
+      .eq('usn', usn.trim().toUpperCase())
+      .maybeSingle();
+    if (!data) return null;
+    return {
+      usn: data.usn,
+      code: data.code,
+      channel: data.channel as 'EMAIL' | 'PHONE' | 'WHATSAPP',
+      target: data.target,
+      expiresAt: data.expires_at,
+    };
+  } catch (e) {
+    console.warn('[OTP DB] Supabase getActiveOtpFromDb error, falling back to stateless token:', e);
+    return null;
+  }
 }
 
 async function saveOtpToDb(usn: string, record: OtpRecord): Promise<void> {
-  await supabase.from('active_otps').upsert({
-    usn: record.usn,
-    code: record.code,
-    channel: record.channel,
-    target: record.target,
-    expires_at: record.expiresAt,
-  });
+  try {
+    await supabase.from('active_otps').upsert({
+      usn: record.usn,
+      code: record.code,
+      channel: record.channel,
+      target: record.target,
+      expires_at: record.expiresAt,
+    });
+  } catch (e) {
+    console.warn('[OTP DB] Supabase saveOtpToDb error (stateless token is active):', e);
+  }
 }
 
 async function deleteOtpFromDb(usn: string): Promise<void> {
-  await supabase.from('active_otps').delete().eq('usn', usn.trim().toUpperCase());
+  try {
+    await supabase.from('active_otps').delete().eq('usn', usn.trim().toUpperCase());
+  } catch {}
 }
 
 // In-Memory with Supabase fallback + Stateless HMAC token

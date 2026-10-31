@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { findAlumnusByUsn } from '@/lib/alumni';
-import { createAttendee, getAttendees } from '@/lib/db';
+import { createAttendee, getAttendeeByUsn } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -27,10 +27,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const allAttendees = await getAttendees();
-    const existing = allAttendees.find(
-      a => (a.usn || a.rollNumber).trim().toUpperCase() === cleanedUsn
-    );
+    let existing = null;
+    try {
+      existing = await getAttendeeByUsn(cleanedUsn);
+    } catch {}
     if (existing) {
       return NextResponse.json(
         { success: false, error: `A pass is already registered for USN "${cleanedUsn}".` },
