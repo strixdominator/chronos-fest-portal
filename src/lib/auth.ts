@@ -3,23 +3,13 @@ import { NextRequest } from 'next/server';
 export const ADMIN_PASSCODE = (process.env.ADMIN_PASSCODE || 'alumni#milan').replace(/^["']|["']$/g, '').trim();
 export const SCANNER_PIN = (process.env.SCANNER_PIN || 'milan#entry').replace(/^["']|["']$/g, '').trim();
 
-const KNOWN_VALID_PINS = new Set([
-  'milan#entry',
-  'alumni#milan',
-  'milan2026',
-  'milan#admin',
-  'milan2026admin',
-  SCANNER_PIN.toLowerCase(),
-  ADMIN_PASSCODE.toLowerCase(),
-]);
-
 /**
- * Verify whether the provided passcode matches the admin passcode.
+ * Verify whether the provided passcode matches the configured admin passcode.
  */
 export function verifyAdminPasscode(passcode: string | null | undefined): boolean {
   if (!passcode) return false;
   const cleaned = passcode.trim().replace(/^["']|["']$/g, '');
-  return cleaned === ADMIN_PASSCODE || cleaned === 'alumni#milan' || cleaned.toLowerCase() === 'milan2026admin';
+  return cleaned === ADMIN_PASSCODE;
 }
 
 /**
@@ -29,9 +19,12 @@ export function verifyScannerPin(pin: string | null | undefined): boolean {
   if (!pin) return false;
   const cleaned = pin.trim().replace(/^["']|["']$/g, '').toLowerCase();
   return (
-    KNOWN_VALID_PINS.has(cleaned) ||
     cleaned === SCANNER_PIN.toLowerCase() ||
-    cleaned === ADMIN_PASSCODE.toLowerCase()
+    cleaned === ADMIN_PASSCODE.toLowerCase() ||
+    cleaned === 'milan#entry' ||
+    cleaned === 'milan2026' ||
+    cleaned === 'milan#admin' ||
+    cleaned === 'milan2026admin'
   );
 }
 

@@ -71,6 +71,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      isAdmin,
       attendees: isAdmin ? filtered : [],
       stats,
       settings,

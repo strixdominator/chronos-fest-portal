@@ -127,7 +127,7 @@ export default function GateScannerPage() {
   }, [isAuthenticated]);
 
   // Handle staff PIN authentication
-  const handlePinSubmit = (e: React.FormEvent) => {
+  const handlePinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanedPin = pin.trim().replace(/^["']|["']$/g, '');
     const validPins = ['milan#entry', 'alumni#milan', 'milan2026', 'milan#admin', 'milan2026admin'];
@@ -136,7 +136,25 @@ export default function GateScannerPage() {
       setPin(cleanedPin);
       setPinError('');
       sessionStorage.setItem('dbit_scanner_pin', cleanedPin);
-    } else {
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/admin/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passcode: cleanedPin }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.valid) {
+        setIsAuthenticated(true);
+        setPin(cleanedPin);
+        setPinError('');
+        sessionStorage.setItem('dbit_scanner_pin', cleanedPin);
+      } else {
+        setPinError('Access Denied: Invalid Gate Authorization PIN.');
+      }
+    } catch {
       setPinError('Access Denied: Invalid Gate Authorization PIN.');
     }
   };

@@ -28,7 +28,8 @@ import {
   Send,
   Sparkles,
   ArrowRight,
-  Trash2
+  Trash2,
+  Loader2
 } from 'lucide-react';
 import { Attendee, AttendeeStatus, EventSettings, AlumniRecord } from '@/lib/types';
 import Link from 'next/link';
@@ -37,6 +38,7 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [adminPasscode, setAdminPasscode] = useState('');
   const [authError, setAuthError] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
 
   // Main Section Toggle: Attendees Review vs Alumni Master Directory vs Live Gateways
   const [activeSection, setActiveSection] = useState<'ATTENDEES' | 'MASTER_DIRECTORY' | 'GATEWAYS'>('ATTENDEES');
@@ -105,9 +107,26 @@ export default function AdminPage() {
 
   useEffect(() => {
     const saved = sessionStorage.getItem('dbit_admin_passcode');
-    if (saved && saved.trim() === 'alumni#milan') {
-      setAdminPasscode(saved.trim());
-      setIsAuthenticated(true);
+    if (saved) {
+      const trimmed = saved.trim();
+      setAdminPasscode(trimmed);
+      fetch('/api/admin/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passcode: trimmed }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.valid) {
+            setIsAuthenticated(true);
+          } else {
+            sessionStorage.removeItem('dbit_admin_passcode');
+            setIsAuthenticated(false);
+          }
+        })
+        .catch(() => {
+          // Network issue or offline
+        });
     }
   }, []);
 
@@ -191,15 +210,31 @@ export default function AdminPage() {
     return () => clearInterval(interval);
   }, [isAuthenticated, adminPasscode, activeSection, statusFilter, search]);
 
-  const handleAuth = (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleaned = adminPasscode.trim();
-    if (cleaned === 'alumni#milan') {
-      setIsAuthenticated(true);
-      setAuthError('');
-      sessionStorage.setItem('dbit_admin_passcode', cleaned);
-    } else {
-      setAuthError('Access Denied: Incorrect administrator passcode.');
+    if (!cleaned) return;
+    setAuthLoading(true);
+    setAuthError('');
+    try {
+      const res = await fetch('/api/admin/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passcode: cleaned }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.valid) {
+        setIsAuthenticated(true);
+        setAuthError('');
+        sessionStorage.setItem('dbit_admin_passcode', cleaned);
+        fetchAttendees(false, cleaned);
+      } else {
+        setAuthError(data.error || 'Access Denied: Incorrect administrator passcode.');
+      }
+    } catch (err: any) {
+      setAuthError('Connection error: Failed to verify administrator passcode.');
+    } finally {
+      setAuthLoading(false);
     }
   };
 
@@ -604,10 +639,28 @@ export default function AdminPage() {
 
               <button
                 type="submit"
+                disabled={authLoading}
                 className="btn-neo-black"
-                style={{ width: '100%', padding: '14px', borderRadius: 8 }}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  borderRadius: 8,
+                  opacity: authLoading ? 0.75 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  cursor: authLoading ? 'not-allowed' : 'pointer'
+                }}
               >
-                SIGN IN TO COMMAND CENTER ↗
+                {authLoading ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>VERIFYING PASSCODE...</span>
+                  </>
+                ) : (
+                  'SIGN IN TO COMMAND CENTER ↗'
+                )}
               </button>
             </form>
           </div>
