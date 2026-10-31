@@ -23,11 +23,81 @@ export interface NotificationResult {
   error?: string;
 }
 
+interface BrevoAccount {
+  apiKey: string;
+  senderEmail: string;
+  name: string;
+  label: string;
+}
+
+// In-memory cache tracking exhausted Brevo accounts (resets if server restarts or after cooldown)
+const exhaustedBrevoKeys = new Map<string, number>();
+
+function isBrevoAccountExhausted(apiKey: string): boolean {
+  const expiry = exhaustedBrevoKeys.get(apiKey);
+  if (!expiry) return false;
+  if (Date.now() > expiry) {
+    exhaustedBrevoKeys.delete(apiKey);
+    return false;
+  }
+  return true;
+}
+
+function markBrevoAccountExhausted(apiKey: string, label: string) {
+  exhaustedBrevoKeys.set(apiKey, Date.now() + 30 * 60 * 1000); // 30 min cooldown
+  console.warn(`[${label}] Daily quota or credit exhausted. Flagged for 30 minutes; routing traffic to backup account.`);
+}
+
+function getBrevoAccounts(): BrevoAccount[] {
+  const accounts: BrevoAccount[] = [];
+  const defaultSender = process.env.BREVO_SENDER || process.env.GMAIL_USER || 'telegramuserkishan@gmail.com';
+
+  // Primary account (supports single key or comma-separated keys)
+  const primaryKey = (process.env.BREVO_API_KEY || '').trim().replace(/^["']|["']$/g, '');
+  if (primaryKey) {
+    const keys = primaryKey.split(',').map(k => k.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
+    keys.forEach((key, idx) => {
+      accounts.push({
+        apiKey: key,
+        senderEmail: defaultSender,
+        name: 'MILAN 2026',
+        label: `Brevo Primary ${idx > 0 ? `#${idx + 1}` : '#1'}`,
+      });
+    });
+  }
+
+  // Secondary account (BREVO_API_KEY_2 & optional BREVO_SENDER_2)
+  const secondaryKey = (process.env.BREVO_API_KEY_2 || '').trim().replace(/^["']|["']$/g, '');
+  if (secondaryKey) {
+    const sender2 = (process.env.BREVO_SENDER_2 || defaultSender).trim().replace(/^["']|["']$/g, '');
+    accounts.push({
+      apiKey: secondaryKey,
+      senderEmail: sender2,
+      name: 'MILAN 2026',
+      label: 'Brevo Backup #2',
+    });
+  }
+
+  // Tertiary account (BREVO_API_KEY_3 & optional BREVO_SENDER_3)
+  const tertiaryKey = (process.env.BREVO_API_KEY_3 || '').trim().replace(/^["']|["']$/g, '');
+  if (tertiaryKey) {
+    const sender3 = (process.env.BREVO_SENDER_3 || defaultSender).trim().replace(/^["']|["']$/g, '');
+    accounts.push({
+      apiKey: tertiaryKey,
+      senderEmail: sender3,
+      name: 'MILAN 2026',
+      label: 'Brevo Backup #3',
+    });
+  }
+
+  return accounts;
+}
+
 /**
  * Dispatches real HTML OTP email.
  * Supports:
  * 1. Resend API (HTTPS Port 443 - Recommended for Render Free Tier)
- * 2. Brevo API (HTTPS Port 443 - 300 free emails/day)
+ * 2. Brevo API Multi-Account (HTTPS Port 443 - 300 free emails/day per account with auto-failover)
  * 3. Google Apps Script Webhook (HTTPS Port 443 - Free Gmail relay)
  * 4. Gmail SMTP via Nodemailer (Port 465 SSL, with auto-fallback on cloud port block)
  */
@@ -40,7 +110,6 @@ export async function sendEmailOtp({
   const gmailUser = process.env.GMAIL_USER;
   const gmailPassword = process.env.GMAIL_APP_PASSWORD;
   const resendKey = process.env.RESEND_API_KEY;
-  const brevoKey = process.env.BREVO_API_KEY;
   const gmailRelayUrl = process.env.GMAIL_RELAY_URL || process.env.GMAIL_WEBHOOK_URL;
 
   const htmlContent = `
@@ -158,53 +227,61 @@ export async function sendEmailOtp({
     }
   }
 
-  // METHOD 2: Brevo HTTP REST API (Uses Port 443 HTTPS - Free 300 emails/day, NEVER blocked by Render)
-  if (brevoKey && brevoKey.trim()) {
-    try {
-      const senderEmail = process.env.BREVO_SENDER || gmailUser || 'telegramuserkishan@gmail.com';
-      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          'api-key': brevoKey.trim(),
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          sender: { name: 'MILAN 2026', email: senderEmail },
-          to: [{ email: toEmail, name: recipientName }],
-          subject: `${otp} is your MILAN 2026 Verification Code (USN: ${usn})`,
-          htmlContent: htmlContent,
-        }),
-      });
+  // METHOD 2: Brevo HTTP REST API (Multi-Account Auto-Failover: 300 + 300 = 600+ emails/day)
+  const brevoAccounts = getBrevoAccounts();
+  if (brevoAccounts.length > 0) {
+    const availableAccounts = brevoAccounts.filter(a => !isBrevoAccountExhausted(a.apiKey));
+    const targetAccounts = availableAccounts.length > 0 ? availableAccounts : brevoAccounts;
 
-      const resData = await res.json();
-      if (res.ok && (resData.messageId || resData.id)) {
-        console.log(`[BREVO EMAIL SENT] to ${toEmail}`);
-        return {
-          success: true,
-          isReal: true,
-          provider: 'BREVO',
-          message: `Real verification email delivered to ${toEmail} via Brevo Cloud API!`,
-        };
-      } else {
-        console.error('[BREVO API ERROR]', resData);
-        const errMsg = resData.message || JSON.stringify(resData);
-        return {
-          success: false,
-          isReal: false,
-          provider: 'BREVO',
-          error: errMsg,
-          message: `Brevo Error: ${errMsg}`,
-        };
+    for (let i = 0; i < targetAccounts.length; i++) {
+      const account = targetAccounts[i];
+      try {
+        const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'api-key': account.apiKey,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sender: { name: account.name, email: account.senderEmail },
+            to: [{ email: toEmail, name: recipientName }],
+            subject: `${otp} is your MILAN 2026 Verification Code (USN: ${usn})`,
+            htmlContent: htmlContent,
+          }),
+        });
+
+        const resData = await res.json().catch(() => ({}));
+        if (res.ok && (resData.messageId || resData.id)) {
+          console.log(`[${account.label} EMAIL SENT] to ${toEmail} (ID: ${resData.messageId || resData.id})`);
+          return {
+            success: true,
+            isReal: true,
+            provider: 'BREVO',
+            message: `Real verification email delivered to ${toEmail} via ${account.label}!`,
+          };
+        } else {
+          const errMsg = resData.message || (resData.error && resData.error.message) || JSON.stringify(resData);
+          console.warn(`[${account.label} NOTICE] HTTP ${res.status}: ${errMsg}`);
+
+          const isExhausted =
+            res.status === 402 ||
+            res.status === 429 ||
+            /not_enough_credits|daily_limit_exceeded|limit exceeded|quota|credits|exceeded/i.test(errMsg);
+
+          if (isExhausted) {
+            markBrevoAccountExhausted(account.apiKey, account.label);
+          }
+
+          if (i < targetAccounts.length - 1) {
+            console.log(`[BREVO AUTO-FAILOVER] Switching to next account: ${targetAccounts[i + 1].label}...`);
+          }
+        }
+      } catch (err: any) {
+        console.warn(`[${account.label} EXCEPTION] ${err.message}`);
+        if (i < targetAccounts.length - 1) {
+          console.log(`[BREVO AUTO-FAILOVER] Switching to next account: ${targetAccounts[i + 1].label}...`);
+        }
       }
-    } catch (err: any) {
-      console.error('[BREVO FETCH EXCEPTION]', err.message);
-      return {
-        success: false,
-        isReal: false,
-        provider: 'BREVO',
-        error: err.message,
-        message: `Brevo Network Error: ${err.message}`,
-      };
     }
   }
 
@@ -809,7 +886,6 @@ export async function sendEmailPass({
   const gmailUser = process.env.GMAIL_USER;
   const gmailPassword = process.env.GMAIL_APP_PASSWORD;
   const resendKey = process.env.RESEND_API_KEY;
-  const brevoKey = process.env.BREVO_API_KEY;
   const gmailRelayUrl = process.env.GMAIL_RELAY_URL || process.env.GMAIL_WEBHOOK_URL;
 
   // Ensure production live URL for online pass button (never localhost)
@@ -978,36 +1054,61 @@ export async function sendEmailPass({
     }
   }
 
-  // METHOD 2: Brevo HTTP REST API
-  if (brevoKey && brevoKey.trim()) {
-    try {
-      const senderEmail = process.env.BREVO_SENDER || gmailUser || 'telegramuserkishan@gmail.com';
-      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          'api-key': brevoKey.trim(),
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          sender: { name: 'MILAN 2026', email: senderEmail },
-          to: [{ email: toEmail, name: recipientName }],
-          subject: `Your MILAN 2026 Official Entry Pass & QR Code (${usn})`,
-          htmlContent: htmlContent,
-        }),
-      });
+  // METHOD 2: Brevo HTTP REST API (Multi-Account Auto-Failover: 300 + 300 = 600+ emails/day)
+  const brevoAccounts = getBrevoAccounts();
+  if (brevoAccounts.length > 0) {
+    const availableAccounts = brevoAccounts.filter(a => !isBrevoAccountExhausted(a.apiKey));
+    const targetAccounts = availableAccounts.length > 0 ? availableAccounts : brevoAccounts;
 
-      const resData = await res.json();
-      if (res.ok && (resData.messageId || resData.id)) {
-        console.log(`[BREVO PASS SENT] to ${toEmail}`);
-        return {
-          success: true,
-          isReal: true,
-          provider: 'BREVO',
-          message: `Official Pass with QR Code delivered to ${toEmail} via Brevo!`,
-        };
+    for (let i = 0; i < targetAccounts.length; i++) {
+      const account = targetAccounts[i];
+      try {
+        const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'api-key': account.apiKey,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sender: { name: account.name, email: account.senderEmail },
+            to: [{ email: toEmail, name: recipientName }],
+            subject: `Your MILAN 2026 Official Entry Pass & QR Code (${usn})`,
+            htmlContent: htmlContent,
+          }),
+        });
+
+        const resData = await res.json().catch(() => ({}));
+        if (res.ok && (resData.messageId || resData.id)) {
+          console.log(`[${account.label} PASS SENT] to ${toEmail} (ID: ${resData.messageId || resData.id})`);
+          return {
+            success: true,
+            isReal: true,
+            provider: 'BREVO',
+            message: `Official Pass with QR Code delivered to ${toEmail} via ${account.label}!`,
+          };
+        } else {
+          const errMsg = resData.message || (resData.error && resData.error.message) || JSON.stringify(resData);
+          console.warn(`[${account.label} PASS NOTICE] HTTP ${res.status}: ${errMsg}`);
+
+          const isExhausted =
+            res.status === 402 ||
+            res.status === 429 ||
+            /not_enough_credits|daily_limit_exceeded|limit exceeded|quota|credits|exceeded/i.test(errMsg);
+
+          if (isExhausted) {
+            markBrevoAccountExhausted(account.apiKey, account.label);
+          }
+
+          if (i < targetAccounts.length - 1) {
+            console.log(`[BREVO AUTO-FAILOVER] Switching to next pass account: ${targetAccounts[i + 1].label}...`);
+          }
+        }
+      } catch (err: any) {
+        console.warn(`[${account.label} PASS EXCEPTION] ${err.message}`);
+        if (i < targetAccounts.length - 1) {
+          console.log(`[BREVO AUTO-FAILOVER] Switching to next pass account: ${targetAccounts[i + 1].label}...`);
+        }
       }
-    } catch (err: any) {
-      console.error('[BREVO PASS ERROR]', err.message);
     }
   }
 
