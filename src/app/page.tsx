@@ -60,7 +60,12 @@ export default function HomePage() {
     }
 
     loadStats();
-    const interval = setInterval(loadStats, 5000);
+    // Refresh stats once every 60 seconds (never spam database)
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        loadStats();
+      }
+    }, 60000);
     return () => clearInterval(interval);
   }, []);
 

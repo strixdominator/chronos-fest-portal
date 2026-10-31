@@ -183,10 +183,10 @@ export default function AdminPage() {
     if (!isAuthenticated || !adminPasscode) return;
 
     const interval = setInterval(() => {
-      if (activeSection === 'ATTENDEES') {
+      if (activeSection === 'ATTENDEES' && typeof document !== 'undefined' && document.visibilityState === 'visible') {
         fetchAttendees(true, adminPasscode); // silent background fetch
       }
-    }, 3000);
+    }, 15000);
 
     return () => clearInterval(interval);
   }, [isAuthenticated, adminPasscode, activeSection, statusFilter, search]);

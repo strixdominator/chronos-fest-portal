@@ -6,6 +6,11 @@ import { verifyAdminPasscode, getAdminPasscodeFromRequest } from '@/lib/auth';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+let cachedAttendees: any[] | null = null;
+let cachedSettings: any = null;
+let lastCacheTime = 0;
+const CACHE_TTL_MS = 12000; // 12-second cache protects Supabase from connection exhaustion
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -13,8 +18,17 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') || 'ALL';
     const isAdmin = verifyAdminPasscode(getAdminPasscodeFromRequest(request));
 
-    const allAttendees = await getAttendees();
-    const settings = await getSettings();
+    const now = Date.now();
+    let allAttendees = cachedAttendees;
+    let settings = cachedSettings;
+
+    if (!allAttendees || !settings || now - lastCacheTime > CACHE_TTL_MS) {
+      allAttendees = await getAttendees();
+      settings = await getSettings();
+      cachedAttendees = allAttendees;
+      cachedSettings = settings;
+      lastCacheTime = now;
+    }
 
     let filtered = allAttendees;
 
@@ -96,6 +110,8 @@ export async function DELETE(request: NextRequest) {
           { status: 403 }
         );
       }
+      cachedAttendees = null;
+      lastCacheTime = 0;
       const result = await deleteAllAttendees();
       await clearAlumniSession();
       return NextResponse.json({
@@ -106,6 +122,8 @@ export async function DELETE(request: NextRequest) {
     }
 
     if (Array.isArray(ids) && ids.length > 0) {
+      cachedAttendees = null;
+      lastCacheTime = 0;
       const result = await deleteSelectedAttendees(ids);
       for (const id of ids) {
         await clearAlumniSession(id);
