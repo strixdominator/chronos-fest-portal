@@ -313,7 +313,13 @@ export default function AdminPage() {
   };
 
   // Bulk Purge All Passes & Allow Everyone to Re-register
+  const [purgeConfirmInput, setPurgeConfirmInput] = React.useState('');
+  const PURGE_PHRASE = 'DELETE ALL';
   const handleResetAllAttendees = async () => {
+    if (purgeConfirmInput.trim().toUpperCase() !== PURGE_PHRASE) {
+      alert(`Type "${PURGE_PHRASE}" exactly to confirm.`);
+      return;
+    }
     setActionLoading('resetAll');
     try {
       const res = await fetch(`/api/attendees?_t=${Date.now()}`, {
@@ -324,12 +330,13 @@ export default function AdminPage() {
           'Pragma': 'no-cache',
           'x-admin-passcode': adminPasscode,
         },
-        body: JSON.stringify({ resetAll: true }),
+        body: JSON.stringify({ resetAll: true, resetConfirmPhrase: 'CHRONOS-PURGE-CONFIRMED' }),
       });
       const data = await res.json();
       if (data.success) {
         setAttendees([]);
         setShowResetAllModal(false);
+        setPurgeConfirmInput('');
         await fetchAttendees();
         alert(data.message || 'All passes have been deleted. Alumni can now register again.');
       } else {
@@ -1754,6 +1761,19 @@ export default function AdminPage() {
                 After this purge is executed, <strong>all alumni listed in the university master directory will be unlocked and permitted to register again</strong> from scratch.
               </p>
 
+              <div style={{ marginBottom: 20 }}>
+                <label style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: '#7f1d1d', display: 'block', marginBottom: 8, letterSpacing: '0.05em' }}>
+                  TYPE &quot;DELETE ALL&quot; TO CONFIRM
+                </label>
+                <input
+                  type="text"
+                  value={purgeConfirmInput}
+                  onChange={e => setPurgeConfirmInput(e.target.value)}
+                  placeholder="DELETE ALL"
+                  style={{ width: '100%', padding: '10px 14px', fontFamily: 'var(--font-mono)', fontSize: '0.88rem', background: '#fff', border: '2px solid #dc2626', borderRadius: 6, color: '#7f1d1d', boxSizing: 'border-box' }}
+                />
+              </div>
+
               <div style={{ display: 'flex', gap: 10 }}>
                 <button
                   type="button"
@@ -1766,7 +1786,7 @@ export default function AdminPage() {
                 <button
                   type="button"
                   onClick={handleResetAllAttendees}
-                  disabled={actionLoading === 'resetAll'}
+                  disabled={actionLoading === 'resetAll' || purgeConfirmInput.trim().toUpperCase() !== PURGE_PHRASE}
                   className="btn-neo-black"
                   style={{ flex: 2, background: '#dc2626', borderColor: '#7f1d1d', padding: '12px', fontSize: '0.8rem', borderRadius: 8 }}
                 >

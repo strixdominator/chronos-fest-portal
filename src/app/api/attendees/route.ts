@@ -86,9 +86,16 @@ export async function DELETE(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { ids, resetAll } = body;
+    const { ids, resetAll, resetConfirmPhrase } = body;
 
     if (resetAll === true) {
+      // Double-confirm: require the exact phrase to prevent accidental wipes
+      if (resetConfirmPhrase !== 'CHRONOS-PURGE-CONFIRMED') {
+        return NextResponse.json(
+          { success: false, error: 'Reset blocked: confirmation phrase missing or incorrect. This is a safety guard against accidental data wipes.' },
+          { status: 403 }
+        );
+      }
       const result = await deleteAllAttendees();
       await clearAlumniSession();
       return NextResponse.json({
