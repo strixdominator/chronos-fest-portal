@@ -248,12 +248,17 @@ export async function createAttendee(
 ): Promise<{ success: boolean; attendee?: Attendee; error?: string }> {
   const usnKey = (data.usn || data.rollNumber).trim().toUpperCase();
 
-  // Check for duplicate USN or email
-  const { data: existing } = await supabase
+  // Check for duplicate USN only (email may be shared for family registrations)
+  const emailToCheck = data.email?.trim();
+  const orFilter = emailToCheck
+    ? `usn.ilike.${usnKey},email.ilike.${emailToCheck}`
+    : `usn.ilike.${usnKey}`;
+  const { data: existingByUsn } = await supabase
     .from('attendees')
     .select('id, full_name, ticket_code')
-    .or(`usn.ilike.${usnKey},email.ilike.${data.email.trim()}`)
+    .ilike('usn', usnKey)
     .maybeSingle();
+  const existing = existingByUsn;
 
   if (existing) {
     return {
