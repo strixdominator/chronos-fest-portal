@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import * as XLSX from 'xlsx';
 import { AlumniRecord, OtpRecord } from './types';
 import { safeReadJson, safeWriteJson } from './storage';
-import { supabase } from './supabase';
+import { sql } from './neon';
 
 declare global {
   var __ALUMNI_MASTER__: AlumniRecord[] | undefined;
@@ -486,46 +486,49 @@ export function verifyStatelessOtpToken(
   }
 }
 
-// ─── OTP STORAGE (Supabase-backed with stateless token fallback) ─────────────
+// ─── OTP STORAGE (Neon PostgreSQL with stateless HMAC token fallback) ────────
 
 async function getActiveOtpFromDb(usn: string): Promise<OtpRecord | null> {
   try {
-    const { data } = await supabase
-      .from('active_otps')
-      .select('*')
-      .eq('usn', usn.trim().toUpperCase())
-      .maybeSingle();
-    if (!data) return null;
+    const cleaned = usn.trim().toUpperCase();
+    const rows = await sql`
+      SELECT * FROM active_otps WHERE usn = ${cleaned} LIMIT 1;
+    `;
+    if (!rows || rows.length === 0) return null;
+    const data = rows[0] as any;
     return {
       usn: data.usn,
       code: data.code,
       channel: data.channel as 'EMAIL' | 'PHONE' | 'WHATSAPP',
       target: data.target,
-      expiresAt: data.expires_at,
+      expiresAt: Number(data.expires_at),
     };
   } catch (e) {
-    console.warn('[OTP DB] Supabase getActiveOtpFromDb error, falling back to stateless token:', e);
+    console.warn('[OTP DB] Neon getActiveOtpFromDb error, falling back to stateless token:', e);
     return null;
   }
 }
 
 async function saveOtpToDb(usn: string, record: OtpRecord): Promise<void> {
   try {
-    await supabase.from('active_otps').upsert({
-      usn: record.usn,
-      code: record.code,
-      channel: record.channel,
-      target: record.target,
-      expires_at: record.expiresAt,
-    });
+    await sql`
+      INSERT INTO active_otps (usn, code, channel, target, expires_at)
+      VALUES (${record.usn}, ${record.code}, ${record.channel}, ${record.target}, ${record.expiresAt})
+      ON CONFLICT (usn) DO UPDATE SET
+        code = EXCLUDED.code,
+        channel = EXCLUDED.channel,
+        target = EXCLUDED.target,
+        expires_at = EXCLUDED.expires_at;
+    `;
   } catch (e) {
-    console.warn('[OTP DB] Supabase saveOtpToDb error (stateless token is active):', e);
+    console.warn('[OTP DB] Neon saveOtpToDb error (stateless token is active):', e);
   }
 }
 
 async function deleteOtpFromDb(usn: string): Promise<void> {
   try {
-    await supabase.from('active_otps').delete().eq('usn', usn.trim().toUpperCase());
+    const cleaned = usn.trim().toUpperCase();
+    await sql`DELETE FROM active_otps WHERE usn = ${cleaned};`;
   } catch {}
 }
 
@@ -589,30 +592,39 @@ export async function createVerifiedSession(usn: string, contactInfo?: { email?:
   const token = `VTOK_${Math.random().toString(36).substring(2, 8).toUpperCase()}_${Date.now()}`;
   const expiresAt = Date.now() + 20 * 60 * 1000;
 
-  await supabase.from('verified_sessions').upsert({
-    token,
-    usn: usn.trim().toUpperCase(),
-    email: contactInfo?.email ?? null,
-    phone: contactInfo?.phone ?? null,
-    expires_at: expiresAt,
-  });
+  try {
+    await sql`
+      INSERT INTO verified_sessions (token, usn, email, phone, expires_at)
+      VALUES (${token}, ${usn.trim().toUpperCase()}, ${contactInfo?.email ?? null}, ${contactInfo?.phone ?? null}, ${expiresAt})
+      ON CONFLICT (token) DO UPDATE SET
+        usn = EXCLUDED.usn,
+        email = EXCLUDED.email,
+        phone = EXCLUDED.phone,
+        expires_at = EXCLUDED.expires_at;
+    `;
+  } catch (err) {
+    console.warn('[SESSION] Neon createVerifiedSession error:', err);
+  }
 
   return token;
 }
 
 export async function getSessionData(token: string): Promise<{ usn: string; email?: string; phone?: string } | null> {
-  const { data } = await supabase
-    .from('verified_sessions')
-    .select('*')
-    .eq('token', token)
-    .maybeSingle();
-
-  if (!data) return null;
-  if (Date.now() > data.expires_at) {
-    await supabase.from('verified_sessions').delete().eq('token', token);
+  try {
+    const rows = await sql`
+      SELECT * FROM verified_sessions WHERE token = ${token} LIMIT 1;
+    `;
+    if (!rows || rows.length === 0) return null;
+    const data = rows[0] as any;
+    if (Date.now() > Number(data.expires_at)) {
+      await sql`DELETE FROM verified_sessions WHERE token = ${token};`;
+      return null;
+    }
+    return { usn: data.usn, email: data.email ?? undefined, phone: data.phone ?? undefined };
+  } catch (err) {
+    console.warn('[SESSION] Neon getSessionData error:', err);
     return null;
   }
-  return { usn: data.usn, email: data.email ?? undefined, phone: data.phone ?? undefined };
 }
 
 export async function verifySessionToken(usn: string, token: string): Promise<boolean> {
@@ -622,13 +634,17 @@ export async function verifySessionToken(usn: string, token: string): Promise<bo
 }
 
 export async function clearAlumniSession(usn?: string): Promise<void> {
-  if (usn) {
-    const cleanedUsn = usn.trim().toUpperCase();
-    await supabase.from('active_otps').delete().eq('usn', cleanedUsn);
-    await supabase.from('verified_sessions').delete().eq('usn', cleanedUsn);
-  } else {
-    await supabase.from('active_otps').delete().neq('usn', '');
-    await supabase.from('verified_sessions').delete().neq('token', '');
+  try {
+    if (usn) {
+      const cleanedUsn = usn.trim().toUpperCase();
+      await sql`DELETE FROM active_otps WHERE usn = ${cleanedUsn};`;
+      await sql`DELETE FROM verified_sessions WHERE usn = ${cleanedUsn};`;
+    } else {
+      await sql`DELETE FROM active_otps;`;
+      await sql`DELETE FROM verified_sessions;`;
+    }
+  } catch (err) {
+    console.warn('[SESSION] Neon clearAlumniSession error:', err);
   }
 }
 

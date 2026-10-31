@@ -1,6 +1,20 @@
 import { Attendee, EventSettings, AttendeeStatus } from './types';
-import { supabase } from './supabase';
+import { sql } from './neon';
 import { safeReadJson, safeWriteJson } from './storage';
+
+// ─── DEFAULT SETTINGS ──────────────────────────────────────────────────────────
+const DEFAULT_SETTINGS: EventSettings = {
+  eventName: 'MILAN 2026',
+  tagline: 'DBIT Alumni Association | Reconnecting Relations',
+  eventDate: 'Saturday, November 7, 2026',
+  eventTime: '02:30 PM',
+  gatesOpenTime: '02:00 PM',
+  eventVenue: 'DBIT Cricket Ground, Bangalore',
+  organizer: 'DBIT Alumni Association',
+  totalCapacity: 1000,
+  isRegistrationOpen: true,
+  wristbandColors: ['Royal Blue (Alumni)', 'Gold (VIP/Staff)', 'Navy Blue (General)'],
+};
 
 // ─── LOCAL STORAGE FALLBACK HELPERS ───────────────────────────────────────────
 function getLocalAttendees(): Attendee[] {
@@ -27,20 +41,6 @@ function saveLocalAttendee(attendee: Attendee): void {
   }
 }
 
-// ─── DEFAULT SETTINGS ──────────────────────────────────────────────────────────
-const DEFAULT_SETTINGS: EventSettings = {
-  eventName: 'MILAN 2026',
-  tagline: 'DBIT Alumni Association | Reconnecting Relations',
-  eventDate: 'Saturday, November 7, 2026',
-  eventTime: '02:30 PM',
-  gatesOpenTime: '02:00 PM',
-  eventVenue: 'DBIT Cricket Ground, Bangalore',
-  organizer: 'DBIT Alumni Association',
-  totalCapacity: 1000,
-  isRegistrationOpen: true,
-  wristbandColors: ['Royal Blue (Alumni)', 'Gold (VIP/Staff)', 'Navy Blue (General)'],
-};
-
 // ─── ROW MAPPERS ───────────────────────────────────────────────────────────────
 
 function rowToAttendee(row: any): Attendee {
@@ -59,7 +59,7 @@ function rowToAttendee(row: any): Attendee {
     ticketCode: row.ticket_code,
     status: row.status as AttendeeStatus,
     rejectionReason: row.rejection_reason,
-    checkedIn: row.checked_in,
+    checkedIn: Boolean(row.checked_in),
     checkedInAt: row.checked_in_at,
     checkedInBy: row.checked_in_by,
     registeredAt: row.registered_at,
@@ -75,48 +75,10 @@ function rowToAttendee(row: any): Attendee {
     admittedCount: row.admitted_count ?? 0,
     checkInLogs: row.check_in_logs ?? [],
     verificationMethod: row.verification_method,
-    isContactUpdated: row.is_contact_updated,
+    isContactUpdated: Boolean(row.is_contact_updated),
     originalEmail: row.original_email,
     originalPhone: row.original_phone,
     reviewReason: row.review_reason,
-  };
-}
-
-function attendeeToRow(a: Attendee) {
-  return {
-    id: a.id,
-    ticket_code: a.ticketCode,
-    full_name: a.fullName,
-    email: a.email,
-    phone: a.phone,
-    roll_number: a.rollNumber,
-    usn: a.usn || a.rollNumber,
-    department: a.department,
-    year: a.year,
-    id_card_url: a.idCardUrl ?? null,
-    degree_proof_url: a.degreeProofUrl ?? null,
-    status: a.status,
-    rejection_reason: a.rejectionReason ?? null,
-    checked_in: a.checkedIn,
-    checked_in_at: a.checkedInAt ?? null,
-    checked_in_by: a.checkedInBy ?? null,
-    registered_at: a.registeredAt,
-    approved_at: a.approvedAt ?? null,
-    wristband_color: a.wristbandColor ?? 'Neon Cyan (General)',
-    wristband_number: a.wristbandNumber ?? null,
-    notes: a.notes ?? null,
-    organization: a.organization ?? null,
-    designation: a.designation ?? null,
-    family_count: a.familyCount ?? 0,
-    family_members: a.familyMembers ?? [],
-    total_quota: a.totalQuota ?? 1,
-    admitted_count: a.admittedCount ?? 0,
-    check_in_logs: a.checkInLogs ?? [],
-    verification_method: a.verificationMethod ?? null,
-    is_contact_updated: a.isContactUpdated ?? false,
-    original_email: a.originalEmail ?? null,
-    original_phone: a.originalPhone ?? null,
-    review_reason: a.reviewReason ?? null,
   };
 }
 
@@ -131,7 +93,9 @@ function rowToSettings(row: any): EventSettings {
     organizer: row.organizer,
     totalCapacity: row.total_capacity,
     isRegistrationOpen: row.is_registration_open,
-    wristbandColors: row.wristband_colors ?? [],
+    wristbandColors: Array.isArray(row.wristband_colors)
+      ? row.wristband_colors
+      : ['Royal Blue (Alumni)', 'Gold (VIP/Staff)', 'Navy Blue (General)'],
   };
 }
 
@@ -139,17 +103,12 @@ function rowToSettings(row: any): EventSettings {
 
 export async function getSettings(): Promise<EventSettings> {
   try {
-    const { data, error } = await supabase
-      .from('settings')
-      .select('*')
-      .eq('id', 1)
-      .single();
-
-    if (!error && data) {
-      return rowToSettings(data);
+    const rows = await sql`SELECT * FROM settings WHERE id = 1 LIMIT 1;`;
+    if (rows && rows.length > 0) {
+      return rowToSettings(rows[0]);
     }
   } catch (e) {
-    console.warn('[DB] Supabase getSettings failed, using defaults:', e);
+    console.warn('[DB] Neon getSettings failed, using defaults:', e);
   }
   return DEFAULT_SETTINGS;
 }
@@ -159,21 +118,30 @@ export async function updateSettings(newSettings: Partial<EventSettings>): Promi
   const merged = { ...current, ...newSettings };
 
   try {
-    await supabase.from('settings').upsert({
-      id: 1,
-      event_name: merged.eventName,
-      tagline: merged.tagline,
-      event_date: merged.eventDate,
-      event_time: merged.eventTime,
-      gates_open_time: merged.gatesOpenTime,
-      event_venue: merged.eventVenue,
-      organizer: merged.organizer,
-      total_capacity: merged.totalCapacity,
-      is_registration_open: merged.isRegistrationOpen,
-      wristband_colors: merged.wristbandColors,
-    });
+    await sql`
+      INSERT INTO settings (
+        id, event_name, tagline, event_date, event_time, gates_open_time,
+        event_venue, organizer, total_capacity, is_registration_open, wristband_colors, updated_at
+      ) VALUES (
+        1, ${merged.eventName}, ${merged.tagline}, ${merged.eventDate}, ${merged.eventTime},
+        ${merged.gatesOpenTime}, ${merged.eventVenue}, ${merged.organizer}, ${merged.totalCapacity},
+        ${merged.isRegistrationOpen}, ${JSON.stringify(merged.wristbandColors)}, NOW()
+      )
+      ON CONFLICT (id) DO UPDATE SET
+        event_name = EXCLUDED.event_name,
+        tagline = EXCLUDED.tagline,
+        event_date = EXCLUDED.event_date,
+        event_time = EXCLUDED.event_time,
+        gates_open_time = EXCLUDED.gates_open_time,
+        event_venue = EXCLUDED.event_venue,
+        organizer = EXCLUDED.organizer,
+        total_capacity = EXCLUDED.total_capacity,
+        is_registration_open = EXCLUDED.is_registration_open,
+        wristband_colors = EXCLUDED.wristband_colors,
+        updated_at = NOW();
+    `;
   } catch (e) {
-    console.warn('[DB] Supabase updateSettings failed:', e);
+    console.warn('[DB] Neon updateSettings failed:', e);
   }
 
   return merged;
@@ -183,18 +151,16 @@ export async function updateSettings(newSettings: Partial<EventSettings>): Promi
 
 export async function getAttendees(): Promise<Attendee[]> {
   try {
-    const { data, error } = await supabase
-      .from('attendees')
-      .select('*')
-      .order('registered_at', { ascending: false });
-
-    if (!error && data && Array.isArray(data) && data.length > 0) {
-      const list = data.map(rowToAttendee);
+    const rows = await sql`
+      SELECT * FROM attendees ORDER BY registered_at DESC;
+    `;
+    if (rows && Array.isArray(rows) && rows.length > 0) {
+      const list = rows.map(rowToAttendee);
       saveLocalAttendees(list);
       return list;
     }
   } catch (err: any) {
-    console.warn('[DB] Supabase getAttendees failed/timed out, using local fallback:', err?.message || err);
+    console.warn('[DB] Neon getAttendees failed, using local fallback:', err?.message || err);
   }
 
   return getLocalAttendees();
@@ -203,19 +169,16 @@ export async function getAttendees(): Promise<Attendee[]> {
 export async function getAttendeeById(id: string): Promise<Attendee | undefined> {
   const cleanId = id.trim();
   try {
-    const { data } = await supabase
-      .from('attendees')
-      .select('*')
-      .ilike('id', cleanId)
-      .maybeSingle();
-
-    if (data) {
-      const attendee = rowToAttendee(data);
+    const rows = await sql`
+      SELECT * FROM attendees WHERE id ILIKE ${cleanId} LIMIT 1;
+    `;
+    if (rows && rows.length > 0) {
+      const attendee = rowToAttendee(rows[0]);
       saveLocalAttendee(attendee);
       return attendee;
     }
   } catch (err) {
-    console.warn('[DB] Supabase getAttendeeById failed:', err);
+    console.warn('[DB] Neon getAttendeeById failed:', err);
   }
 
   const local = getLocalAttendees();
@@ -225,19 +188,16 @@ export async function getAttendeeById(id: string): Promise<Attendee | undefined>
 export async function getAttendeeByTicketCode(code: string): Promise<Attendee | undefined> {
   const cleaned = code.trim().toLowerCase();
   try {
-    const { data } = await supabase
-      .from('attendees')
-      .select('*')
-      .or(`ticket_code.ilike.${cleaned},id.ilike.${cleaned}`)
-      .maybeSingle();
-
-    if (data) {
-      const attendee = rowToAttendee(data);
+    const rows = await sql`
+      SELECT * FROM attendees WHERE ticket_code ILIKE ${cleaned} OR id ILIKE ${cleaned} LIMIT 1;
+    `;
+    if (rows && rows.length > 0) {
+      const attendee = rowToAttendee(rows[0]);
       saveLocalAttendee(attendee);
       return attendee;
     }
   } catch (err) {
-    console.warn('[DB] Supabase getAttendeeByTicketCode failed:', err);
+    console.warn('[DB] Neon getAttendeeByTicketCode failed:', err);
   }
 
   const local = getLocalAttendees();
@@ -247,19 +207,16 @@ export async function getAttendeeByTicketCode(code: string): Promise<Attendee | 
 export async function getAttendeeByUsn(usn: string): Promise<Attendee | undefined> {
   const cleaned = usn.trim().toUpperCase();
   try {
-    const { data, error } = await supabase
-      .from('attendees')
-      .select('*')
-      .or(`usn.ilike.${cleaned},roll_number.ilike.${cleaned}`)
-      .maybeSingle();
-
-    if (!error && data) {
-      const attendee = rowToAttendee(data);
+    const rows = await sql`
+      SELECT * FROM attendees WHERE usn ILIKE ${cleaned} OR roll_number ILIKE ${cleaned} LIMIT 1;
+    `;
+    if (rows && rows.length > 0) {
+      const attendee = rowToAttendee(rows[0]);
       saveLocalAttendee(attendee);
       return attendee;
     }
   } catch (err: any) {
-    console.warn('[DB] Supabase getAttendeeByUsn failed, using local:', err?.message || err);
+    console.warn('[DB] Neon getAttendeeByUsn failed, using local:', err?.message || err);
   }
 
   const local = getLocalAttendees();
@@ -271,8 +228,8 @@ async function getNextAttendeeIdAndTicket(): Promise<{ id: string; ticketCode: s
   const existingTickets = new Set<string>();
 
   try {
-    const { data } = await supabase.from('attendees').select('id, ticket_code');
-    for (const row of data || []) {
+    const rows = await sql`SELECT id, ticket_code FROM attendees;`;
+    for (const row of rows || []) {
       if (row.id) existingIds.add(row.id);
       if (row.ticket_code) existingTickets.add(row.ticket_code);
     }
@@ -326,7 +283,7 @@ export async function createAttendee(
 ): Promise<{ success: boolean; attendee?: Attendee; error?: string }> {
   const usnKey = (data.usn || data.rollNumber).trim().toUpperCase();
 
-  // Check for duplicate USN (check Supabase and local cache)
+  // Check for duplicate USN (check Neon and local cache)
   const existing = await getAttendeeByUsn(usnKey);
   if (existing) {
     return {
@@ -339,7 +296,6 @@ export async function createAttendee(
   const cleanYear = (data.year || '').replace(/^Batch of\s*/i, '').trim() || data.year || 'Alumni';
 
   let lastError: any = null;
-  // Retry loop up to 5 attempts to guarantee zero primary key collisions
   for (let attempt = 0; attempt < 5; attempt++) {
     const { id, ticketCode } = await getNextAttendeeIdAndTicket();
 
@@ -365,22 +321,39 @@ export async function createAttendee(
       checkInLogs: [],
     };
 
-    // Try Supabase insert
     try {
-      const { error } = await supabase.from('attendees').insert(attendeeToRow(newAttendee));
-      if (error) {
-        lastError = error;
-        console.warn(`[DB] Supabase createAttendee attempt ${attempt + 1}:`, error.message);
-        if (error.message.includes('unique constraint') || error.message.includes('duplicate key')) {
-          await new Promise(r => setTimeout(r, 100));
-          continue;
-        }
-      }
+      await sql`
+        INSERT INTO attendees (
+          id, ticket_code, full_name, email, phone, roll_number, usn, department, year,
+          id_card_url, degree_proof_url, status, rejection_reason, checked_in, checked_in_at,
+          checked_in_by, registered_at, approved_at, wristband_color, wristband_number, notes,
+          organization, designation, family_count, family_members, total_quota, admitted_count,
+          check_in_logs, verification_method, is_contact_updated, original_email, original_phone,
+          review_reason
+        ) VALUES (
+          ${newAttendee.id}, ${newAttendee.ticketCode}, ${newAttendee.fullName}, ${newAttendee.email},
+          ${newAttendee.phone || ''}, ${newAttendee.rollNumber}, ${newAttendee.usn}, ${newAttendee.department || ''},
+          ${newAttendee.year || ''}, ${newAttendee.idCardUrl || null}, ${newAttendee.degreeProofUrl || null},
+          ${newAttendee.status}, ${newAttendee.rejectionReason || null}, ${newAttendee.checkedIn},
+          ${newAttendee.checkedInAt || null}, ${newAttendee.checkedInBy || null}, ${newAttendee.registeredAt},
+          ${newAttendee.approvedAt || null}, ${newAttendee.wristbandColor || 'Neon Cyan (General)'},
+          ${newAttendee.wristbandNumber || null}, ${newAttendee.notes || null}, ${newAttendee.organization || null},
+          ${newAttendee.designation || null}, ${newAttendee.familyCount || 0}, ${JSON.stringify(newAttendee.familyMembers || [])},
+          ${newAttendee.totalQuota || 1}, ${newAttendee.admittedCount || 0}, ${JSON.stringify(newAttendee.checkInLogs || [])},
+          ${newAttendee.verificationMethod || null}, ${Boolean(newAttendee.isContactUpdated)},
+          ${newAttendee.originalEmail || null}, ${newAttendee.originalPhone || null}, ${newAttendee.reviewReason || null}
+        );
+      `;
     } catch (insertErr: any) {
-      console.warn(`[DB] Supabase insert timed out/errored, persisting locally:`, insertErr?.message || insertErr);
+      lastError = insertErr;
+      console.warn(`[DB] Neon createAttendee attempt ${attempt + 1}:`, insertErr.message);
+      if (insertErr.message.includes('unique constraint') || insertErr.message.includes('duplicate key')) {
+        await new Promise(r => setTimeout(r, 100));
+        continue;
+      }
     }
 
-    // Always persist to local storage backup
+    // Always persist to local backup
     saveLocalAttendee(newAttendee);
 
     return { success: true, attendee: newAttendee };
@@ -395,69 +368,90 @@ export async function updateAttendeeStatus(
   rejectionReason?: string,
   wristbandColor?: string
 ): Promise<Attendee | null> {
-  const updates: any = { status };
+  const approvedAt = status === 'APPROVED' ? new Date().toISOString() : null;
+  const reason = status === 'REJECTED' ? (rejectionReason || 'Details did not match official college records.') : null;
 
-  if (status === 'APPROVED') {
-    updates.approved_at = new Date().toISOString();
-    updates.rejection_reason = null;
-    if (wristbandColor) updates.wristband_color = wristbandColor;
-  } else if (status === 'REJECTED') {
-    updates.rejection_reason = rejectionReason || 'Details did not match official college records.';
+  try {
+    const rows = await sql`
+      UPDATE attendees
+      SET status = ${status},
+          approved_at = COALESCE(${approvedAt}, approved_at),
+          rejection_reason = ${reason},
+          wristband_color = COALESCE(${wristbandColor || null}, wristband_color)
+      WHERE id ILIKE ${id.trim()}
+      RETURNING *;
+    `;
+    if (rows && rows.length > 0) {
+      const attendee = rowToAttendee(rows[0]);
+      saveLocalAttendee(attendee);
+      return attendee;
+    }
+  } catch (err) {
+    console.warn('[DB] Neon updateAttendeeStatus failed:', err);
   }
 
-  const { data, error } = await supabase
-    .from('attendees')
-    .update(updates)
-    .ilike('id', id)
-    .select()
-    .maybeSingle();
-
-  if (error || !data) return null;
-  return rowToAttendee(data);
+  const local = getLocalAttendees();
+  const a = local.find(x => x.id.toLowerCase() === id.trim().toLowerCase());
+  if (a) {
+    a.status = status;
+    if (approvedAt) a.approvedAt = approvedAt;
+    if (reason) a.rejectionReason = reason;
+    if (wristbandColor) a.wristbandColor = wristbandColor;
+    saveLocalAttendees(local);
+    return a;
+  }
+  return null;
 }
 
 export async function bulkApproveAttendees(ids: string[]): Promise<number> {
   if (!ids.length) return 0;
+  const approvedAt = new Date().toISOString();
 
-  const { data, error } = await supabase
-    .from('attendees')
-    .update({ status: 'APPROVED', approved_at: new Date().toISOString() })
-    .in('id', ids)
-    .eq('status', 'PENDING')
-    .select();
-
-  if (error) {
-    console.error('[DB] bulkApprove error:', error.message);
-    return 0;
+  let count = 0;
+  try {
+    for (const id of ids) {
+      await sql`
+        UPDATE attendees
+        SET status = 'APPROVED', approved_at = ${approvedAt}
+        WHERE id = ${id} AND status = 'PENDING';
+      `;
+      count++;
+    }
+  } catch (err: any) {
+    console.error('[DB] Neon bulkApprove error:', err.message);
   }
 
-  return data?.length ?? 0;
+  const local = getLocalAttendees();
+  for (const a of local) {
+    if (ids.includes(a.id) && a.status === 'PENDING') {
+      a.status = 'APPROVED';
+      a.approvedAt = approvedAt;
+    }
+  }
+  saveLocalAttendees(local);
+
+  return count;
 }
 
 export async function deleteAttendee(
   idOrUsn: string
 ): Promise<{ success: boolean; deletedAttendee?: Attendee; error?: string }> {
   const query = idOrUsn.trim();
-
   let foundAttendee: Attendee | undefined = undefined;
 
-  // Try finding in Supabase
   try {
-    const { data: found } = await supabase
-      .from('attendees')
-      .select('*')
-      .or(`id.ilike.${query},usn.ilike.${query},roll_number.ilike.${query},ticket_code.ilike.${query}`)
-      .maybeSingle();
-
-    if (found) {
-      foundAttendee = rowToAttendee(found);
-      await supabase.from('attendees').delete().eq('id', found.id);
+    const rows = await sql`
+      DELETE FROM attendees
+      WHERE id ILIKE ${query} OR usn ILIKE ${query} OR roll_number ILIKE ${query} OR ticket_code ILIKE ${query}
+      RETURNING *;
+    `;
+    if (rows && rows.length > 0) {
+      foundAttendee = rowToAttendee(rows[0]);
     }
-  } catch (err) {
-    console.warn('[DB] Supabase deleteAttendee error:', err);
+  } catch (err: any) {
+    console.warn('[DB] Neon deleteAttendee error:', err.message);
   }
 
-  // Remove from local storage
   const local = getLocalAttendees();
   const localIdx = local.findIndex(a =>
     a.id.toLowerCase() === query.toLowerCase() ||
@@ -479,13 +473,11 @@ export async function deleteAttendee(
 export async function deleteAllAttendees(): Promise<{ success: boolean; count: number }> {
   let count = 0;
   try {
-    const { count: c } = await supabase
-      .from('attendees')
-      .select('*', { count: 'exact', head: true });
-    count = c ?? 0;
-    await supabase.from('attendees').delete().neq('id', '');
-  } catch (e) {
-    console.warn('[DB] Supabase deleteAllAttendees error:', e);
+    const c = await sql`SELECT count(*)::int as total FROM attendees;`;
+    count = c[0]?.total || 0;
+    await sql`DELETE FROM attendees;`;
+  } catch (e: any) {
+    console.warn('[DB] Neon deleteAllAttendees error:', e.message);
   }
 
   const local = getLocalAttendees();
@@ -500,14 +492,12 @@ export async function deleteSelectedAttendees(
 ): Promise<{ success: boolean; count: number }> {
   let count = 0;
   try {
-    const { data, error } = await supabase
-      .from('attendees')
-      .delete()
-      .in('id', ids)
-      .select();
-    if (!error && data) count = data.length;
-  } catch (e) {
-    console.warn('[DB] Supabase deleteSelectedAttendees error:', e);
+    for (const id of ids) {
+      await sql`DELETE FROM attendees WHERE id = ${id};`;
+      count++;
+    }
+  } catch (e: any) {
+    console.warn('[DB] Neon deleteSelectedAttendees error:', e.message);
   }
 
   const local = getLocalAttendees();
@@ -518,21 +508,38 @@ export async function deleteSelectedAttendees(
 }
 
 export async function resetCheckIn(id: string): Promise<Attendee | null> {
-  const { data, error } = await supabase
-    .from('attendees')
-    .update({
-      checked_in: false,
-      checked_in_at: null,
-      checked_in_by: null,
-      admitted_count: 0,
-      check_in_logs: [],
-    })
-    .ilike('id', id)
-    .select()
-    .maybeSingle();
+  try {
+    const rows = await sql`
+      UPDATE attendees
+      SET checked_in = FALSE,
+          checked_in_at = NULL,
+          checked_in_by = NULL,
+          admitted_count = 0,
+          check_in_logs = '[]'::jsonb
+      WHERE id ILIKE ${id.trim()}
+      RETURNING *;
+    `;
+    if (rows && rows.length > 0) {
+      const attendee = rowToAttendee(rows[0]);
+      saveLocalAttendee(attendee);
+      return attendee;
+    }
+  } catch (err: any) {
+    console.warn('[DB] Neon resetCheckIn error:', err.message);
+  }
 
-  if (error || !data) return null;
-  return rowToAttendee(data);
+  const local = getLocalAttendees();
+  const a = local.find(x => x.id.toLowerCase() === id.trim().toLowerCase());
+  if (a) {
+    a.checkedIn = false;
+    a.checkedInAt = undefined;
+    a.checkedInBy = undefined;
+    a.admittedCount = 0;
+    a.checkInLogs = [];
+    saveLocalAttendees(local);
+    return a;
+  }
+  return null;
 }
 
 // ─── SCAN / CHECK-IN ──────────────────────────────────────────────────────────
@@ -577,24 +584,21 @@ async function findAttendeeByQuery(query: string): Promise<Attendee | undefined>
   const q = query.trim();
   if (!q) return undefined;
 
-  // 1. Try Supabase combined query
   try {
-    const { data } = await supabase
-      .from('attendees')
-      .select('*')
-      .or(`id.ilike.${q},ticket_code.ilike.${q},usn.ilike.${q},roll_number.ilike.${q}`)
-      .maybeSingle();
-
-    if (data) {
-      const attendee = rowToAttendee(data);
+    const rows = await sql`
+      SELECT * FROM attendees
+      WHERE id ILIKE ${q} OR ticket_code ILIKE ${q} OR usn ILIKE ${q} OR roll_number ILIKE ${q}
+      LIMIT 1;
+    `;
+    if (rows && rows.length > 0) {
+      const attendee = rowToAttendee(rows[0]);
       saveLocalAttendee(attendee);
       return attendee;
     }
   } catch (e) {
-    console.warn('[DB] Supabase findAttendeeByQuery error:', e);
+    console.warn('[DB] Neon findAttendeeByQuery error:', e);
   }
 
-  // 2. Check local fallback
   const clean = q.toLowerCase();
   const local = getLocalAttendees();
   return local.find(a =>
@@ -683,25 +687,36 @@ export async function checkInAttendee(
     notes: isFullyExhausted ? `Quota completed (${newAdmitted}/${totalQuota})` : `Partial entry (${newAdmitted}/${totalQuota})`,
   };
 
-  const { data: updated, error } = await supabase
-    .from('attendees')
-    .update({
-      total_quota: totalQuota,
-      admitted_count: newAdmitted,
-      checked_in: isFullyExhausted,
-      checked_in_at: new Date().toISOString(),
-      checked_in_by: volunteerName,
-      check_in_logs: [...existingLogs, newLog],
-    })
-    .eq('id', attendee.id)
-    .select()
-    .maybeSingle();
+  let updatedAttendee: Attendee = {
+    ...attendee,
+    totalQuota,
+    admittedCount: newAdmitted,
+    checkedIn: isFullyExhausted,
+    checkedInAt: new Date().toISOString(),
+    checkedInBy: volunteerName,
+    checkInLogs: [...existingLogs, newLog],
+  };
 
-  if (error || !updated) {
-    return { status: 'NOT_FOUND', message: 'Database error during check-in. Try again.' };
+  try {
+    const rows = await sql`
+      UPDATE attendees
+      SET total_quota = ${totalQuota},
+          admitted_count = ${newAdmitted},
+          checked_in = ${isFullyExhausted},
+          checked_in_at = NOW(),
+          checked_in_by = ${volunteerName},
+          check_in_logs = ${JSON.stringify([...existingLogs, newLog])}
+      WHERE id = ${attendee.id}
+      RETURNING *;
+    `;
+    if (rows && rows.length > 0) {
+      updatedAttendee = rowToAttendee(rows[0]);
+    }
+  } catch (err) {
+    console.warn('[DB] Neon checkIn update error:', err);
   }
 
-  const updatedAttendee = rowToAttendee(updated);
+  saveLocalAttendee(updatedAttendee);
 
   if (isFullyExhausted) {
     return { status: 'SUCCESS', message: `FINAL ENTRY GRANTED! Admitted ${countToAdmit} member(s). All ${totalQuota} of ${totalQuota} quotas used. Issue ${countToAdmit} ${attendee.wristbandColor || 'Neon Cyan'} wristband(s). Pass is now EXPIRED.`, attendee: updatedAttendee, admittedNow: countToAdmit, remaining: 0, totalQuota };
