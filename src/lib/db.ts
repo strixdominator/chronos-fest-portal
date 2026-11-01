@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { Attendee, EventSettings, AttendeeStatus } from './types';
 import { sql } from './neon';
 import { supabase, isSupabaseConfigured } from './supabase';
@@ -477,15 +478,16 @@ async function getNextAttendeeIdAndTicket(): Promise<{ id: string; ticketCode: s
 
   let ticketCode = '';
   for (let attempt = 0; attempt < 50; attempt++) {
-    const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
-    const candidate = `TKT-CHRONOS-${randomSuffix}${Math.floor(1000 + Math.random() * 9000)}`;
+    const randomHex = crypto.randomBytes(4).toString('hex').toUpperCase();
+    const randomDigits = crypto.randomInt(1000, 9999);
+    const candidate = `TKT-CHRONOS-${randomHex}${randomDigits}`;
     if (!existingTickets.has(candidate)) {
       ticketCode = candidate;
       break;
     }
   }
   if (!ticketCode) {
-    ticketCode = `TKT-CHRONOS-${Date.now().toString(36).toUpperCase()}`;
+    ticketCode = `TKT-CHRONOS-${crypto.randomBytes(6).toString('hex').toUpperCase()}`;
   }
 
   return { id, ticketCode };

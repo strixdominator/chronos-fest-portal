@@ -14,15 +14,14 @@ export async function GET(
     const { id } = await params;
     const cleanId = (id || '').trim();
 
-    // SECURITY FIX: Sequential ATT- IDs can only be accessed with admin authorization.
-    if (/^ATT-\d+$/i.test(cleanId)) {
-      const isAdmin = verifyAdminPasscode(getAdminPasscodeFromRequest(_request));
-      if (!isAdmin) {
-        return NextResponse.json(
-          { success: false, error: 'Unauthorized: Direct sequential ID lookup is restricted.' },
-          { status: 401 }
-        );
-      }
+    // SECURITY: The /api/attendees/[id] endpoint returns full unmasked attendee records (including base64 ID/degree proofs, phone, email).
+    // It is an internal administrative endpoint and must ALWAYS require administrator authorization.
+    const isAdmin = verifyAdminPasscode(getAdminPasscodeFromRequest(_request));
+    if (!isAdmin) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Admin authorization required to access attendee details.' },
+        { status: 401 }
+      );
     }
 
     let attendee = await getAttendeeById(cleanId);

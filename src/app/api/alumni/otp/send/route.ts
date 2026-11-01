@@ -75,24 +75,35 @@ export async function POST(request: NextRequest) {
       console.error('[DISPATCH ERROR]', dispatchErr);
     }
 
+    const isDev = process.env.NODE_ENV === 'development';
+
+    if (!dispatchResult?.isReal && !isDev) {
+      return NextResponse.json({
+        success: false,
+        error: `Unable to deliver live verification code via ${isWhatsApp ? 'WhatsApp/SMS' : 'Email'}. Please select Email or contact event organizers.`,
+      }, { status: 502 });
+    }
+
     if (dispatchResult && !dispatchResult.success && dispatchResult.provider !== 'SIMULATION') {
       return NextResponse.json({
         success: false,
         error: dispatchResult.error ? `${dispatchResult.provider === 'RENFLAIR' ? 'SMS' : (isWhatsApp ? 'WhatsApp' : 'Delivery')} failed: ${dispatchResult.error}` : 'Could not deliver verification code to registered contact.',
-        dispatchError: dispatchResult.error,
+        dispatchError: isDev ? dispatchResult.error : undefined,
       }, { status: 502 });
     }
 
     const response = NextResponse.json({
       success: true,
-      message: dispatchResult?.isReal ? `Real verification code sent to ${otpData.maskedTarget}!` : `Simulation Mode: Verification code is ${otpData.otp}`,
+      message: dispatchResult?.isReal
+        ? `Verification code delivered to ${otpData.maskedTarget}!`
+        : (isDev ? `Dev Mode: Verification code is ${otpData.otp}` : `Verification code sent to ${otpData.maskedTarget}`),
       maskedTarget: otpData.maskedTarget,
       channel: isWhatsApp ? (dispatchResult?.provider === 'RENFLAIR' ? 'SMS' : 'WhatsApp') : 'Email',
       isRealDelivery: dispatchResult?.isReal || false,
       deliveryProvider: dispatchResult?.provider || 'SIMULATION',
-      simulationCode: !dispatchResult?.isReal ? otpData.otp : undefined,
-      dispatchError: dispatchResult?.error,
-      simulationNotice: dispatchResult?.provider === 'SIMULATION' ? dispatchResult.message : undefined,
+      simulationCode: isDev && !dispatchResult?.isReal ? otpData.otp : undefined,
+      dispatchError: isDev ? dispatchResult?.error : undefined,
+      simulationNotice: isDev && dispatchResult?.provider === 'SIMULATION' ? dispatchResult.message : undefined,
       otpToken: otpData.statelessToken,
     });
 

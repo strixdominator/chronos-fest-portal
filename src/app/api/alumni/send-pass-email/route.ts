@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAttendeeById, getAttendeeByTicketCode } from '@/lib/db';
 import { sendEmailPass } from '@/lib/notifications';
+import { verifyAdminPasscode, getAdminPasscodeFromRequest } from '@/lib/auth';
 import QRCode from 'qrcode';
 
 export const dynamic = 'force-dynamic';
@@ -10,16 +11,27 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { attendeeId, email, qrDataUrl } = body;
 
-    if (!attendeeId) {
+    if (!attendeeId || typeof attendeeId !== 'string') {
       return NextResponse.json(
         { success: false, error: 'Attendee ID or Ticket code is required' },
         { status: 400 }
       );
     }
 
-    let attendee = await getAttendeeById(attendeeId);
-    if (!attendee) {
-      attendee = await getAttendeeByTicketCode(attendeeId);
+    const cleanId = attendeeId.trim();
+    const isAdmin = verifyAdminPasscode(getAdminPasscodeFromRequest(request));
+
+    // SECURITY: Prevent sequential ATT- enumeration for non-admins
+    if (!isAdmin && /^ATT-\d+$/i.test(cleanId)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Pass email delivery requires verified ticket code.' },
+        { status: 401 }
+      );
+    }
+
+    let attendee = await getAttendeeByTicketCode(cleanId);
+    if (!attendee && isAdmin) {
+      attendee = await getAttendeeById(cleanId);
     }
 
     if (!attendee) {
@@ -29,10 +41,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const targetEmail = (email || attendee.email)?.trim();
+    // SECURITY: Non-admins can ONLY send passes to the verified email on record for this attendee.
+    // Prevent IDOR pass redirection to arbitrary third-party attacker inboxes.
+    let targetEmail = attendee.email?.trim().toLowerCase();
+    if (isAdmin && email && typeof email === 'string') {
+      targetEmail = email.trim().toLowerCase();
+    } else if (email && attendee.email && email.trim().toLowerCase() !== attendee.email.trim().toLowerCase()) {
+      return NextResponse.json(
+        { success: false, error: 'Security restriction: Entry passes can only be delivered to the verified email address on record.' },
+        { status: 403 }
+      );
+    }
+
     if (!targetEmail) {
       return NextResponse.json(
-        { success: false, error: 'Recipient email address is required' },
+        { success: false, error: 'No registered recipient email address found for this attendee.' },
         { status: 400 }
       );
     }

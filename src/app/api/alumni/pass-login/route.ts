@@ -67,24 +67,35 @@ export async function POST(request: NextRequest) {
         dispatchResult = await sendEmailOtp({ toEmail: target, otp: otpResult.otp, recipientName: attendee.fullName, usn: cleanedUsn });
       }
 
+      const isDev = process.env.NODE_ENV === 'development';
+
+      if (!dispatchResult?.isReal && !isDev) {
+        return NextResponse.json({
+          success: false,
+          error: `Unable to deliver live unlock code via ${isWhatsApp ? 'WhatsApp/SMS' : 'Email'}. Please select Email or contact event organizers.`,
+        }, { status: 502 });
+      }
+
       if (dispatchResult && !dispatchResult.success && dispatchResult.provider !== 'SIMULATION') {
         return NextResponse.json({
           success: false,
           error: dispatchResult.error ? `${isWhatsApp ? 'WhatsApp' : 'Delivery'} failed: ${dispatchResult.error}` : 'Could not deliver unlock code to registered contact.',
-          dispatchError: dispatchResult.error,
+          dispatchError: isDev ? dispatchResult.error : undefined,
         }, { status: 502 });
       }
 
       const response = NextResponse.json({
         success: true,
-        message: dispatchResult?.isReal ? `Real unlock code delivered to ${isWhatsApp ? maskPhone(phone) : maskEmail(email)}!` : `Simulation Mode: Unlock code is ${otpResult.otp}`,
+        message: dispatchResult?.isReal
+          ? `Unlock code delivered to ${isWhatsApp ? maskPhone(phone) : maskEmail(email)}!`
+          : (isDev ? `Dev Mode: Unlock code is ${otpResult.otp}` : `Unlock code sent to ${isWhatsApp ? maskPhone(phone) : maskEmail(email)}`),
         maskedTarget: isWhatsApp ? maskPhone(phone) : maskEmail(email),
         channel: isWhatsApp ? 'WhatsApp' : 'Email',
         isRealDelivery: dispatchResult?.isReal || false,
         deliveryProvider: dispatchResult?.provider || 'SIMULATION',
-        simulationCode: !dispatchResult?.isReal ? otpResult.otp : undefined,
-        dispatchError: dispatchResult?.error,
-        simulationNotice: dispatchResult?.provider === 'SIMULATION' ? dispatchResult.message : undefined,
+        simulationCode: isDev && !dispatchResult?.isReal ? otpResult.otp : undefined,
+        dispatchError: isDev ? dispatchResult?.error : undefined,
+        simulationNotice: isDev && dispatchResult?.provider === 'SIMULATION' ? dispatchResult.message : undefined,
         otpToken: otpResult.statelessToken,
       });
 
