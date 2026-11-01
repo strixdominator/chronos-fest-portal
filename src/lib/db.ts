@@ -372,7 +372,7 @@ export async function getAttendeeByTicketCode(code: string): Promise<Attendee | 
   const cleaned = code.trim().toLowerCase();
   try {
     const rows = await sql`
-      SELECT * FROM attendees WHERE ticket_code ILIKE ${cleaned} OR id ILIKE ${cleaned} LIMIT 1;
+      SELECT * FROM attendees WHERE ticket_code ILIKE ${cleaned} LIMIT 1;
     `;
     if (rows && rows.length > 0) {
       const attendee = rowToAttendee(rows[0]);
@@ -386,7 +386,7 @@ export async function getAttendeeByTicketCode(code: string): Promise<Attendee | 
         const { data, error } = await supabase
           .from('attendees')
           .select('*')
-          .or(`ticket_code.ilike.${cleaned},id.ilike.${cleaned}`)
+          .ilike('ticket_code', cleaned)
           .maybeSingle();
         if (!error && data) {
           const attendee = rowToAttendee(data);
@@ -398,7 +398,7 @@ export async function getAttendeeByTicketCode(code: string): Promise<Attendee | 
   }
 
   const local = getLocalAttendees();
-  return local.find(a => (a.ticketCode?.toLowerCase() === cleaned || a.id.toLowerCase() === cleaned));
+  return local.find(a => a.ticketCode?.toLowerCase() === cleaned);
 }
 
 export async function getAttendeeByUsn(usn: string): Promise<Attendee | undefined> {
