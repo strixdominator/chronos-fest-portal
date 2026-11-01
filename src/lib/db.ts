@@ -68,7 +68,13 @@ const DEFAULT_SETTINGS: EventSettings = {
 
 // ─── LOCAL STORAGE FALLBACK HELPERS ───────────────────────────────────────────
 function getLocalAttendees(): Attendee[] {
-  return safeReadJson<Attendee[]>('attendees.json', []);
+  const list = safeReadJson<any[]>('attendees.json', []);
+  return list.map(item => {
+    if (item && item.ticket_code && !item.ticketCode) {
+      return rowToAttendee(item);
+    }
+    return item as Attendee;
+  });
 }
 
 function saveLocalAttendees(list: Attendee[]): void {

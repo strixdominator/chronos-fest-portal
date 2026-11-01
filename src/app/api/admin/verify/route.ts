@@ -17,12 +17,18 @@ export async function POST(request: NextRequest) {
     const passcode = getAdminPasscodeFromRequest(request, bodyPasscode);
     const isValid = verifyAdminPasscode(passcode);
 
-    if (isValid) {
-      return NextResponse.json({
+    if (isValid && passcode) {
+      const response = NextResponse.json({
         success: true,
         valid: true,
         message: 'Admin authentication successful',
       });
+      response.cookies.set('dbit_admin_passcode', passcode.trim(), {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        sameSite: 'lax',
+      });
+      return response;
     }
 
     return NextResponse.json(

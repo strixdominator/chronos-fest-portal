@@ -148,6 +148,7 @@ export default function AdminPage() {
         .then(data => {
           if (data.success && data.valid) {
             setIsAuthenticated(true);
+            document.cookie = `dbit_admin_passcode=${encodeURIComponent(trimmed)}; path=/; max-age=604800; SameSite=Lax`;
           } else {
             sessionStorage.removeItem('dbit_admin_passcode');
             setIsAuthenticated(false);
@@ -256,6 +257,7 @@ export default function AdminPage() {
         setIsAuthenticated(true);
         setAuthError('');
         sessionStorage.setItem('dbit_admin_passcode', cleaned);
+        document.cookie = `dbit_admin_passcode=${encodeURIComponent(cleaned)}; path=/; max-age=604800; SameSite=Lax`;
         fetchAttendees(false, cleaned);
       } else {
         setAuthError(data.error || 'Access Denied: Incorrect administrator passcode.');
@@ -749,6 +751,7 @@ export default function AdminPage() {
           <button
             onClick={() => {
               sessionStorage.removeItem('dbit_admin_passcode');
+              document.cookie = 'dbit_admin_passcode=; path=/; max-age=0; SameSite=Lax';
               setIsAuthenticated(false);
               setAdminPasscode('');
             }}
@@ -1155,7 +1158,7 @@ export default function AdminPage() {
                         <td style={{ textAlign: 'right' }}>
                           <div style={{ display: 'inline-flex', gap: 6 }}>
                             <Link
-                              href={`/ticket/${attendee.ticketCode}`}
+                              href={`/ticket/${attendee.ticketCode || attendee.id}?adminPasscode=${encodeURIComponent(adminPasscode)}`}
                               target="_blank"
                               className="btn-neo-outline"
                               style={{ padding: '6px 10px', fontSize: '0.75rem' }}
