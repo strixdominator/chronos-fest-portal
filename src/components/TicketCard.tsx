@@ -69,8 +69,9 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
   // Generate QR code when approved
   useEffect(() => {
     if (attendee.status === 'APPROVED' && canvasRef.current) {
+      // SECURITY FIX: Encode unguessable ticketCode instead of sequential ID to prevent enumeration
       const qrPayload = typeof window !== 'undefined' 
-        ? `${window.location.origin}/ticket/${attendee.id}` 
+        ? `${window.location.origin}/ticket/${attendee.ticketCode}` 
         : attendee.ticketCode;
 
       QRCode.toCanvas(

@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const host = forwardedHost || request.headers.get('host');
     const proto = request.headers.get('x-forwarded-proto') || 'https';
     const liveOrigin = (process.env.NEXT_PUBLIC_APP_URL || (host && !host.includes('localhost') && !host.includes('127.0.0.1') ? `${proto}://${host}` : 'https://milan202622.onrender.com')).replace(/\/$/, '');
-    const passUrl = `${liveOrigin}/ticket/${attendee.id}`;
+    const passUrl = `${liveOrigin}/ticket/${attendee.ticketCode}`;
 
     // Generate QR Data URL if not provided by client
     let finalQrDataUrl = qrDataUrl;

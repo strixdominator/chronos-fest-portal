@@ -1,8 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import TicketCard from '@/components/TicketCard';
-import { getAttendeeById, getAttendeeByTicketCode, getSettings } from '@/lib/db';
+import { getAttendeeByTicketCode, getSettings } from '@/lib/db';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -13,10 +13,17 @@ interface PageProps {
 
 export default async function TicketDetailsPage({ params }: PageProps) {
   const { id } = await params;
-  let attendee = await getAttendeeById(id);
-  if (!attendee) {
-    attendee = await getAttendeeByTicketCode(id);
+  const cleanId = (id || '').trim();
+
+  // SECURITY FIX: Prevent IDOR enumeration via sequential IDs (e.g. ATT-1001, ATT-1002).
+  // If someone manually modifies the URL to an ATT-XXXX ID, redirect them to the secure Pass Portal
+  // where they must enter their USN and verify identity via OTP.
+  if (/^ATT-\d+$/i.test(cleanId)) {
+    redirect('/ticket');
   }
+
+  // Only allow direct pass viewing using the unguessable ticketCode (e.g. TKT-CHRONOS-XXXX)
+  const attendee = await getAttendeeByTicketCode(cleanId);
 
   if (!attendee) {
     notFound();

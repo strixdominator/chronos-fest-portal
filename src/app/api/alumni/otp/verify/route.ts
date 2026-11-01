@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
       const host = forwardedHost || request.headers.get('host');
       const proto = request.headers.get('x-forwarded-proto') || 'https';
       const liveOrigin = (process.env.NEXT_PUBLIC_APP_URL || (host && !host.includes('localhost') && !host.includes('127.0.0.1') ? `${proto}://${host}` : 'https://milan202622.onrender.com')).replace(/\/$/, '');
-      const passUrl = `${liveOrigin}/ticket/${attendee.id}`;
+      const passUrl = `${liveOrigin}/ticket/${attendee.ticketCode}`;
       QRCode.toDataURL(passUrl, { width: 300, margin: 2, color: { dark: '#0a0a0a', light: '#ffffff' }, errorCorrectionLevel: 'H' }).then(qrDataUrl => {
         return sendEmailPass({ toEmail: attendee.email, recipientName: attendee.fullName, usn: attendee.usn || attendee.rollNumber, ticketCode: attendee.ticketCode, department: attendee.department, year: attendee.year, qrDataUrl, passUrl });
       }).catch(err => { console.error('Error auto-dispatching pass email:', err); });

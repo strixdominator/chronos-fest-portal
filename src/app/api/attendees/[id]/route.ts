@@ -12,10 +12,23 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    let attendee = await getAttendeeById(id);
+    const cleanId = (id || '').trim();
+
+    // SECURITY FIX: Sequential ATT- IDs can only be accessed with admin authorization.
+    if (/^ATT-\d+$/i.test(cleanId)) {
+      const isAdmin = verifyAdminPasscode(getAdminPasscodeFromRequest(_request));
+      if (!isAdmin) {
+        return NextResponse.json(
+          { success: false, error: 'Unauthorized: Direct sequential ID lookup is restricted.' },
+          { status: 401 }
+        );
+      }
+    }
+
+    let attendee = await getAttendeeById(cleanId);
 
     if (!attendee) {
-      attendee = await getAttendeeByTicketCode(id);
+      attendee = await getAttendeeByTicketCode(cleanId);
     }
 
     if (!attendee) {

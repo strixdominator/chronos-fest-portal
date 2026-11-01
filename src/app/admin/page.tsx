@@ -1155,7 +1155,7 @@ export default function AdminPage() {
                         <td style={{ textAlign: 'right' }}>
                           <div style={{ display: 'inline-flex', gap: 6 }}>
                             <Link
-                              href={`/ticket/${attendee.id}`}
+                              href={`/ticket/${attendee.ticketCode}`}
                               target="_blank"
                               className="btn-neo-outline"
                               style={{ padding: '6px 10px', fontSize: '0.75rem' }}
