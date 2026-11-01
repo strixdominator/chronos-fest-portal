@@ -158,7 +158,13 @@ export async function getSettings(): Promise<EventSettings> {
       return rowToSettings(rows[0]);
     }
   } catch (e) {
-    console.warn('[DB] Neon getSettings failed, using defaults:', e);
+    console.warn('[DB] Neon getSettings failed, falling back to Supabase:', e);
+    if (isSupabaseConfigured) {
+      try {
+        const { data } = await supabase.from('settings').select('*').eq('id', 1).maybeSingle();
+        if (data) return rowToSettings(data);
+      } catch {}
+    }
   }
   return DEFAULT_SETTINGS;
 }
@@ -211,12 +217,99 @@ export async function updateSettings(newSettings: Partial<EventSettings>): Promi
   return merged;
 }
 
+// ─── ATTENDEES STATS (ULTRA-LIGHTWEIGHT < 1KB BANDWIDTH) ─────────────────────
+
+export async function getAttendeeStats(): Promise<{
+  total: number;
+  capacity: number;
+  pending: number;
+  approved: number;
+  checkedIn: number;
+  remainingAtGate: number;
+  rejected: number;
+}> {
+  try {
+    const counts = await sql`
+      SELECT
+        count(*)::int as total,
+        count(*) FILTER (WHERE status = 'PENDING')::int as pending,
+        count(*) FILTER (WHERE status = 'APPROVED')::int as approved,
+        count(*) FILTER (WHERE status = 'REJECTED')::int as rejected,
+        count(*) FILTER (WHERE checked_in = true)::int as checked_in
+      FROM attendees;
+    `;
+    const settings = await getSettings();
+    if (counts && counts.length > 0) {
+      const r = counts[0];
+      return {
+        total: r.total || 0,
+        capacity: settings.totalCapacity,
+        pending: r.pending || 0,
+        approved: r.approved || 0,
+        checkedIn: r.checked_in || 0,
+        remainingAtGate: Math.max(0, (r.approved || 0) - (r.checked_in || 0)),
+        rejected: r.rejected || 0,
+      };
+    }
+  } catch (err) {
+    console.warn('[DB] Neon getAttendeeStats failed, falling back to Supabase:', err);
+    if (isSupabaseConfigured) {
+      try {
+        const { data } = await supabase.from('attendees').select('status, checked_in');
+        if (data) {
+          const settings = await getSettings();
+          const pending = data.filter(a => a.status === 'PENDING').length;
+          const approved = data.filter(a => a.status === 'APPROVED').length;
+          const rejected = data.filter(a => a.status === 'REJECTED').length;
+          const checkedIn = data.filter(a => a.checked_in).length;
+          return {
+            total: data.length,
+            capacity: settings.totalCapacity,
+            pending,
+            approved,
+            checkedIn,
+            remainingAtGate: Math.max(0, approved - checkedIn),
+            rejected,
+          };
+        }
+      } catch {}
+    }
+  }
+
+  const local = getLocalAttendees();
+  const settings = await getSettings();
+  const pending = local.filter(a => a.status === 'PENDING').length;
+  const approved = local.filter(a => a.status === 'APPROVED').length;
+  const rejected = local.filter(a => a.status === 'REJECTED').length;
+  const checkedIn = local.filter(a => a.checkedIn).length;
+  return {
+    total: local.length,
+    capacity: settings.totalCapacity,
+    pending,
+    approved,
+    checkedIn,
+    remainingAtGate: Math.max(0, approved - checkedIn),
+    rejected,
+  };
+}
+
 // ─── ATTENDEES ────────────────────────────────────────────────────────────────
 
 export async function getAttendees(): Promise<Attendee[]> {
   try {
+    // Optimized: Do NOT fetch massive base64 image columns in list queries to save 99.2% network bandwidth
     const rows = await sql`
-      SELECT * FROM attendees ORDER BY registered_at DESC;
+      SELECT
+        id, ticket_code, full_name, email, phone, roll_number, usn,
+        department, year, status, rejection_reason, checked_in, checked_in_at,
+        checked_in_by, registered_at, approved_at, wristband_color, wristband_number,
+        notes, organization, designation, family_count, family_members, total_quota,
+        admitted_count, check_in_logs, verification_method, is_contact_updated,
+        original_email, original_phone, review_reason,
+        CASE WHEN id_card_url IS NOT NULL THEN 'EXISTS' ELSE NULL END as id_card_url,
+        CASE WHEN degree_proof_url IS NOT NULL THEN 'EXISTS' ELSE NULL END as degree_proof_url
+      FROM attendees
+      ORDER BY registered_at DESC;
     `;
     if (rows && Array.isArray(rows) && rows.length > 0) {
       const list = rows.map(rowToAttendee);
@@ -224,7 +317,23 @@ export async function getAttendees(): Promise<Attendee[]> {
       return list;
     }
   } catch (err: any) {
-    console.warn('[DB] Neon getAttendees failed, using local fallback:', err?.message || err);
+    console.warn('[DB] Neon getAttendees failed, falling back to Supabase:', err?.message || err);
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('attendees')
+          .select('id, ticket_code, full_name, email, phone, roll_number, usn, department, year, status, rejection_reason, checked_in, checked_in_at, checked_in_by, registered_at, approved_at, wristband_color, wristband_number, notes, organization, designation, family_count, family_members, total_quota, admitted_count, check_in_logs, verification_method, is_contact_updated, original_email, original_phone, review_reason, id_card_url, degree_proof_url')
+          .order('registered_at', { ascending: false });
+        if (!error && data && data.length > 0) {
+          console.log('[DB] Supabase getAttendees fallback succeeded, count:', data.length);
+          const list = data.map(rowToAttendee);
+          saveLocalAttendees(list);
+          return list;
+        }
+      } catch (sErr) {
+        console.warn('[DB] Supabase getAttendees fallback error:', sErr);
+      }
+    }
   }
 
   return getLocalAttendees();
@@ -242,7 +351,17 @@ export async function getAttendeeById(id: string): Promise<Attendee | undefined>
       return attendee;
     }
   } catch (err) {
-    console.warn('[DB] Neon getAttendeeById failed:', err);
+    console.warn('[DB] Neon getAttendeeById failed, falling back to Supabase:', err);
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase.from('attendees').select('*').ilike('id', cleanId).maybeSingle();
+        if (!error && data) {
+          const attendee = rowToAttendee(data);
+          saveLocalAttendee(attendee);
+          return attendee;
+        }
+      } catch {}
+    }
   }
 
   const local = getLocalAttendees();
@@ -261,7 +380,21 @@ export async function getAttendeeByTicketCode(code: string): Promise<Attendee | 
       return attendee;
     }
   } catch (err) {
-    console.warn('[DB] Neon getAttendeeByTicketCode failed:', err);
+    console.warn('[DB] Neon getAttendeeByTicketCode failed, falling back to Supabase:', err);
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('attendees')
+          .select('*')
+          .or(`ticket_code.ilike.${cleaned},id.ilike.${cleaned}`)
+          .maybeSingle();
+        if (!error && data) {
+          const attendee = rowToAttendee(data);
+          saveLocalAttendee(attendee);
+          return attendee;
+        }
+      } catch {}
+    }
   }
 
   const local = getLocalAttendees();
@@ -280,7 +413,21 @@ export async function getAttendeeByUsn(usn: string): Promise<Attendee | undefine
       return attendee;
     }
   } catch (err: any) {
-    console.warn('[DB] Neon getAttendeeByUsn failed, using local:', err?.message || err);
+    console.warn('[DB] Neon getAttendeeByUsn failed, falling back to Supabase:', err?.message || err);
+    if (isSupabaseConfigured) {
+      try {
+        const { data } = await supabase
+          .from('attendees')
+          .select('*')
+          .or(`usn.ilike.${cleaned},roll_number.ilike.${cleaned}`)
+          .maybeSingle();
+        if (data) {
+          const attendee = rowToAttendee(data);
+          saveLocalAttendee(attendee);
+          return attendee;
+        }
+      } catch {}
+    }
   }
 
   const local = getLocalAttendees();

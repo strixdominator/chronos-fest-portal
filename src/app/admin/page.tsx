@@ -96,6 +96,35 @@ export default function AdminPage() {
     organization?: string;
     designation?: string;
   } | null>(null);
+  const [loadingProofId, setLoadingProofId] = useState<string | null>(null);
+
+  const handleViewProof = async (attendee: Attendee) => {
+    let url = attendee.degreeProofUrl || '';
+    if (url === 'EXISTS' || !url || url.length < 50) {
+      setLoadingProofId(attendee.id);
+      try {
+        const res = await fetch(`/api/attendees/${attendee.id}?_t=${Date.now()}`, {
+          headers: { 'x-admin-passcode': adminPasscode },
+        });
+        const data = await res.json();
+        if (data.attendee?.degreeProofUrl) {
+          url = data.attendee.degreeProofUrl;
+        }
+      } catch (err) {
+        console.error('Failed to load proof:', err);
+      } finally {
+        setLoadingProofId(null);
+      }
+    }
+    setViewingProof({
+      name: attendee.fullName,
+      url: url,
+      roll: attendee.usn || attendee.rollNumber,
+      reason: attendee.reviewReason,
+      organization: attendee.organization,
+      designation: attendee.designation,
+    });
+  };
 
   // Rejection modal
   const [rejectingId, setRejectingId] = useState<string | null>(null);
@@ -1107,18 +1136,12 @@ export default function AdminPage() {
                               </p>
                               {attendee.degreeProofUrl && (
                                 <button
-                                  onClick={() => setViewingProof({
-                                    name: attendee.fullName,
-                                    url: attendee.degreeProofUrl!,
-                                    roll: attendee.usn || attendee.rollNumber,
-                                    reason: attendee.reviewReason,
-                                    organization: attendee.organization,
-                                    designation: attendee.designation,
-                                  })}
+                                  onClick={() => handleViewProof(attendee)}
+                                  disabled={loadingProofId === attendee.id}
                                   className="btn-neo-outline"
-                                  style={{ padding: '3px 8px', fontSize: '0.7rem', marginTop: 4 }}
+                                  style={{ padding: '3px 8px', fontSize: '0.7rem', marginTop: 4, cursor: loadingProofId === attendee.id ? 'wait' : 'pointer' }}
                                 >
-                                  VIEW PROOF ↗
+                                  {loadingProofId === attendee.id ? 'LOADING PROOF...' : 'VIEW PROOF ↗'}
                                 </button>
                               )}
                             </div>

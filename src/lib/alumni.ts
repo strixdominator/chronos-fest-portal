@@ -5,6 +5,7 @@ import * as XLSX from 'xlsx';
 import { AlumniRecord, OtpRecord } from './types';
 import { safeReadJson, safeWriteJson } from './storage';
 import { sql } from './neon';
+import { supabase, isSupabaseConfigured } from './supabase';
 
 declare global {
   var __ALUMNI_MASTER__: AlumniRecord[] | undefined;
@@ -489,24 +490,39 @@ export function verifyStatelessOtpToken(
 // ─── OTP STORAGE (Neon PostgreSQL with stateless HMAC token fallback) ────────
 
 async function getActiveOtpFromDb(usn: string): Promise<OtpRecord | null> {
+  const cleaned = usn.trim().toUpperCase();
   try {
-    const cleaned = usn.trim().toUpperCase();
     const rows = await sql`
       SELECT * FROM active_otps WHERE usn = ${cleaned} LIMIT 1;
     `;
-    if (!rows || rows.length === 0) return null;
-    const data = rows[0] as any;
-    return {
-      usn: data.usn,
-      code: data.code,
-      channel: data.channel as 'EMAIL' | 'PHONE' | 'WHATSAPP',
-      target: data.target,
-      expiresAt: Number(data.expires_at),
-    };
+    if (rows && rows.length > 0) {
+      const data = rows[0] as any;
+      return {
+        usn: data.usn,
+        code: data.code,
+        channel: data.channel as 'EMAIL' | 'PHONE' | 'WHATSAPP',
+        target: data.target,
+        expiresAt: Number(data.expires_at),
+      };
+    }
   } catch (e) {
-    console.warn('[OTP DB] Neon getActiveOtpFromDb error, falling back to stateless token:', e);
-    return null;
+    console.warn('[OTP DB] Neon getActiveOtpFromDb error, falling back to Supabase:', e);
+    if (isSupabaseConfigured) {
+      try {
+        const { data } = await supabase.from('active_otps').select('*').eq('usn', cleaned).maybeSingle();
+        if (data) {
+          return {
+            usn: data.usn,
+            code: data.code,
+            channel: data.channel as 'EMAIL' | 'PHONE' | 'WHATSAPP',
+            target: data.target,
+            expiresAt: Number(data.expires_at),
+          };
+        }
+      } catch {}
+    }
   }
+  return null;
 }
 
 async function saveOtpToDb(usn: string, record: OtpRecord): Promise<void> {
@@ -521,15 +537,32 @@ async function saveOtpToDb(usn: string, record: OtpRecord): Promise<void> {
         expires_at = EXCLUDED.expires_at;
     `;
   } catch (e) {
-    console.warn('[OTP DB] Neon saveOtpToDb error (stateless token is active):', e);
+    console.warn('[OTP DB] Neon saveOtpToDb error:', e);
+  }
+
+  if (isSupabaseConfigured) {
+    try {
+      await supabase.from('active_otps').upsert({
+        usn: record.usn,
+        code: record.code,
+        channel: record.channel,
+        target: record.target,
+        expires_at: record.expiresAt,
+      });
+    } catch {}
   }
 }
 
 async function deleteOtpFromDb(usn: string): Promise<void> {
+  const cleaned = usn.trim().toUpperCase();
   try {
-    const cleaned = usn.trim().toUpperCase();
     await sql`DELETE FROM active_otps WHERE usn = ${cleaned};`;
   } catch {}
+  if (isSupabaseConfigured) {
+    try {
+      await supabase.from('active_otps').delete().eq('usn', cleaned);
+    } catch {}
+  }
 }
 
 // In-Memory with Supabase fallback + Stateless HMAC token
@@ -591,11 +624,12 @@ export async function verifyOtp(
 export async function createVerifiedSession(usn: string, contactInfo?: { email?: string; phone?: string }): Promise<string> {
   const token = `VTOK_${Math.random().toString(36).substring(2, 8).toUpperCase()}_${Date.now()}`;
   const expiresAt = Date.now() + 20 * 60 * 1000;
+  const cleanedUsn = usn.trim().toUpperCase();
 
   try {
     await sql`
       INSERT INTO verified_sessions (token, usn, email, phone, expires_at)
-      VALUES (${token}, ${usn.trim().toUpperCase()}, ${contactInfo?.email ?? null}, ${contactInfo?.phone ?? null}, ${expiresAt})
+      VALUES (${token}, ${cleanedUsn}, ${contactInfo?.email ?? null}, ${contactInfo?.phone ?? null}, ${expiresAt})
       ON CONFLICT (token) DO UPDATE SET
         usn = EXCLUDED.usn,
         email = EXCLUDED.email,
@@ -606,6 +640,18 @@ export async function createVerifiedSession(usn: string, contactInfo?: { email?:
     console.warn('[SESSION] Neon createVerifiedSession error:', err);
   }
 
+  if (isSupabaseConfigured) {
+    try {
+      await supabase.from('verified_sessions').upsert({
+        token,
+        usn: cleanedUsn,
+        email: contactInfo?.email ?? null,
+        phone: contactInfo?.phone ?? null,
+        expires_at: expiresAt,
+      });
+    } catch {}
+  }
+
   return token;
 }
 
@@ -614,17 +660,32 @@ export async function getSessionData(token: string): Promise<{ usn: string; emai
     const rows = await sql`
       SELECT * FROM verified_sessions WHERE token = ${token} LIMIT 1;
     `;
-    if (!rows || rows.length === 0) return null;
-    const data = rows[0] as any;
-    if (Date.now() > Number(data.expires_at)) {
-      await sql`DELETE FROM verified_sessions WHERE token = ${token};`;
-      return null;
+    if (rows && rows.length > 0) {
+      const data = rows[0] as any;
+      if (Date.now() > Number(data.expires_at)) {
+        await sql`DELETE FROM verified_sessions WHERE token = ${token};`;
+        return null;
+      }
+      return { usn: data.usn, email: data.email ?? undefined, phone: data.phone ?? undefined };
     }
-    return { usn: data.usn, email: data.email ?? undefined, phone: data.phone ?? undefined };
   } catch (err) {
-    console.warn('[SESSION] Neon getSessionData error:', err);
-    return null;
+    console.warn('[SESSION] Neon getSessionData error, falling back to Supabase:', err);
   }
+
+  if (isSupabaseConfigured) {
+    try {
+      const { data } = await supabase.from('verified_sessions').select('*').eq('token', token).maybeSingle();
+      if (data) {
+        if (Date.now() > Number(data.expires_at)) {
+          await supabase.from('verified_sessions').delete().eq('token', token);
+          return null;
+        }
+        return { usn: data.usn, email: data.email ?? undefined, phone: data.phone ?? undefined };
+      }
+    } catch {}
+  }
+
+  return null;
 }
 
 export async function verifySessionToken(usn: string, token: string): Promise<boolean> {
@@ -645,6 +706,19 @@ export async function clearAlumniSession(usn?: string): Promise<void> {
     }
   } catch (err) {
     console.warn('[SESSION] Neon clearAlumniSession error:', err);
+  }
+
+  if (isSupabaseConfigured) {
+    try {
+      if (usn) {
+        const cleanedUsn = usn.trim().toUpperCase();
+        await supabase.from('active_otps').delete().eq('usn', cleanedUsn);
+        await supabase.from('verified_sessions').delete().eq('usn', cleanedUsn);
+      } else {
+        await supabase.from('active_otps').delete().neq('usn', '');
+        await supabase.from('verified_sessions').delete().neq('token', '');
+      }
+    } catch {}
   }
 }
 

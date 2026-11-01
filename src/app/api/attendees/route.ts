@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAttendees, getSettings, deleteAllAttendees, deleteSelectedAttendees } from '@/lib/db';
+import { getAttendees, getSettings, getAttendeeStats, deleteAllAttendees, deleteSelectedAttendees } from '@/lib/db';
 import { clearAlumniSession } from '@/lib/alumni';
 import { verifyAdminPasscode, getAdminPasscodeFromRequest } from '@/lib/auth';
 
@@ -8,8 +8,11 @@ export const revalidate = 0;
 
 let cachedAttendees: any[] | null = null;
 let cachedSettings: any = null;
+let cachedStats: any = null;
 let lastCacheTime = 0;
-const CACHE_TTL_MS = 12000; // 12-second cache protects Supabase from connection exhaustion
+let lastStatsCacheTime = 0;
+const CACHE_TTL_MS = 25000; // 25-second cache prevents database bandwidth exhaustion
+const STATS_CACHE_TTL_MS = 20000; // 20-second cache for public stats queries
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,6 +22,28 @@ export async function GET(request: NextRequest) {
     const isAdmin = verifyAdminPasscode(getAdminPasscodeFromRequest(request));
 
     const now = Date.now();
+
+    // ULTRA-OPTIMIZATION: If not admin (e.g. public visitor or scanner checking remaining capacity),
+    // do NOT fetch 286 attendee rows! Only fetch lightweight aggregate stats (< 1KB).
+    if (!isAdmin) {
+      if (!cachedStats || !cachedSettings || now - lastStatsCacheTime > STATS_CACHE_TTL_MS) {
+        cachedStats = await getAttendeeStats();
+        cachedSettings = await getSettings();
+        lastStatsCacheTime = now;
+      }
+      return NextResponse.json({
+        success: true,
+        isAdmin: false,
+        attendees: [],
+        stats: cachedStats,
+        settings: cachedSettings,
+      }, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=15, stale-while-revalidate=30',
+        }
+      });
+    }
+
     let allAttendees = cachedAttendees;
     let settings = cachedSettings;
 
