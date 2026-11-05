@@ -232,6 +232,7 @@ export async function getAttendeeStats(): Promise<{
   pending: number;
   approved: number;
   checkedIn: number;
+  admittedPeople: number;
   remainingAtGate: number;
   rejected: number;
 }> {
@@ -242,7 +243,8 @@ export async function getAttendeeStats(): Promise<{
         count(*) FILTER (WHERE status = 'PENDING')::int as pending,
         count(*) FILTER (WHERE status = 'APPROVED')::int as approved,
         count(*) FILTER (WHERE status = 'REJECTED')::int as rejected,
-        count(*) FILTER (WHERE checked_in = true)::int as checked_in
+        count(*) FILTER (WHERE checked_in = true)::int as checked_in,
+        coalesce(sum(case when checked_in = true then greatest(coalesce(admitted_count, 1), 1) else coalesce(admitted_count, 0) end), 0)::int as admitted_people
       FROM attendees;
     `;
     const settings = await getSettings();
@@ -254,6 +256,7 @@ export async function getAttendeeStats(): Promise<{
         pending: r.pending || 0,
         approved: r.approved || 0,
         checkedIn: r.checked_in || 0,
+        admittedPeople: r.admitted_people || r.checked_in || 0,
         remainingAtGate: Math.max(0, (r.approved || 0) - (r.checked_in || 0)),
         rejected: r.rejected || 0,
       };
@@ -262,19 +265,25 @@ export async function getAttendeeStats(): Promise<{
     console.warn('[DB] Neon getAttendeeStats failed, falling back to Supabase:', err);
     if (isSupabaseConfigured) {
       try {
-        const { data } = await supabase.from('attendees').select('status, checked_in');
+        const { data } = await supabase.from('attendees').select('status, checked_in, admitted_count, total_quota');
         if (data) {
           const settings = await getSettings();
           const pending = data.filter(a => a.status === 'PENDING').length;
           const approved = data.filter(a => a.status === 'APPROVED').length;
           const rejected = data.filter(a => a.status === 'REJECTED').length;
           const checkedIn = data.filter(a => a.checked_in).length;
+          const admittedPeople = data.reduce((acc, a) => {
+            if (a.admitted_count && a.admitted_count > 0) return acc + a.admitted_count;
+            if (a.checked_in) return acc + (a.total_quota || 1);
+            return acc;
+          }, 0);
           return {
             total: data.length,
             capacity: settings.totalCapacity,
             pending,
             approved,
             checkedIn,
+            admittedPeople,
             remainingAtGate: Math.max(0, approved - checkedIn),
             rejected,
           };
@@ -289,12 +298,18 @@ export async function getAttendeeStats(): Promise<{
   const approved = local.filter(a => a.status === 'APPROVED').length;
   const rejected = local.filter(a => a.status === 'REJECTED').length;
   const checkedIn = local.filter(a => a.checkedIn).length;
+  const admittedPeople = local.reduce((acc, a) => {
+    if (a.admittedCount && a.admittedCount > 0) return acc + a.admittedCount;
+    if (a.checkedIn) return acc + (a.totalQuota || 1);
+    return acc;
+  }, 0);
   return {
     total: local.length,
     capacity: settings.totalCapacity,
     pending,
     approved,
     checkedIn,
+    admittedPeople,
     remainingAtGate: Math.max(0, approved - checkedIn),
     rejected,
   };
@@ -921,29 +936,36 @@ export async function checkInAttendee(
   const currentAdmitted = attendee.admittedCount ?? (attendee.checkedIn ? totalQuota : 0);
   const currentRemaining = Math.max(0, totalQuota - currentAdmitted);
 
-  if (currentRemaining <= 0) {
+  // If already checked in and no extra count was requested
+  if (currentRemaining <= 0 && (!admittingCount || admittingCount <= 0)) {
     return { status: 'ALREADY_CHECKED_IN', message: `FRAUD ALERT: All ${totalQuota} of ${totalQuota} quotas already admitted!`, attendee, remaining: 0, totalQuota };
   }
 
-  const requested = (admittingCount !== undefined && admittingCount > 0) ? admittingCount : currentRemaining;
-  const countToAdmit = Math.min(requested, currentRemaining);
+  // Count to admit in this action (supports extra people beyond quota via volunteer override)
+  const requested = (admittingCount !== undefined && admittingCount > 0) ? admittingCount : (currentRemaining > 0 ? currentRemaining : 1);
+  const countToAdmit = Math.max(1, requested);
+
   const newAdmitted = currentAdmitted + countToAdmit;
-  const newRemaining = totalQuota - newAdmitted;
+  const newTotalQuota = Math.max(totalQuota, newAdmitted);
+  const newRemaining = Math.max(0, newTotalQuota - newAdmitted);
   const isFullyExhausted = newRemaining <= 0;
+  const extraGuests = newTotalQuota > totalQuota ? (newTotalQuota - totalQuota) : 0;
 
   const existingLogs = attendee.checkInLogs ?? [];
   const newLog = {
     timestamp: new Date().toISOString(),
     admitted: countToAdmit,
     gateVolunteer: volunteerName,
-    notes: isFullyExhausted ? `Quota completed (${newAdmitted}/${totalQuota})` : `Partial entry (${newAdmitted}/${totalQuota})`,
+    notes: extraGuests > 0 
+      ? `Admitted ${countToAdmit} person(s) (${extraGuests} extra guest(s) authorized at gate by volunteer ${volunteerName}). Total admitted: ${newAdmitted}`
+      : (isFullyExhausted ? `Quota completed (${newAdmitted}/${newTotalQuota})` : `Partial entry (${newAdmitted}/${newTotalQuota})`),
   };
 
   let updatedAttendee: Attendee = {
     ...attendee,
-    totalQuota,
+    totalQuota: newTotalQuota,
     admittedCount: newAdmitted,
-    checkedIn: isFullyExhausted,
+    checkedIn: true,
     checkedInAt: new Date().toISOString(),
     checkedInBy: volunteerName,
     checkInLogs: [...existingLogs, newLog],
@@ -952,9 +974,9 @@ export async function checkInAttendee(
   try {
     const rows = await sql`
       UPDATE attendees
-      SET total_quota = ${totalQuota},
+      SET total_quota = ${newTotalQuota},
           admitted_count = ${newAdmitted},
-          checked_in = ${isFullyExhausted},
+          checked_in = true,
           checked_in_at = NOW(),
           checked_in_by = ${volunteerName},
           check_in_logs = ${JSON.stringify([...existingLogs, newLog])}
@@ -972,16 +994,26 @@ export async function checkInAttendee(
 
   // Dual-write mirror to Supabase
   mirrorToSupabase(() => supabase.from('attendees').update({
-    total_quota: totalQuota,
+    total_quota: newTotalQuota,
     admitted_count: newAdmitted,
-    checked_in: isFullyExhausted,
+    checked_in: true,
     checked_in_at: new Date().toISOString(),
     checked_in_by: volunteerName,
     check_in_logs: [...existingLogs, newLog],
   }).eq('id', attendee.id));
 
+  const wristband = attendee.wristbandColor || 'Neon Cyan';
+  const extraMsg = extraGuests > 0 ? ` (includes ${extraGuests} extra guest${extraGuests > 1 ? 's' : ''})` : '';
+
   if (isFullyExhausted) {
-    return { status: 'SUCCESS', message: `FINAL ENTRY GRANTED! Admitted ${countToAdmit} member(s). All ${totalQuota} of ${totalQuota} quotas used. Issue ${countToAdmit} ${attendee.wristbandColor || 'Neon Cyan'} wristband(s). Pass is now EXPIRED.`, attendee: updatedAttendee, admittedNow: countToAdmit, remaining: 0, totalQuota };
+    return {
+      status: 'SUCCESS',
+      message: `ENTRY GRANTED! Admitted ${countToAdmit} member(s)${extraMsg}. Total admitted: ${newAdmitted}. Issue ${countToAdmit} ${wristband} wristband(s).`,
+      attendee: updatedAttendee,
+      admittedNow: countToAdmit,
+      remaining: 0,
+      totalQuota: newTotalQuota
+    };
   }
 
   return { status: 'PARTIAL_ENTRY', message: `PARTIAL ENTRY GRANTED! Admitted ${countToAdmit} member(s). Issue ${countToAdmit} ${attendee.wristbandColor || 'Neon Cyan'} wristband(s). ${newRemaining} admission(s) remaining.`, attendee: updatedAttendee, admittedNow: countToAdmit, remaining: newRemaining, totalQuota };

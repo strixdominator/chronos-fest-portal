@@ -1112,11 +1112,13 @@ export default function AdminPage() {
                           )}
                           {attendee.status === 'APPROVED' && !attendee.checkedIn && attendee.admittedCount && attendee.admittedCount > 0 && (
                             <span className="neo-badge" style={{ background: 'var(--card-blue-2)', color: '#0f2b5c' }}>
-                              ADMITTED
+                              PARTIAL ({attendee.admittedCount})
                             </span>
                           )}
                           {attendee.status === 'APPROVED' && attendee.checkedIn && (
-                            <span className="neo-badge neo-badge-checkedin">ADMITTED</span>
+                            <span className="neo-badge neo-badge-checkedin">
+                              ADMITTED {attendee.admittedCount && attendee.admittedCount > 1 ? `(${attendee.admittedCount})` : ''}
+                            </span>
                           )}
                           {attendee.status === 'PENDING' && (
                             <span className="neo-badge neo-badge-pending">NEEDS REVIEW</span>

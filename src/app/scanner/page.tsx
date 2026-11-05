@@ -277,6 +277,7 @@ export default function GateScannerPage() {
       if (data.status !== 'READY') {
         playErrorSound();
         const displayMsg = data.message || data.error || 'Pass verification rejected.';
+        setAdmitCount(1);
         setScanPreview({
           code: codeToVerify.trim(),
           attendee: data.attendee,
@@ -954,12 +955,13 @@ export default function GateScannerPage() {
                   </label>
 
                   {/* Stepper */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 14 }}>
                     <button
                       type="button"
                       disabled={admitCount <= 1}
                       onClick={() => setAdmitCount(prev => Math.max(1, prev - 1))}
                       className="neo-stepper-btn"
+                      title="Decrease count"
                     >
                       <Minus size={18} />
                     </button>
@@ -970,33 +972,71 @@ export default function GateScannerPage() {
 
                     <button
                       type="button"
-                      disabled={admitCount >= scanPreview.remaining}
-                      onClick={() => setAdmitCount(prev => Math.min(scanPreview.remaining, prev + 1))}
+                      disabled={admitCount >= 15}
+                      onClick={() => setAdmitCount(prev => prev + 1)}
                       className="neo-stepper-btn"
+                      title="Add extra person on this pass (Volunteer override)"
                     >
                       <Plus size={18} />
                     </button>
                   </div>
 
-                  {/* Quick Shortcut Chips */}
-                  {scanPreview.remaining > 1 && (
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
-                      {Array.from({ length: scanPreview.remaining }).map((_, i) => {
-                        const val = i + 1;
-                        const isSelected = admitCount === val;
-                        return (
-                          <button
-                            key={val}
-                            type="button"
-                            onClick={() => setAdmitCount(val)}
-                            className={`neo-chip-btn ${isSelected ? 'active' : ''}`}
-                          >
-                            {val === scanPreview.remaining ? `All ${val} Present` : `${val} Member${val > 1 ? 's' : ''}`}
-                          </button>
-                        );
-                      })}
+                  {/* Extra Guest Notification Badge */}
+                  {admitCount > scanPreview.remaining && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                      marginBottom: 14,
+                      fontSize: '0.8rem',
+                      fontFamily: 'var(--font-mono)',
+                      color: '#b45309',
+                      background: 'rgba(245, 158, 11, 0.12)',
+                      border: '1px solid rgba(245, 158, 11, 0.35)',
+                      borderRadius: 6,
+                      padding: '8px 12px'
+                    }}>
+                      <span>✨ <strong>+{admitCount - scanPreview.remaining} Extra Guest{admitCount - scanPreview.remaining > 1 ? 's' : ''}</strong> (Volunteer Override) will be recorded</span>
                     </div>
                   )}
+
+                  {/* Quick Shortcut Chips */}
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+                    {scanPreview.remaining > 1 && Array.from({ length: scanPreview.remaining }).map((_, i) => {
+                      const val = i + 1;
+                      const isSelected = admitCount === val;
+                      return (
+                        <button
+                          key={val}
+                          type="button"
+                          onClick={() => setAdmitCount(val)}
+                          className={`neo-chip-btn ${isSelected ? 'active' : ''}`}
+                        >
+                          {val === scanPreview.remaining ? `All ${val} Quota` : `${val} Member${val > 1 ? 's' : ''}`}
+                        </button>
+                      );
+                    })}
+                    {[1, 2].map(extra => {
+                      const val = scanPreview.remaining + extra;
+                      const isSelected = admitCount === val;
+                      return (
+                        <button
+                          key={`extra-${extra}`}
+                          type="button"
+                          onClick={() => setAdmitCount(val)}
+                          className={`neo-chip-btn ${isSelected ? 'active' : ''}`}
+                          style={{
+                            borderColor: isSelected ? 'var(--color-navy)' : '#d97706',
+                            color: isSelected ? '#fff' : '#b45309',
+                            background: isSelected ? '#b45309' : undefined
+                          }}
+                        >
+                          +{extra} Extra Guest
+                        </button>
+                      );
+                    })}
+                  </div>
 
                   {/* Submit Button */}
                   <button
@@ -1012,7 +1052,8 @@ export default function GateScannerPage() {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: 8
+                      gap: 8,
+                      background: admitCount > scanPreview.remaining ? '#0f766e' : undefined
                     }}
                   >
                     {admitting ? (
@@ -1033,18 +1074,73 @@ export default function GateScannerPage() {
 
               {/* Anti-fraud warning if already exhausted */}
               {scanPreview.status === 'ALREADY_CHECKED_IN' && (
-                <div style={{
-                  padding: '14px',
-                  background: '#fee2e2',
-                  border: '1px solid #fca5a5',
-                  borderRadius: 8,
-                  color: '#991b1b',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.82rem',
-                  fontWeight: 700,
-                  marginBottom: 16
-                }}>
-                  ⛔ DO NOT ADMIT: All {scanPreview.totalQuota} of {scanPreview.totalQuota} registered passes have already been scanned. Wristbands were already issued.
+                <div>
+                  <div style={{
+                    padding: '14px',
+                    background: '#fee2e2',
+                    border: '1px solid #fca5a5',
+                    borderRadius: 8,
+                    color: '#991b1b',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.82rem',
+                    fontWeight: 700,
+                    marginBottom: 16
+                  }}>
+                    ⛔ QUOTA PREVIOUSLY EXHAUSTED: {scanPreview.admittedCount || scanPreview.totalQuota} wristbands were already issued for this pass.
+                  </div>
+
+                  <div style={{ border: '1px solid rgba(178, 139, 76, 0.35)', borderRadius: 8, padding: '18px', background: '#FAF7F2', marginBottom: 20 }}>
+                    <label className="mono-label" style={{ display: 'block', marginBottom: 10, textAlign: 'center', color: 'var(--espresso)', fontSize: '0.78rem' }}>
+                      VOLUNTEER OVERRIDE: ADMIT EXTRA GUEST(S) ON THIS PASS?
+                    </label>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 14 }}>
+                      <button
+                        type="button"
+                        disabled={admitCount <= 1}
+                        onClick={() => setAdmitCount(prev => Math.max(1, prev - 1))}
+                        className="neo-stepper-btn"
+                        title="Decrease count"
+                      >
+                        <Minus size={18} />
+                      </button>
+
+                      <div className="neo-stepper-val">
+                        +{admitCount}
+                      </div>
+
+                      <button
+                        type="button"
+                        disabled={admitCount >= 10}
+                        onClick={() => setAdmitCount(prev => prev + 1)}
+                        className="neo-stepper-btn"
+                        title="Add extra person"
+                      >
+                        <Plus size={18} />
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={admitting}
+                      onClick={() => handleConfirmCheckIn(admitCount)}
+                      className="btn-neo-black"
+                      style={{
+                        width: '100%',
+                        padding: '14px',
+                        fontSize: '0.85rem',
+                        borderRadius: 8,
+                        background: '#0f766e',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 8
+                      }}
+                    >
+                      {admitting ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
+                      AUTHORIZE +{admitCount} EXTRA GUEST{admitCount > 1 ? 'S' : ''} & ISSUE WRISTBAND{admitCount > 1 ? 'S' : ''} ↗
+                    </button>
+                  </div>
                 </div>
               )}
 

@@ -84,12 +84,21 @@ export async function GET(request: NextRequest) {
     const rejectedAlumni = allAttendees.filter(a => a.status === 'REJECTED');
     const checkedInAlumni = allAttendees.filter(a => a.checkedIn);
 
+    const totalAdmittedPeople = allAttendees.reduce((acc, a) => {
+      if (a.admittedCount && a.admittedCount > 0) return acc + a.admittedCount;
+      if (a.checkedIn) return acc + (a.totalQuota || 1);
+      return acc;
+    }, 0);
+    const totalApprovedPeople = allAttendees.filter(a => a.status === 'APPROVED').reduce((acc, a) => acc + (a.totalQuota || 1), 0);
+
     const stats = {
       total: totalAlumni,
       capacity: settings.totalCapacity,
       pending: pendingAlumni.length,
       approved: approvedAlumni.length,
       checkedIn: checkedInAlumni.length,
+      admittedPeople: totalAdmittedPeople,
+      approvedPeople: totalApprovedPeople,
       remainingAtGate: Math.max(0, approvedAlumni.length - checkedInAlumni.length),
       rejected: rejectedAlumni.length,
     };

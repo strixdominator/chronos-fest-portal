@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
       'Pass ID', 'Full Name', 'USN / Seat No', 'Department', 'Batch Year',
       'Current Organisation', 'Designation / Role', 'Email', 'Phone',
       'Ticket Code', 'Verification Method', 'Approval Status', 'Gate Admitted',
+      'Admitted People Count', 'Total Quota',
       'Check-in Timestamp', 'Gate Checkpoint', 'Wristband', 'Registration Time',
       'Review Reason / Notes'
     ];
@@ -45,6 +46,8 @@ export async function GET(request: NextRequest) {
       escapeCsv(a.verificationMethod || 'OTP_VERIFIED'),
       escapeCsv(a.status),
       escapeCsv(a.checkedIn ? 'YES' : 'NO'),
+      escapeCsv(a.checkedIn ? String(a.admittedCount || a.totalQuota || 1) : String(a.admittedCount || 0)),
+      escapeCsv(String(a.totalQuota || 1)),
       escapeCsv(a.checkedInAt || ''),
       escapeCsv(a.checkedInBy || ''),
       escapeCsv(a.wristbandColor || ''),
