@@ -3,6 +3,9 @@ import { findAlumnusByUsn, maskEmail, maskPhone } from '@/lib/alumni';
 import { getAttendeeByUsn } from '@/lib/db';
 import { getClientIp, checkRateLimit } from '@/lib/rateLimit';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request: NextRequest) {
   try {
     const clientIp = getClientIp(request);

@@ -129,13 +129,21 @@ export function maskPhone(phone?: string): string {
   return `${prefix} •••• ••${suffix}`;
 }
 
+let lastAlumniLoadTime = 0;
+const ALUMNI_CACHE_TTL_MS = 5000; // 5-second cache to ensure updates to alumni_master.json appear live immediately
+
 export function getAlumniMaster(): AlumniRecord[] {
-  if (globalThis.__ALUMNI_MASTER__ && globalThis.__ALUMNI_MASTER__.length > 0) {
+  const now = Date.now();
+  if (globalThis.__ALUMNI_MASTER__ && globalThis.__ALUMNI_MASTER__.length > 0 && now - lastAlumniLoadTime < ALUMNI_CACHE_TTL_MS) {
     return globalThis.__ALUMNI_MASTER__;
   }
   const loaded = safeReadJson<AlumniRecord[]>('alumni_master.json', INITIAL_ALUMNI_MASTER);
-  globalThis.__ALUMNI_MASTER__ = loaded;
-  return loaded;
+  if (loaded && loaded.length > 0) {
+    globalThis.__ALUMNI_MASTER__ = loaded;
+    lastAlumniLoadTime = now;
+    return loaded;
+  }
+  return globalThis.__ALUMNI_MASTER__ || INITIAL_ALUMNI_MASTER;
 }
 
 export function saveAlumniMaster(list: AlumniRecord[]): void {
