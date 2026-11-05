@@ -876,10 +876,10 @@ export default function AdminPage() {
         <div className="neo-stat-card">
           <span className="mono-label">GATE ADMITTED</span>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.4rem', fontWeight: 700, margin: '8px 0 2px', color: '#0e8a5a' }}>
-            {stats.checkedIn}
+            {stats.admittedPeople && stats.admittedPeople > stats.checkedIn ? stats.admittedPeople : stats.checkedIn}
           </div>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-            {Math.max(0, stats.approved - stats.checkedIn)} passes yet to arrive
+            {stats.checkedIn} passes scanned {stats.admittedPeople && stats.admittedPeople > stats.checkedIn ? `(${stats.admittedPeople} total people)` : 'at gate'}
           </span>
         </div>
 
@@ -970,7 +970,7 @@ export default function AdminPage() {
                   className={statusFilter === 'CHECKED_IN' ? 'btn-neo-black' : 'btn-neo-outline'}
                   style={{ padding: '8px 14px', fontSize: '0.76rem' }}
                 >
-                  CHECKED IN ({stats.checkedIn})
+                  CHECKED IN ({stats.checkedIn}{stats.admittedPeople && stats.admittedPeople > stats.checkedIn ? ` · ${stats.admittedPeople} people` : ''})
                 </button>
                 <button
                   onClick={() => setStatusFilter('REJECTED')}
@@ -1049,6 +1049,7 @@ export default function AdminPage() {
                     <th>CONTACT & VERIFICATION</th>
                     <th>ORGANISATION & ROLE</th>
                     <th>STATUS</th>
+                    <th>ADMISSION HEADCOUNT (ALUMNI + EXTRA)</th>
                     <th>REVIEW NOTE / PROOF</th>
                     <th style={{ textAlign: 'right' }}>ACTIONS</th>
                   </tr>
@@ -1056,7 +1057,7 @@ export default function AdminPage() {
                 <tbody>
                   {attendees.length === 0 ? (
                     <tr>
-                      <td colSpan={8} style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                      <td colSpan={9} style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
                         NO PASSES MATCH THE SELECTED FILTER CRITERIA.
                       </td>
                     </tr>
@@ -1130,6 +1131,73 @@ export default function AdminPage() {
                             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-secondary)', marginTop: 2 }}>
                               At {new Date(attendee.checkedInAt).toLocaleTimeString()}
                             </div>
+                          )}
+                        </td>
+
+                        <td>
+                          {attendee.checkedIn || (attendee.admittedCount && attendee.admittedCount > 0) ? (
+                            <div>
+                              {(() => {
+                                const total = attendee.admittedCount || (attendee.checkedIn ? (attendee.totalQuota || 1) : 1);
+                                const extra = total - 1;
+                                if (extra > 0) {
+                                  return (
+                                    <div>
+                                      <span
+                                        style={{
+                                          fontFamily: 'var(--font-mono)',
+                                          fontWeight: 800,
+                                          fontSize: '0.82rem',
+                                          color: '#065f46',
+                                          background: '#d1fae5',
+                                          border: '1.5px solid #10b981',
+                                          padding: '3px 8px',
+                                          borderRadius: 6,
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          gap: 4,
+                                          whiteSpace: 'nowrap'
+                                        }}
+                                      >
+                                        Alumni + {extra} {extra === 1 ? 'member' : 'members'} ({total} total)
+                                      </span>
+                                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: '#047857', marginTop: 3 }}>
+                                        ✓ {attendee.fullName} + {extra} extra guest{extra > 1 ? 's' : ''}
+                                      </div>
+                                    </div>
+                                  );
+                                }
+                                return (
+                                  <div>
+                                    <span
+                                      style={{
+                                        fontFamily: 'var(--font-mono)',
+                                        fontWeight: 700,
+                                        fontSize: '0.8rem',
+                                        color: '#1e3a8a',
+                                        background: '#dbeafe',
+                                        border: '1px solid #93c5fd',
+                                        padding: '2px 7px',
+                                        borderRadius: 5,
+                                        display: 'inline-block',
+                                        whiteSpace: 'nowrap'
+                                      }}
+                                    >
+                                      Alumni (1 person)
+                                    </span>
+                                  </div>
+                                );
+                              })()}
+                              {attendee.checkedInBy && (
+                                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.66rem', color: 'var(--text-secondary)', marginTop: 2 }}>
+                                  By: {attendee.checkedInBy}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                              — Not at gate yet
+                            </span>
                           )}
                         </td>
 
