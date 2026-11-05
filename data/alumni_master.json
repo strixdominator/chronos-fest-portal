@@ -7,6 +7,23 @@
     "department": "CSE",
     "batchYear": "Batch of 2021"
   },
+   {
+    "usn": "1DB12ME101",
+    "fullName": "Vijayprakash",
+    "officialEmail": "Vijayprakashkusti94@gmail.com",
+    "phone": "9901157663",
+    "department": "Mechanical",
+    "batchYear": "Batch of 2016"
+  },
+  {
+    "usn": "1DB08EC418",
+    "fullName": "Sreeraj",
+    "officialEmail": "sreerajinch@gmail.com",
+    "phone": "7795779535",
+    "department": "ECE",
+    "batchYear": "Batch of 2011"
+  },
+
   {
     "usn": "1DB07EC068",
     "fullName": "Pavan Kumar B",
