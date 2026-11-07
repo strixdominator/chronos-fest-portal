@@ -74,7 +74,6 @@ export default function AdminPage() {
 
   // Delete & Re-registration state
   const [deletingAttendee, setDeletingAttendee] = useState<Attendee | null>(null);
-  const [showResetAllModal, setShowResetAllModal] = useState(false);
 
 
   // Alumni Master state
@@ -378,42 +377,7 @@ export default function AdminPage() {
     }
   };
 
-  // Bulk Purge All Passes & Allow Everyone to Re-register
-  const [purgeConfirmInput, setPurgeConfirmInput] = React.useState('');
-  const PURGE_PHRASE = 'DELETE ALL';
-  const handleResetAllAttendees = async () => {
-    if (purgeConfirmInput.trim().toUpperCase() !== PURGE_PHRASE) {
-      alert(`Type "${PURGE_PHRASE}" exactly to confirm.`);
-      return;
-    }
-    setActionLoading('resetAll');
-    try {
-      const res = await fetch(`/api/attendees?_t=${Date.now()}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'x-admin-passcode': adminPasscode,
-        },
-        body: JSON.stringify({ resetAll: true, resetConfirmPhrase: 'CHRONOS-PURGE-CONFIRMED' }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setAttendees([]);
-        setShowResetAllModal(false);
-        setPurgeConfirmInput('');
-        await fetchAttendees();
-        alert(data.message || 'All passes have been deleted. Alumni can now register again.');
-      } else {
-        alert(data.error || 'Failed to reset passes.');
-      }
-    } catch (e: any) {
-      alert('Error: ' + e.message);
-    } finally {
-      setActionLoading(null);
-    }
-  };
+
 
 
   // Import Multiple Excel (.xlsx, .xls) or CSV files
@@ -998,17 +962,6 @@ export default function AdminPage() {
                     style={{ whiteSpace: 'nowrap', padding: '10px 16px', fontSize: '0.76rem', background: '#0e8a5a' }}
                   >
                     APPROVE ALL PENDING ({stats.pending}) ↗
-                  </button>
-                )}
-                {stats.total > 0 && (
-                  <button
-                    onClick={() => setShowResetAllModal(true)}
-                    className="btn-neo-outline"
-                    style={{ whiteSpace: 'nowrap', padding: '10px 14px', fontSize: '0.76rem', color: '#dc2626', borderColor: '#dc2626', display: 'inline-flex', alignItems: 'center', gap: 6 }}
-                    title="Delete all registered passes and allow everyone to re-register"
-                  >
-                    <Trash2 size={13} />
-                    RESET ALL PASSES ({stats.total}) ↗
                   </button>
                 )}
                 <a
@@ -1883,69 +1836,6 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* MODAL 6: RESET ALL PASSES (DANGER ZONE) */}
-      {showResetAllModal && (
-        <div className="neo-modal-backdrop" onClick={() => setShowResetAllModal(false)}>
-          <div className="neo-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 540 }}>
-            <div className="neo-modal-header" style={{ background: '#7f1d1d' }}>
-              <span className="mono-tag" style={{ color: '#fee2e2' }}>
-                DANGER ZONE · PURGE ALL REGISTERED PASSES
-              </span>
-              <button onClick={() => setShowResetAllModal(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: 4 }}>
-                <X size={18} />
-              </button>
-            </div>
-
-            <div style={{ padding: '24px' }}>
-              <div style={{ background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 8, padding: '16px', marginBottom: 20 }}>
-                <h4 style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', fontWeight: 700, color: '#991b1b' }}>
-                  PURGE ALL {stats.total} REGISTERED PASSES?
-                </h4>
-                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: '#7f1d1d', marginTop: 6 }}>
-                  This will permanently delete all claimed passes from the database and invalidate every issued QR code.
-                </p>
-              </div>
-
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.88rem', color: 'var(--text-body)', marginBottom: 20, lineHeight: 1.6 }}>
-                After this purge is executed, <strong>all alumni listed in the university master directory will be unlocked and permitted to register again</strong> from scratch.
-              </p>
-
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: '#7f1d1d', display: 'block', marginBottom: 8, letterSpacing: '0.05em' }}>
-                  TYPE &quot;DELETE ALL&quot; TO CONFIRM
-                </label>
-                <input
-                  type="text"
-                  value={purgeConfirmInput}
-                  onChange={e => setPurgeConfirmInput(e.target.value)}
-                  placeholder="DELETE ALL"
-                  style={{ width: '100%', padding: '10px 14px', fontFamily: 'var(--font-mono)', fontSize: '0.88rem', background: '#fff', border: '2px solid #dc2626', borderRadius: 6, color: '#7f1d1d', boxSizing: 'border-box' }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button
-                  type="button"
-                  onClick={() => setShowResetAllModal(false)}
-                  className="btn-neo-outline"
-                  style={{ flex: 1, padding: '12px', borderRadius: 8 }}
-                >
-                  CANCEL
-                </button>
-                <button
-                  type="button"
-                  onClick={handleResetAllAttendees}
-                  disabled={actionLoading === 'resetAll' || purgeConfirmInput.trim().toUpperCase() !== PURGE_PHRASE}
-                  className="btn-neo-black"
-                  style={{ flex: 2, background: '#dc2626', borderColor: '#7f1d1d', padding: '12px', fontSize: '0.8rem', borderRadius: 8 }}
-                >
-                  {actionLoading === 'resetAll' ? 'PURGING...' : 'YES, PURGE ALL & RESET RE-REGISTRATION ↗'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
