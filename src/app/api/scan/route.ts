@@ -70,13 +70,13 @@ export async function POST(request: NextRequest) {
     const result = await checkInAttendee(code, volunteerName, count);
 
     return NextResponse.json({
-      success: result.status === 'SUCCESS' || result.status === 'PARTIAL_ENTRY',
+      success: result.status === 'SUCCESS',
       status: result.status,
       message: result.message,
-      error: (result.status !== 'SUCCESS' && result.status !== 'PARTIAL_ENTRY') ? result.message : undefined,
+      error: result.status !== 'SUCCESS' ? result.message : undefined,
       attendee: result.attendee,
       admittedNow: result.admittedNow,
-      remaining: result.remaining,
+      remaining: 0,
       totalQuota: result.totalQuota,
     });
   } catch (error: any) {

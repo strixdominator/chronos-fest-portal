@@ -265,10 +265,7 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
   const isRejected = attendee.status === 'REJECTED';
 
   const totalQuota = attendee.totalQuota || (1 + (attendee.familyCount || 0));
-  const admittedCount = attendee.admittedCount ?? (attendee.checkedIn ? totalQuota : 0);
-  const remaining = Math.max(0, totalQuota - admittedCount);
-  const isPartiallyCheckedIn = admittedCount > 0 && remaining > 0;
-  const isFullyCheckedIn = attendee.checkedIn || (totalQuota > 0 && remaining === 0);
+  const isCheckedIn = Boolean(attendee.checkedIn || (attendee.admittedCount && attendee.admittedCount > 0));
 
   return (
     <div className="ticket-wrapper-neo">
@@ -285,19 +282,14 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
           </div>
 
           <div>
-            {isApproved && !isFullyCheckedIn && !isPartiallyCheckedIn && (
+            {isApproved && !isCheckedIn && (
               <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', fontWeight: 800, background: 'rgba(176, 138, 70, 0.2)', color: 'var(--gold-champagne, #E8D2A0)', padding: '5px 10px', borderRadius: 6, border: '1px solid var(--gold-antique, #B08A46)', letterSpacing: '1px' }}>
                 VERIFIED ({totalQuota} {totalQuota > 1 ? 'PASSES' : 'PASS'})
               </span>
             )}
-            {isApproved && isPartiallyCheckedIn && (
-              <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', fontWeight: 800, background: 'rgba(201, 155, 75, 0.25)', color: '#FDE68A', padding: '5px 10px', borderRadius: 6, border: '1px solid #D97706', letterSpacing: '1px' }}>
-                {admittedCount}/{totalQuota} ADMITTED
-              </span>
-            )}
-            {isApproved && isFullyCheckedIn && (
+            {isApproved && isCheckedIn && (
               <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', fontWeight: 800, background: 'rgba(239, 68, 68, 0.2)', color: '#FCA5A5', padding: '5px 10px', borderRadius: 6, border: '1px solid #EF4444', letterSpacing: '1px' }}>
-                EXHAUSTED ({totalQuota}/{totalQuota})
+                EXPIRED / CHECKED IN
               </span>
             )}
             {isPending && (
@@ -406,8 +398,8 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
                   {totalQuota} PERSONS TOTAL
                 </div>
               </div>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 700, color: 'var(--gold-antique, #B08A46)' }}>
-                {admittedCount > 0 ? `${remaining} REMAINING` : 'ALL UNCLAIMED'}
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 700, color: isCheckedIn ? '#EF4444' : 'var(--gold-antique, #B08A46)' }}>
+                {isCheckedIn ? 'EXPIRED' : 'VALID ENTRY'}
               </span>
             </div>
           )}
@@ -473,8 +465,8 @@ export default function TicketCard({ attendee, settings }: TicketCardProps) {
               }}>
                 <canvas ref={canvasRef} style={{ display: 'block', maxWidth: '100%', height: 'auto' }} />
               </div>
-              <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', color: 'var(--gold-champagne, #E8D2A0)', letterSpacing: '1px' }}>
-                PRESENT THIS QR CODE AT SECURITY GATE FOR ENTRY
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', color: isCheckedIn ? '#FCA5A5' : 'var(--gold-champagne, #E8D2A0)', letterSpacing: '1px' }}>
+                {isCheckedIn ? 'PASS EXPIRED • ALREADY ADMITTED AT GATE' : 'PRESENT THIS QR CODE AT SECURITY GATE FOR ENTRY'}
               </div>
             </div>
           ) : isPending ? (

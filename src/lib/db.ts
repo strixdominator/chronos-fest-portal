@@ -893,23 +893,32 @@ export async function getScanPreview(ticketOrId: string): Promise<{
 
   const totalQuota = attendee.totalQuota || (1 + (attendee.familyCount || 0));
   const admittedCount = attendee.admittedCount ?? (attendee.checkedIn ? totalQuota : 0);
-  const remaining = Math.max(0, totalQuota - admittedCount);
 
   if (attendee.status === 'PENDING') {
-    return { status: 'PENDING', message: 'Entry Denied: Registration is PENDING APPROVAL by the committee.', attendee, totalQuota, admittedCount, remaining };
+    return { status: 'PENDING', message: 'Entry Denied: Registration is PENDING APPROVAL by the committee.', attendee, totalQuota, admittedCount, remaining: 0 };
   }
   if (attendee.status === 'REJECTED') {
-    return { status: 'REJECTED', message: `Entry Denied: Registration was REJECTED (${attendee.rejectionReason || 'Invalid Graduate ID'}).`, attendee, totalQuota, admittedCount, remaining };
+    return { status: 'REJECTED', message: `Entry Denied: Registration was REJECTED (${attendee.rejectionReason || 'Invalid Graduate ID'}).`, attendee, totalQuota, admittedCount, remaining: 0 };
   }
-  if (remaining <= 0) {
+  if (attendee.checkedIn || admittedCount > 0) {
     const timeStr = attendee.checkedInAt ? new Date(attendee.checkedInAt).toLocaleTimeString() : 'earlier';
-    return { status: 'ALREADY_CHECKED_IN', message: `PASS QUOTA EXHAUSTED: All ${totalQuota} of ${totalQuota} members have already entered! Last checked in at ${timeStr}.`, attendee, totalQuota, admittedCount, remaining: 0 };
+    return {
+      status: 'ALREADY_CHECKED_IN',
+      message: `PASS EXPIRED: This pass was already scanned and used at gate (Checked in at ${timeStr} by ${attendee.checkedInBy || 'Gate Staff'}). Single-use entry only.`,
+      attendee,
+      totalQuota,
+      admittedCount,
+      remaining: 0
+    };
   }
 
   return {
     status: 'READY',
-    message: admittedCount > 0 ? `Partial entry active: ${admittedCount} already admitted, ${remaining} admissions remaining.` : `Verified pass: ${totalQuota} total admission(s) available.`,
-    attendee, totalQuota, admittedCount, remaining,
+    message: `Verified pass: ${totalQuota} member(s) registered. Confirm entry count at gate.`,
+    attendee,
+    totalQuota,
+    admittedCount: 0,
+    remaining: totalQuota,
   };
 }
 
@@ -933,22 +942,25 @@ export async function checkInAttendee(
   if (attendee.status === 'REJECTED') return { status: 'REJECTED', message: `Entry Denied: Registration was REJECTED (${attendee.rejectionReason || 'Invalid Student ID'}).`, attendee };
 
   const totalQuota = attendee.totalQuota || (1 + (attendee.familyCount || 0));
-  const currentAdmitted = attendee.admittedCount ?? (attendee.checkedIn ? totalQuota : 0);
-  const currentRemaining = Math.max(0, totalQuota - currentAdmitted);
 
-  // If already checked in and no extra count was requested
-  if (currentRemaining <= 0 && (!admittingCount || admittingCount <= 0)) {
-    return { status: 'ALREADY_CHECKED_IN', message: `FRAUD ALERT: All ${totalQuota} of ${totalQuota} quotas already admitted!`, attendee, remaining: 0, totalQuota };
+  // If already checked in: Pass is single-use and already expired
+  if (attendee.checkedIn || (attendee.admittedCount && attendee.admittedCount > 0)) {
+    const timeStr = attendee.checkedInAt ? new Date(attendee.checkedInAt).toLocaleTimeString() : 'earlier';
+    return {
+      status: 'ALREADY_CHECKED_IN',
+      message: `FRAUD ALERT: This pass is already EXPIRED! Previously scanned at ${timeStr} by ${attendee.checkedInBy || 'Gate Staff'}.`,
+      attendee,
+      remaining: 0,
+      totalQuota
+    };
   }
 
   // Count to admit in this action (supports extra people beyond quota via volunteer override)
-  const requested = (admittingCount !== undefined && admittingCount > 0) ? admittingCount : (currentRemaining > 0 ? currentRemaining : 1);
+  const requested = (admittingCount !== undefined && admittingCount > 0) ? admittingCount : totalQuota;
   const countToAdmit = Math.max(1, requested);
 
-  const newAdmitted = currentAdmitted + countToAdmit;
+  const newAdmitted = countToAdmit;
   const newTotalQuota = Math.max(totalQuota, newAdmitted);
-  const newRemaining = Math.max(0, newTotalQuota - newAdmitted);
-  const isFullyExhausted = newRemaining <= 0;
   const extraGuests = newTotalQuota > totalQuota ? (newTotalQuota - totalQuota) : 0;
 
   const existingLogs = attendee.checkInLogs ?? [];
@@ -957,8 +969,8 @@ export async function checkInAttendee(
     admitted: countToAdmit,
     gateVolunteer: volunteerName,
     notes: extraGuests > 0 
-      ? `Admitted ${countToAdmit} person(s) (${extraGuests} extra guest(s) authorized at gate by volunteer ${volunteerName}). Total admitted: ${newAdmitted}`
-      : (isFullyExhausted ? `Quota completed (${newAdmitted}/${newTotalQuota})` : `Partial entry (${newAdmitted}/${newTotalQuota})`),
+      ? `Admitted ${countToAdmit} person(s) (${extraGuests} extra guest(s) authorized at gate by volunteer ${volunteerName}). Pass expired.`
+      : `Admitted ${countToAdmit} person(s). Pass expired.`,
   };
 
   let updatedAttendee: Attendee = {
@@ -1005,16 +1017,12 @@ export async function checkInAttendee(
   const wristband = attendee.wristbandColor || 'Neon Cyan';
   const extraMsg = extraGuests > 0 ? ` (includes ${extraGuests} extra guest${extraGuests > 1 ? 's' : ''})` : '';
 
-  if (isFullyExhausted) {
-    return {
-      status: 'SUCCESS',
-      message: `ENTRY GRANTED! Admitted ${countToAdmit} member(s)${extraMsg}. Total admitted: ${newAdmitted}. Issue ${countToAdmit} ${wristband} wristband(s).`,
-      attendee: updatedAttendee,
-      admittedNow: countToAdmit,
-      remaining: 0,
-      totalQuota: newTotalQuota
-    };
-  }
-
-  return { status: 'PARTIAL_ENTRY', message: `PARTIAL ENTRY GRANTED! Admitted ${countToAdmit} member(s). Issue ${countToAdmit} ${attendee.wristbandColor || 'Neon Cyan'} wristband(s). ${newRemaining} admission(s) remaining.`, attendee: updatedAttendee, admittedNow: countToAdmit, remaining: newRemaining, totalQuota };
+  return {
+    status: 'SUCCESS',
+    message: `ENTRY GRANTED! Admitted ${countToAdmit} member(s)${extraMsg}. Pass is now EXPIRED. Issue ${countToAdmit} ${wristband} wristband(s).`,
+    attendee: updatedAttendee,
+    admittedNow: countToAdmit,
+    remaining: 0,
+    totalQuota: newTotalQuota
+  };
 }

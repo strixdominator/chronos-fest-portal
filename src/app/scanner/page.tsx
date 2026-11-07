@@ -542,7 +542,7 @@ export default function GateScannerPage() {
             Gate Entry & Wristband Terminal
           </h1>
           <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: 'var(--soft-beige)', marginTop: 4 }}>
-            Station: <strong style={{ color: 'var(--champagne)' }}>{volunteerName.toUpperCase()}</strong> · Optical pass validation with automatic family split-quota tracking.
+            Station: <strong style={{ color: 'var(--champagne)' }}>{volunteerName.toUpperCase()}</strong> · Official gate pass scanner & single-use entry validation.
           </p>
         </div>
 
@@ -844,12 +844,8 @@ export default function GateScannerPage() {
 
                   <div>
                     <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-navy)' }}>
-                      {scanPreview.status === 'READY' && (
-                        scanPreview.admittedCount > 0
-                          ? `PARTIAL ENTRY (${scanPreview.remaining} REMAINING)`
-                          : `VALID PASS (${scanPreview.totalQuota} TOTAL QUOTA)`
-                      )}
-                      {scanPreview.status === 'ALREADY_CHECKED_IN' && 'QUOTA FULLY EXHAUSTED!'}
+                      {scanPreview.status === 'READY' && `VALID PASS (${scanPreview.totalQuota} REGISTERED)`}
+                      {scanPreview.status === 'ALREADY_CHECKED_IN' && 'PASS EXPIRED / ALREADY USED!'}
                       {scanPreview.status === 'PENDING' && 'PENDING MANUAL APPROVAL'}
                       {scanPreview.status === 'REJECTED' && 'PASS REJECTED'}
                       {scanPreview.status === 'NOT_FOUND' && 'INVALID / NOT FOUND'}
@@ -905,45 +901,24 @@ export default function GateScannerPage() {
                     </div>
                   )}
 
-                  {/* Quota Progress Strip */}
+                  {/* Registered Headcount Strip */}
                   <div style={{
                     marginTop: 14,
                     paddingTop: 12,
                     borderTop: '1px solid var(--border-color)',
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr 1fr',
-                    gap: 8,
-                    textAlign: 'center'
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '12px 16px',
+                    background: '#ffffff',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 8
                   }}>
-                    <div style={{ background: '#ffffff', border: '1px solid var(--border-color)', borderRadius: 8, padding: '10px' }}>
-                      <span className="mono-label" style={{ display: 'block', fontSize: '0.68rem' }}>Total Quota</span>
-                      <strong style={{ fontFamily: 'var(--font-mono)', fontSize: '1.2rem', color: 'var(--color-navy)' }}>{scanPreview.totalQuota}</strong>
-                    </div>
-                    <div style={{ background: '#ffffff', border: '1px solid var(--border-color)', borderRadius: 8, padding: '10px' }}>
-                      <span className="mono-label" style={{ display: 'block', fontSize: '0.68rem' }}>Already In</span>
-                      <strong style={{ fontFamily: 'var(--font-mono)', fontSize: '1.2rem', color: scanPreview.admittedCount > 0 ? '#b45309' : 'var(--text-muted)' }}>
-                        {scanPreview.admittedCount}
-                      </strong>
-                    </div>
-                    <div style={{ background: '#ffffff', border: '1px solid var(--border-color)', borderRadius: 8, padding: '10px' }}>
-                      <span className="mono-label" style={{ display: 'block', fontSize: '0.68rem' }}>Available Now</span>
-                      <strong style={{ fontFamily: 'var(--font-mono)', fontSize: '1.2rem', color: scanPreview.remaining > 0 ? '#0e8a5a' : '#dc2626' }}>
-                        {scanPreview.remaining}
-                      </strong>
-                    </div>
+                    <span className="mono-label" style={{ fontSize: '0.72rem' }}>REGISTERED HEADCOUNT</span>
+                    <strong style={{ fontFamily: 'var(--font-mono)', fontSize: '1.05rem', color: 'var(--color-navy)' }}>
+                      {scanPreview.totalQuota} {scanPreview.totalQuota > 1 ? 'MEMBERS' : 'MEMBER'}
+                    </strong>
                   </div>
-
-                  {/* Previous Check-in logs if already partially admitted */}
-                  {scanPreview.attendee.checkInLogs && scanPreview.attendee.checkInLogs.length > 0 && (
-                    <div style={{ marginTop: 12, fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-                      <span style={{ fontWeight: 700, color: 'var(--color-navy)' }}>Previous Check-in Log:</span>
-                      {scanPreview.attendee.checkInLogs.map((log, idx) => (
-                        <div key={idx} style={{ marginTop: 2 }}>
-                          • {log.admitted} member(s) admitted at {new Date(log.timestamp).toLocaleTimeString()} by {log.gateVolunteer}
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -982,7 +957,7 @@ export default function GateScannerPage() {
                   </div>
 
                   {/* Extra Guest Notification Badge */}
-                  {admitCount > scanPreview.remaining && (
+                  {admitCount > scanPreview.totalQuota && (
                     <div style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -997,28 +972,30 @@ export default function GateScannerPage() {
                       borderRadius: 6,
                       padding: '8px 12px'
                     }}>
-                      <span>✨ <strong>+{admitCount - scanPreview.remaining} Extra Guest{admitCount - scanPreview.remaining > 1 ? 's' : ''}</strong> (Volunteer Override) will be recorded</span>
+                      <span>✨ <strong>+{admitCount - scanPreview.totalQuota} Extra Guest{admitCount - scanPreview.totalQuota > 1 ? 's' : ''}</strong> (Volunteer Override) will be recorded</span>
                     </div>
                   )}
 
                   {/* Quick Shortcut Chips */}
                   <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
-                    {scanPreview.remaining > 1 && Array.from({ length: scanPreview.remaining }).map((_, i) => {
-                      const val = i + 1;
-                      const isSelected = admitCount === val;
-                      return (
-                        <button
-                          key={val}
-                          type="button"
-                          onClick={() => setAdmitCount(val)}
-                          className={`neo-chip-btn ${isSelected ? 'active' : ''}`}
-                        >
-                          {val === scanPreview.remaining ? `All ${val} Quota` : `${val} Member${val > 1 ? 's' : ''}`}
-                        </button>
-                      );
-                    })}
-                    {[1, 2].map(extra => {
-                      const val = scanPreview.remaining + extra;
+                    {scanPreview.totalQuota > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setAdmitCount(scanPreview.totalQuota)}
+                        className={`neo-chip-btn ${admitCount === scanPreview.totalQuota ? 'active' : ''}`}
+                      >
+                        Registered ({scanPreview.totalQuota})
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setAdmitCount(1)}
+                      className={`neo-chip-btn ${admitCount === 1 ? 'active' : ''}`}
+                    >
+                      1 Person (Alumnus Only)
+                    </button>
+                    {[1, 2, 3].map(extra => {
+                      const val = scanPreview.totalQuota + extra;
                       const isSelected = admitCount === val;
                       return (
                         <button
@@ -1032,7 +1009,7 @@ export default function GateScannerPage() {
                             background: isSelected ? '#b45309' : undefined
                           }}
                         >
-                          +{extra} Extra Guest
+                          +{extra} Extra
                         </button>
                       );
                     })}
@@ -1053,7 +1030,7 @@ export default function GateScannerPage() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: 8,
-                      background: admitCount > scanPreview.remaining ? '#0f766e' : undefined
+                      background: admitCount > scanPreview.totalQuota ? '#0f766e' : undefined
                     }}
                   >
                     {admitting ? (
@@ -1061,85 +1038,31 @@ export default function GateScannerPage() {
                     ) : (
                       <CheckCircle2 size={18} />
                     )}
-                    CONFIRM ENTRY FOR {admitCount} & ISSUE {admitCount} WRISTBAND{admitCount > 1 ? 'S' : ''} ↗
+                    CONFIRM ENTRY FOR {admitCount} & EXPIRE PASS ↗
                   </button>
 
-                  {admitCount < scanPreview.remaining && (
-                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: 10 }}>
-                      ℹ️ Note: {scanPreview.remaining - admitCount} quota will remain valid on this QR code for late arrivals.
-                    </p>
-                  )}
+                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: '#b45309', textAlign: 'center', marginTop: 10 }}>
+                    ⚠️ Once confirmed, this pass will be EXPIRED immediately. Single-use entry only.
+                  </p>
                 </div>
               )}
 
-              {/* Anti-fraud warning if already exhausted */}
+              {/* Anti-fraud warning if already exhausted / expired */}
               {scanPreview.status === 'ALREADY_CHECKED_IN' && (
                 <div>
                   <div style={{
-                    padding: '14px',
+                    padding: '16px',
                     background: '#fee2e2',
-                    border: '1px solid #fca5a5',
+                    border: '1.5px solid #fca5a5',
                     borderRadius: 8,
                     color: '#991b1b',
                     fontFamily: 'var(--font-mono)',
-                    fontSize: '0.82rem',
+                    fontSize: '0.85rem',
                     fontWeight: 700,
-                    marginBottom: 16
+                    textAlign: 'center',
+                    marginBottom: 20
                   }}>
-                    ⛔ QUOTA PREVIOUSLY EXHAUSTED: {scanPreview.admittedCount || scanPreview.totalQuota} wristbands were already issued for this pass.
-                  </div>
-
-                  <div style={{ border: '1px solid rgba(178, 139, 76, 0.35)', borderRadius: 8, padding: '18px', background: '#FAF7F2', marginBottom: 20 }}>
-                    <label className="mono-label" style={{ display: 'block', marginBottom: 10, textAlign: 'center', color: 'var(--espresso)', fontSize: '0.78rem' }}>
-                      VOLUNTEER OVERRIDE: ADMIT EXTRA GUEST(S) ON THIS PASS?
-                    </label>
-
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 14 }}>
-                      <button
-                        type="button"
-                        disabled={admitCount <= 1}
-                        onClick={() => setAdmitCount(prev => Math.max(1, prev - 1))}
-                        className="neo-stepper-btn"
-                        title="Decrease count"
-                      >
-                        <Minus size={18} />
-                      </button>
-
-                      <div className="neo-stepper-val">
-                        +{admitCount}
-                      </div>
-
-                      <button
-                        type="button"
-                        disabled={admitCount >= 10}
-                        onClick={() => setAdmitCount(prev => prev + 1)}
-                        className="neo-stepper-btn"
-                        title="Add extra person"
-                      >
-                        <Plus size={18} />
-                      </button>
-                    </div>
-
-                    <button
-                      type="button"
-                      disabled={admitting}
-                      onClick={() => handleConfirmCheckIn(admitCount)}
-                      className="btn-neo-black"
-                      style={{
-                        width: '100%',
-                        padding: '14px',
-                        fontSize: '0.85rem',
-                        borderRadius: 8,
-                        background: '#0f766e',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 8
-                      }}
-                    >
-                      {admitting ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
-                      AUTHORIZE +{admitCount} EXTRA GUEST{admitCount > 1 ? 'S' : ''} & ISSUE WRISTBAND{admitCount > 1 ? 'S' : ''} ↗
-                    </button>
+                    ⛔ PASS IS EXPIRED: This pass was already scanned and used at the gate. Duplicate entries are strictly prohibited.
                   </div>
                 </div>
               )}
@@ -1182,7 +1105,7 @@ export default function GateScannerPage() {
 
             <div style={{ padding: '28px', textAlign: 'center' }}>
               <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', fontWeight: 700, textTransform: 'uppercase', color: '#0e8a5a' }}>
-                {scanResult.code === 'PARTIAL_ENTRY' ? 'PARTIAL ENTRY RECORDED!' : 'ENTRY GRANTED!'}
+                ENTRY GRANTED · PASS EXPIRED
               </h2>
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.92rem', color: 'var(--text-body)', marginTop: 6, marginBottom: 20 }}>
                 {scanResult.message}
@@ -1211,37 +1134,20 @@ export default function GateScannerPage() {
                   ATTACH {scanResult.admittedNow || 1} × {scanResult.attendee?.wristbandColor || 'ROYAL BLUE'} WRISTBAND(S) NOW
                 </span>
 
-                {scanResult.remaining !== undefined && scanResult.remaining > 0 ? (
-                  <span style={{
-                    display: 'inline-block',
-                    marginTop: 12,
-                    padding: '6px 14px',
-                    background: '#ffffff',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 6,
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.74rem',
-                    fontWeight: 700,
-                    color: 'var(--color-blue)'
-                  }}>
-                    ℹ️ {scanResult.remaining} remaining admission(s) left on this pass for late arrivals.
-                  </span>
-                ) : (
-                  <span style={{
-                    display: 'inline-block',
-                    marginTop: 12,
-                    padding: '6px 14px',
-                    background: '#ffffff',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 6,
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.74rem',
-                    fontWeight: 700,
-                    color: '#0e8a5a'
-                  }}>
-                    ✓ Full pass quota fulfilled · Pass marked complete.
-                  </span>
-                )}
+                <span style={{
+                  display: 'inline-block',
+                  marginTop: 12,
+                  padding: '6px 14px',
+                  background: '#ffffff',
+                  border: '1px solid #10b981',
+                  borderRadius: 6,
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.74rem',
+                  fontWeight: 700,
+                  color: '#0e8a5a'
+                }}>
+                  ✓ Pass is now EXPIRED · Single-use entry completed.
+                </span>
               </div>
 
               {/* Ready for next button */}
